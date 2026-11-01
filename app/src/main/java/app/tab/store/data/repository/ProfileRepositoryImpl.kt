@@ -2,7 +2,7 @@ package app.tab.store.data.repository
 
 import app.tab.store.core.datastore.SessionStore
 import app.tab.store.core.firebase.firestoreResult
-import app.tab.store.core.network.FunctionsClient
+import app.tab.store.domain.repository.SellerRepository
 import app.tab.store.data.remote.FirestorePaths
 import app.tab.store.data.remote.toUser
 import app.tab.store.domain.model.User
@@ -24,7 +24,7 @@ class ProfileRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val sessionStore: SessionStore,
-    private val functionsClient: FunctionsClient,
+    private val sellerRepository: SellerRepository,
 ) : ProfileRepository {
 
     override fun observeProfile(): Flow<User?> = sessionStore.cachedUser
@@ -59,9 +59,5 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun registerAsSeller(storeName: String): DataResult<String> =
-        functionsClient.callString(
-            "registerSeller",
-            mapOf("storeName" to storeName.trim()),
-            key = "storeId",
-        )
+        sellerRepository.createStore(name = storeName, tagline = "", city = "")
 }

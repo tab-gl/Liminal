@@ -25,12 +25,26 @@ android {
         applicationId = "app.tab.store"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 4
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Public OAuth client id used by Google Sign-In (not a secret).
+        // Cloudinary: the cloud name is public (it appears in every asset URL).
+        // The upload preset is public too, but should be locked to the
+        // "sproutly" folder with a size cap in the Cloudinary console.
+        buildConfigField(
+            "String",
+            "CLOUDINARY_CLOUD_NAME",
+            "\"${secret("cloudinaryCloudName", "SPROUTLY_CLOUDINARY_CLOUD_NAME") ?: "wjoegjfk"}\"",
+        )
+        buildConfigField(
+            "String",
+            "CLOUDINARY_UPLOAD_PRESET",
+            "\"${secret("cloudinaryUploadPreset", "SPROUTLY_CLOUDINARY_UPLOAD_PRESET") ?: "sproutly_unsigned"}\"",
+        )
+
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",

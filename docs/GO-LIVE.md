@@ -61,23 +61,30 @@ The account `aceyash-dev@proton.me` already exists — the first sign-up attempt
 created it before the profile write was denied. Use **Sign in**, not Create
 account. On 1.0.2 any new email registers cleanly.
 
-## 3. Cloudinary secret and Cloud Functions
+## 3. Cloudinary upload preset (no functions needed)
 
-```bash
-firebase functions:secrets:set CLOUDINARY_URL
-# paste: cloudinary://<api_key>:<api_secret>@<cloud_name>
+This app runs on the Spark plan, so uploads use an unsigned preset instead of a
+server signature. Cloudinary Console → **Settings → Upload → Upload presets →
+Add upload preset**:
 
-cd functions && npm ci && npm run build && cd ..
-firebase deploy --only functions
-```
+| Field | Value |
+| --- | --- |
+| Preset name | `sproutly_unsigned` |
+| Signing mode | **Unsigned** |
+| Folder | `sproutly` |
+| Max file size | `5 MB` |
+| Allowed formats | `jpg,png,webp` |
 
-Cloud Functions require the Blaze plan. Deploy targets `asia-south1`.
+The cloud name (`wjoegjfk`) and preset name are already baked into the APK, so
+nothing needs rebuilding. Full detail and the trade-offs:
+[docs/SPARK-MODE.md](SPARK-MODE.md).
 
-Verify: `firebase functions:list` shows `createOrder`, `registerSeller`,
-`getCloudinaryUploadSignature`, `adminSetStoreStatus` and the rest.
+Verify: add a product image in the seller hub and check it appears in the
+Cloudinary media library under `sproutly/`.
 
-Rotate the Cloudinary key first if it has ever been pasted into chat — the one
-from the original brief was.
+Cloud Functions are optional now. If you move to Blaze later:
+`firebase functions:secrets:set CLOUDINARY_URL`, `firebase deploy --only functions`,
+and clear `SPROUTLY_CLOUDINARY_UPLOAD_PRESET` so the client signs instead.
 
 ## 4. Seed the category taxonomy
 

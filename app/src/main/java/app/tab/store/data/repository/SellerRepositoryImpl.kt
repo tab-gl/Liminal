@@ -3,7 +3,6 @@ package app.tab.store.data.repository
 import app.tab.store.core.firebase.firestoreResult
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.firebase.toUserMessage
-import app.tab.store.core.network.FunctionsClient
 import app.tab.store.data.remote.FirestorePaths
 import app.tab.store.data.remote.toProduct
 import app.tab.store.data.remote.toStore
@@ -39,7 +38,6 @@ import kotlinx.coroutines.tasks.await
 class SellerRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
-    private val functionsClient: FunctionsClient,
 ) : SellerRepository {
 
     private val uidFlow = MutableStateFlow(auth.currentUser?.uid)
@@ -68,18 +66,52 @@ class SellerRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Creates the store and promotes the caller in one batch. `firestore.rules`
+     * re-checks both writes: the store must be owned by the caller and start
+     * PENDING, and the user's role may only move CUSTOMER → SELLER with a
+     * storeId the caller actually owns.
+     */
     override suspend fun createStore(name: String, tagline: String, city: String): DataResult<String> {
-        val storeId = when (
-            val res = functionsClient.callString(
-                "registerSeller",
-                mapOf("storeName" to name.trim(), "tagline" to tagline, "city" to city),
-                key = "storeId",
+        val uid = auth.currentUser?.uid ?: return DataResult.Failure("You are signed out.")
+        val storeRef = firestore.collection(FirestorePaths.STORES).document()
+        return try {
+            val batch = firestore.batch()
+            batch.set(
+                storeRef,
+                mapOf(
+                    "ownerId" to uid,
+                    "name" to name.trim(),
+                    "slug" to app.tab.store.core.utils.Validators.slugify(name),
+                    "tagline" to tagline.trim(),
+                    "description" to "",
+                    "logoUrl" to null,
+                    "logoPublicId" to null,
+                    "bannerUrl" to null,
+                    "bannerPublicId" to null,
+                    "city" to city.trim(),
+                    "status" to "PENDING",
+                    "rating" to 0.0,
+                    "ratingCount" to 0,
+                    "productCount" to 0,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
             )
-        ) {
-            is DataResult.Failure -> return res
-            is DataResult.Success -> res.value
+            batch.set(
+                firestore.collection(FirestorePaths.USERS).document(uid),
+                mapOf(
+                    "role" to "SELLER",
+                    "storeId" to storeRef.id,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+                SetOptions.merge(),
+            )
+            batch.commit().await()
+            DataResult.Success(storeRef.id)
+        } catch (t: Throwable) {
+            DataResult.Failure(t.toUserMessage(), t)
         }
-        return DataResult.Success(storeId)
     }
 
     override suspend fun updateStore(store: Store): DataResult<Unit> {
@@ -142,14 +174,14 @@ class SellerRepositoryImpl @Inject constructor(
         DataResult.Failure(t.toUserMessage(), t)
     }
 
-    override suspend fun deleteProduct(productId: String): DataResult<Unit> {
-        // Server removes the Cloudinary assets, then the document.
-        val res = functionsClient.call("deleteProduct", mapOf("productId" to productId))
-        return when (res) {
-            is DataResult.Failure -> res
-            is DataResult.Success -> DataResult.Success(Unit)
+    override suspend fun deleteProduct(productId: String): DataResult<Unit> =
+        // The document is removed here; Cloudinary assets need the api_secret to
+        // destroy, so on the Spark plan they are left for manual cleanup in the
+        // Cloudinary console (or purged by the deleteProduct function once
+        // Cloud Functions are deployed).
+        firestoreResult {
+            firestore.collection(FirestorePaths.PRODUCTS).document(productId).delete().await()
         }
-    }
 
     override suspend fun setStock(productId: String, stock: Int): DataResult<Unit> =
         firestoreResult {

@@ -3,7 +3,6 @@ package app.tab.store.data.repository
 import app.tab.store.core.firebase.firestoreResult
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.firebase.toUserMessage
-import app.tab.store.core.network.FunctionsClient
 import app.tab.store.data.remote.FirestorePaths
 import app.tab.store.data.remote.toProduct
 import app.tab.store.data.remote.toStore
@@ -17,37 +16,70 @@ import app.tab.store.domain.model.User
 import app.tab.store.domain.model.UserRole
 import app.tab.store.domain.repository.AdminRepository
 import app.tab.store.domain.repository.DataResult
+import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Query
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 @Singleton
 class AdminRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val functionsClient: FunctionsClient,
 ) : AdminRepository {
 
     private val stores get() = firestore.collection(FirestorePaths.STORES)
     private val products get() = firestore.collection(FirestorePaths.PRODUCTS)
     private val users get() = firestore.collection(FirestorePaths.USERS)
 
-    override fun observeOverview(): Flow<AdminOverview> =
-        firestore.document(FirestorePaths.platformStats()).snapshotFlow().map { snap ->
-            AdminOverview(
-                userCount = (snap.get("userCount") as? Number)?.toInt() ?: 0,
-                sellerCount = (snap.get("sellerCount") as? Number)?.toInt() ?: 0,
-                storeCount = (snap.get("storeCount") as? Number)?.toInt() ?: 0,
-                pendingStores = (snap.get("pendingStores") as? Number)?.toInt() ?: 0,
-                productCount = (snap.get("productCount") as? Number)?.toInt() ?: 0,
-                blockedProducts = (snap.get("blockedProducts") as? Number)?.toInt() ?: 0,
-                orderCount = (snap.get("orderCount") as? Number)?.toInt() ?: 0,
-                grossMerchandiseValue = (snap.get("gmv") as? Number)?.toLong() ?: 0L,
-            )
-        }
+    /**
+     * Computed from the collections themselves with count() aggregations, so the
+     * dashboard needs no scheduled Cloud Function. GMV is summed over the most
+     * recent 300 orders — a sample, labelled as such on the screen.
+     */
+    override fun observeOverview(): Flow<AdminOverview> = flow {
+        emit(computeOverview())
+    }
+
+    private suspend fun computeOverview(): AdminOverview = try {
+        val userCount = users.count().get(AggregateSource.SERVER).await().count
+        val sellerCount = users.whereEqualTo("role", "SELLER")
+            .count().get(AggregateSource.SERVER).await().count
+        val storeCount = stores.count().get(AggregateSource.SERVER).await().count
+        val pendingStores = stores.whereEqualTo("status", StoreStatus.PENDING.name)
+            .count().get(AggregateSource.SERVER).await().count
+        val productCount = products.count().get(AggregateSource.SERVER).await().count
+        val blockedProducts = products.whereEqualTo("status", ProductStatus.BLOCKED.name)
+            .count().get(AggregateSource.SERVER).await().count
+        val orderCount = firestore.collection(FirestorePaths.ORDERS)
+            .count().get(AggregateSource.SERVER).await().count
+
+        val recent = firestore.collection(FirestorePaths.ORDERS)
+            .orderBy("placedAt", Query.Direction.DESCENDING)
+            .limit(300)
+            .get()
+            .await()
+        val gmv = recent.documents
+            .filter { it.getString("status") != "CANCELLED" }
+            .sumOf { (it.get("total") as? Number)?.toLong() ?: 0L }
+
+        AdminOverview(
+            userCount = userCount.toInt(),
+            sellerCount = sellerCount.toInt(),
+            storeCount = storeCount.toInt(),
+            pendingStores = pendingStores.toInt(),
+            productCount = productCount.toInt(),
+            blockedProducts = blockedProducts.toInt(),
+            orderCount = orderCount.toInt(),
+            grossMerchandiseValue = gmv,
+        )
+    } catch (t: Throwable) {
+        AdminOverview()
+    }
 
     override fun observePendingStores(): Flow<List<Store>> =
         stores.whereEqualTo("status", StoreStatus.PENDING.name)
@@ -62,14 +94,14 @@ class AdminRepositoryImpl @Inject constructor(
             .map { snap -> snap.documents.map { it.toStore() } }
 
     override suspend fun setStoreStatus(storeId: String, status: StoreStatus): DataResult<Unit> =
-        when (
-            val res = functionsClient.call(
-                "adminSetStoreStatus",
-                mapOf("storeId" to storeId, "status" to status.name),
-            )
-        ) {
-            is DataResult.Failure -> res
-            is DataResult.Success -> DataResult.Success(Unit)
+        firestoreResult {
+            stores.document(storeId).update(
+                mapOf(
+                    "status" to status.name,
+                    "moderatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                ),
+            ).await()
         }
 
     override fun observeUsers(): Flow<List<User>> =
@@ -79,9 +111,13 @@ class AdminRepositoryImpl @Inject constructor(
             .map { snap -> snap.documents.map { it.toUser() } }
 
     override suspend fun setUserRole(uid: String, role: UserRole): DataResult<Unit> =
-        when (val res = functionsClient.call("setUserRole", mapOf("uid" to uid, "role" to role.name))) {
-            is DataResult.Failure -> res
-            is DataResult.Success -> DataResult.Success(Unit)
+        firestoreResult {
+            val updates = mutableMapOf<String, Any?>(
+                "role" to role.name,
+                "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+            )
+            if (role == UserRole.CUSTOMER) updates["storeId"] = null
+            users.document(uid).set(updates, SetOptions.merge()).await()
         }
 
     override fun observeReportedProducts(): Flow<List<Product>> =
@@ -91,14 +127,14 @@ class AdminRepositoryImpl @Inject constructor(
             .map { snap -> snap.documents.map { it.toProduct() } }
 
     override suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit> =
-        when (
-            val res = functionsClient.call(
-                "adminSetProductStatus",
-                mapOf("productId" to productId, "status" to status.name),
-            )
-        ) {
-            is DataResult.Failure -> res
-            is DataResult.Success -> DataResult.Success(Unit)
+        firestoreResult {
+            products.document(productId).update(
+                mapOf(
+                    "status" to status.name,
+                    "moderatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                ),
+            ).await()
         }
 
     override suspend fun createCategory(name: String, slug: String, iconKey: String): DataResult<Unit> {

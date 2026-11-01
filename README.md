@@ -16,7 +16,7 @@ admins moderate the platform.
 | Area | Contents |
 | --- | --- |
 | `app/` | The Android application (Kotlin, Compose, MVVM, Clean-ish layering) |
-| `functions/` | Cloud Functions in TypeScript — all trusted operations |
+| `functions/` | Cloud Functions in TypeScript — the trusted operations for a Blaze deployment (the app also runs without them, see [SPARK-MODE.md](docs/SPARK-MODE.md)) |
 | `firestore.rules` | Security rules for every collection |
 | `firestore.indexes.json` | 23 composite indexes used by the queries in the app |
 | `.github/workflows/` | Android CI (build + ARM32 verification) and Functions deploy |

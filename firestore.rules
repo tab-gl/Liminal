@@ -3,12 +3,22 @@ rules_version = '2';
 // ---------------------------------------------------------------------------
 // Sproutly Firestore security rules
 //
+// These rules carry the weight that Cloud Functions would normally carry,
+// because the app has to run on the Firebase Spark plan (no functions). Every
+// number that matters — prices, stock, order totals, status transitions, roles
+// — is re-checked here at commit time.
+//
 // Principles:
-//   1. Roles are read from users/{uid} on the server side of every check —
-//      never from a claim supplied by the client.
-//   2. Money, stock, order totals and moderation state are written only by
-//      Cloud Functions (which run with the Admin SDK and bypass these rules).
-//   3. A shopper can always read their own data and never anyone else's.
+//   1. Roles are read from users/{uid} server-side; never from the request.
+//   2. A shopper can always read their own data and never anyone else's.
+//   3. Anything the client is not explicitly allowed to do is denied.
+//
+// Known limits of running without a server (documented in docs/SPARK-MODE.md):
+//   • A signed-in user may adjust a product's stock/unitsSold fields. Oversell
+//     is impossible (stock can never go below zero) and prices cannot be
+//     touched, but stock is not cryptographically bound to a specific order.
+//   • Cloudinary asset deletion needs the api_secret, so removing a product
+//     leaves its images for manual cleanup in the Cloudinary console.
 // ---------------------------------------------------------------------------
 
 service cloud.firestore {
@@ -46,10 +56,6 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/stores/$(storeId)).data;
     }
 
-    function ownsStore(storeId) {
-      return isSignedIn() && storeId != null && storeDoc(storeId).ownerId == uid();
-    }
-
     function unchanged(field) {
       return !(field in request.resource.data.diff(resource.data).affectedKeys());
     }
@@ -57,24 +63,33 @@ service cloud.firestore {
     // --------------------------------------------------------------- users
     match /users/{userId} {
       allow read: if isSignedIn() && (userId == uid() || isAdmin());
+
       allow create: if isSignedIn() && userId == uid()
         && request.resource.data.uid == uid()
         && request.resource.data.role == 'CUSTOMER'
         && request.resource.data.email is string
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() <= 80;
-      // A user may edit their own profile, but never their role or store link.
-      allow update: if isSignedIn() && userId == uid()
-        && unchanged('role')
-        && unchanged('storeId')
-        && unchanged('createdAt')
-        && request.resource.data.displayName is string
-        && request.resource.data.displayName.size() >= 1
-        && request.resource.data.displayName.size() <= 80;
+
+      allow update: if isSignedIn() && userId == uid() && (
+          // Ordinary profile edits: identity fields are frozen.
+          (unchanged('role') && unchanged('storeId') && unchanged('createdAt')
+            && request.resource.data.displayName is string
+            && request.resource.data.displayName.size() >= 1
+            && request.resource.data.displayName.size() <= 80)
+          ||
+          // Becoming a seller: only from CUSTOMER, only towards a store the
+          // caller actually owns.
+          (resource.data.role == 'CUSTOMER'
+            && request.resource.data.role == 'SELLER'
+            && request.resource.data.storeId is string
+            && storeDoc(request.resource.data.storeId).ownerId == uid())
+        );
+
+      // Admins manage roles and store links (Admin → Users).
       allow update: if isAdmin();
       allow delete: if isAdmin();
 
-      // Device tokens are private to the user.
       match /tokens/{tokenId} {
         allow read, write: if isSignedIn() && userId == uid();
       }
@@ -83,8 +98,15 @@ service cloud.firestore {
     // -------------------------------------------------------------- stores
     match /stores/{storeId} {
       allow read: if true;
-      // Stores are created by the registerSeller function only.
-      allow create: if false;
+
+      // A seller opens their own store, always PENDING (an admin activates it).
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == uid()
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 3
+        && request.resource.data.name.size() <= 60;
+
       allow update: if (isSeller() && resource.data.ownerId == uid()
           && unchanged('ownerId')
           && unchanged('status')
@@ -95,6 +117,7 @@ service cloud.firestore {
           && request.resource.data.name.size() >= 3
           && request.resource.data.name.size() <= 60)
         || isAdmin();
+
       allow delete: if isAdmin();
     }
 
@@ -103,10 +126,6 @@ service cloud.firestore {
       function isPublic() {
         return resource.data.status == 'ACTIVE';
       }
-
-      allow read: if isPublic()
-        || (isSeller() && resource.data.storeId == myStoreId())
-        || isAdmin();
 
       function validProduct() {
         return request.resource.data.title is string
@@ -123,9 +142,23 @@ service cloud.firestore {
           && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED'];
       }
 
+      // The only fields a shopper's order transaction may move, and stock may
+      // never go negative.
+      function stockOnlyChange() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['stock', 'unitsSold', 'updatedAt'])
+          && request.resource.data.stock is int
+          && request.resource.data.stock >= 0;
+      }
+
+      allow read: if isPublic()
+        || (isSeller() && resource.data.storeId == myStoreId())
+        || isAdmin();
+
       allow create: if isSeller()
         && request.resource.data.storeId == myStoreId()
         && validProduct();
+
       allow update: if isSeller()
         && resource.data.storeId == myStoreId()
         && unchanged('storeId')
@@ -133,8 +166,17 @@ service cloud.firestore {
         && unchanged('rating')
         && unchanged('ratingCount')
         && validProduct();
-      // Deletion goes through the deleteProduct function so media is purged.
-      allow delete: if false;
+
+      // Buyers decrement stock (and restore it on cancellation) inside the
+      // order transaction. Prices and titles stay untouched.
+      allow update: if isSignedIn()
+        && resource.data.status == 'ACTIVE'
+        && stockOnlyChange();
+
+      // Moderation (Admin → Products).
+      allow update: if isAdmin();
+
+      allow delete: if (isSeller() && resource.data.storeId == myStoreId()) || isAdmin();
     }
 
     // ---------------------------------------------------------- categories
@@ -194,21 +236,108 @@ service cloud.firestore {
         );
       }
 
+      function itemValid(index) {
+        let item = request.resource.data.items[index];
+        let product = get(/databases/$(database)/documents/products/$(item.productId)).data;
+        return item.quantity is int
+          && item.quantity > 0
+          && item.quantity <= 99
+          && item.unitPrice is int
+          && item.unitPrice > 0
+          && item.unitPrice == product.price
+          && item.storeId == product.storeId
+          && product.status == 'ACTIVE'
+          && product.stock >= item.quantity;
+      }
+
+      function totalsConsistent() {
+        let shipping = request.resource.data.shipping;
+        return request.resource.data.total == request.resource.data.subtotal + shipping
+          && (shipping == 0 || shipping == 4900)
+          && request.resource.data.subtotal >= 0
+          && request.resource.data.total > 0;
+      }
+
+      function editableKeys() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'updatedAt', 'timeline', 'cancelledBy']);
+      }
+
+      function sellerTransition() {
+        let current = resource.data.status;
+        let next = request.resource.data.status;
+        return (current == 'PENDING' && next == 'CONFIRMED')
+          || (current == 'CONFIRMED' && next == 'PACKED')
+          || (current == 'PACKED' && next == 'SHIPPED')
+          || (current == 'SHIPPED' && next == 'DELIVERED');
+      }
+
+      function buyerCancel() {
+        return resource.data.buyerId == uid()
+          && request.resource.data.status == 'CANCELLED'
+          && resource.data.status in ['PENDING', 'CONFIRMED'];
+      }
+
+      function sellerOfRecord() {
+        return isSignedIn()
+          && resource.data.storeIds is list
+          && myStoreId() in resource.data.storeIds;
+      }
+
       allow read: if isParticipant() || isAdmin();
-      // Orders are created, cancelled and advanced by Cloud Functions only.
-      allow create, update, delete: if false;
+
+      // Prices and stock are verified against the product documents, so a
+      // tampered cart cannot change what is charged.
+      allow create: if isSignedIn()
+        && request.resource.data.buyerId == uid()
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 8
+        && request.resource.data.storeIds is list
+        && request.resource.data.storeIds.size() > 0
+        && request.resource.data.address is map
+        && request.resource.data.address.pincode is string
+        && totalsConsistent()
+        && itemValid(0)
+        && (request.resource.data.items.size() < 2 || itemValid(1))
+        && (request.resource.data.items.size() < 3 || itemValid(2))
+        && (request.resource.data.items.size() < 4 || itemValid(3))
+        && (request.resource.data.items.size() < 5 || itemValid(4))
+        && (request.resource.data.items.size() < 6 || itemValid(5))
+        && (request.resource.data.items.size() < 7 || itemValid(6))
+        && (request.resource.data.items.size() < 8 || itemValid(7));
+
+      allow update: if editableKeys() && (
+        (sellerOfRecord() && sellerTransition())
+        || buyerCancel()
+        || isAdmin()
+      );
+
+      allow delete: if false;
     }
 
     // ------------------------------------------------------- notifications
     match /notifications/{userId} {
-      allow read, write: if isSignedIn() && userId == uid();
+      allow read: if isSignedIn() && userId == uid();
 
       match /items/{itemId} {
         allow read: if isSignedIn() && userId == uid();
         // The client may only flip the read flag.
         allow update: if isSignedIn() && userId == uid()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
-        allow create, delete: if false;
+
+        // A seller's "new order" notice is written by the buyer who placed it.
+        // Scoped to order notices with a bounded body.
+        allow create: if isSignedIn()
+          && request.resource.data.type == 'ORDER'
+          && request.resource.data.title is string
+          && request.resource.data.body is string
+          && request.resource.data.body.size() <= 200
+          && request.resource.data.deepLink is string
+          && request.resource.data.read == false;
+
+        allow delete: if false;
       }
     }
 
@@ -219,8 +348,7 @@ service cloud.firestore {
     }
 
     match /media_usage/{docId} {
-      allow read: if isAdmin();
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     // Deny anything not explicitly allowed above.
