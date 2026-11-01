@@ -33,7 +33,7 @@ class AddressRepositoryImpl @Inject constructor(
         return ref.snapshotFlow().map { snap ->
             snap.documents.map { it.toAddress() }
                 .sortedWith(compareByDescending<Address> { it.isDefault }.thenBy { it.label })
-        }
+        }.orFallback(emptyList())
     }
 
     override suspend fun upsert(address: Address): DataResult<String> {

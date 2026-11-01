@@ -32,7 +32,7 @@ class NotificationRepositoryImpl @Inject constructor(
         val ref = items() ?: return flowOf(emptyList())
         return ref.snapshotFlow().map { snap ->
             snap.documents.map { it.toNotification() }.sortedByDescending { it.createdAt }
-        }
+        }.orFallback(emptyList())
     }
 
     override fun observeUnreadCount(): Flow<Int> =

@@ -49,7 +49,7 @@ class CartRepositoryImpl @Inject constructor(
                     )
                 }.sortedBy { it.title },
             )
-        }
+        }.orFallback(Cart())
     }
 
     override suspend fun add(product: Product, quantity: Int): DataResult<Unit> {

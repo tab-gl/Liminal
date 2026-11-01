@@ -45,12 +45,12 @@ class OrderRepositoryImpl @Inject constructor(
         return orders.whereEqualTo("buyerId", uid)
             .orderBy("placedAt", Query.Direction.DESCENDING)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toOrder() } }
+            .map { snap -> snap.documents.map { it.toOrder() } }.orFallback(emptyList())
     }
 
     override fun observeOrder(orderId: String): Flow<Order?> =
         orders.document(orderId).snapshotFlow()
-            .map { snap -> if (snap.exists()) snap.toOrder() else null }
+            .map { snap -> if (snap.exists()) snap.toOrder() else null }.orFallback(null)
 
     override suspend fun placeOrder(addressId: String, note: String?): DataResult<String> {
         val uid = uid ?: return DataResult.Failure("Sign in to place an order.")
@@ -272,7 +272,7 @@ class OrderRepositoryImpl @Inject constructor(
         orders.whereArrayContains("storeIds", storeId)
             .orderBy("placedAt", Query.Direction.DESCENDING)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toOrder() } }
+            .map { snap -> snap.documents.map { it.toOrder() } }.orFallback(emptyList())
 
     override suspend fun updateOrderStatus(orderId: String, status: OrderStatus): DataResult<Unit> {
         val ref = orders.document(orderId)
@@ -305,7 +305,7 @@ class OrderRepositoryImpl @Inject constructor(
         orders.orderBy("placedAt", Query.Direction.DESCENDING)
             .limit(200)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toOrder() } }
+            .map { snap -> snap.documents.map { it.toOrder() } }.orFallback(emptyList())
 
     private companion object {
         const val FREE_SHIPPING_PAISE = 99_900L

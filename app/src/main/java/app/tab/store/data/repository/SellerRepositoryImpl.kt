@@ -52,7 +52,7 @@ class SellerRepositoryImpl @Inject constructor(
         } else {
             firestore.collection(FirestorePaths.USERS).document(uid)
                 .snapshotFlow()
-                .map { it.getString("storeId") }
+                .map { it.getString("storeId") }.orFallback(null)
         }
     }
 
@@ -62,7 +62,7 @@ class SellerRepositoryImpl @Inject constructor(
         } else {
             firestore.collection(FirestorePaths.STORES).document(storeId)
                 .snapshotFlow()
-                .map { if (it.exists()) it.toStore() else null }
+                .map { if (it.exists()) it.toStore() else null }.orFallback(null)
         }
     }
 
@@ -140,7 +140,7 @@ class SellerRepositoryImpl @Inject constructor(
             .whereEqualTo("storeId", storeId)
             .orderBy("updatedAt", Query.Direction.DESCENDING)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
     override suspend fun upsertProduct(product: Product): DataResult<String> = try {
         val ref = firestore.collection(FirestorePaths.PRODUCTS)
@@ -226,11 +226,12 @@ class SellerRepositoryImpl @Inject constructor(
                     mine,
                 )
             } }
+            .orFallback(emptyList<Triple<String, Long, List<Map<String, Any?>>>>())
 
         val products = firestore.collection(FirestorePaths.PRODUCTS)
             .whereEqualTo("storeId", storeId)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
         return combine(orders, products) { orderRows, productRows ->
             val valid = orderRows.filter { it.first != OrderStatus.CANCELLED.name }

@@ -52,12 +52,12 @@ class WishlistRepositoryImpl @Inject constructor(
                     ),
                 )
             }.sortedByDescending { it.title }
-        }
+        }.orFallback(emptyList())
     }
 
     override fun observeWishlistIds(): Flow<Set<String>> {
         val ref = items() ?: return flowOf(emptySet())
-        return ref.snapshotFlow().map { snap -> snap.documents.mapNotNull { it.id }.toSet() }
+        return ref.snapshotFlow().map { snap -> snap.documents.mapNotNull { it.id }.toSet() }.orFallback(emptySet())
     }
 
     override suspend fun toggle(product: Product): DataResult<Boolean> {

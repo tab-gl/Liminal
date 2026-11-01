@@ -45,7 +45,7 @@ class CatalogRepositoryImpl @Inject constructor(
         firestore.collection(FirestorePaths.CATEGORIES)
             .orderBy("order")
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toCategory() } }
+            .map { snap -> snap.documents.map { it.toCategory() } }.orFallback(emptyList())
 
     override suspend fun refreshCategories(): DataResult<Unit> = try {
         val snap = firestore.collection(FirestorePaths.CATEGORIES).orderBy("order").get().await()
@@ -66,27 +66,28 @@ class CatalogRepositoryImpl @Inject constructor(
                 cache(items)
                 items
             }
+            .orFallback(emptyList())
 
     override fun observeTrending(limit: Int): Flow<List<Product>> =
         activeProducts()
             .orderBy("unitsSold", Query.Direction.DESCENDING)
             .limit(limit.toLong())
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
     override fun observeNewArrivals(limit: Int): Flow<List<Product>> =
         activeProducts()
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .limit(limit.toLong())
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
     override fun observeRecommended(limit: Int): Flow<List<Product>> =
         activeProducts()
             .orderBy("rating", Query.Direction.DESCENDING)
             .limit(limit.toLong())
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
     override fun observeByCategory(categoryId: String, limit: Int): Flow<List<Product>> =
         activeProducts()
@@ -94,7 +95,7 @@ class CatalogRepositoryImpl @Inject constructor(
             .orderBy("unitsSold", Query.Direction.DESCENDING)
             .limit(limit.toLong())
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
     /**
      * Search is a Firestore range scan on the lower-cased title (`titleLower`),
@@ -146,7 +147,7 @@ class CatalogRepositoryImpl @Inject constructor(
 
     override fun observeProduct(productId: String): Flow<Product?> =
         products.document(productId).snapshotFlow()
-            .map { snap -> if (snap.exists()) snap.toProduct() else null }
+            .map { snap -> if (snap.exists()) snap.toProduct() else null }.orFallback(null)
 
     override suspend fun recordProductView(productId: String) {
         val uid = auth.currentUser?.uid ?: return
@@ -188,14 +189,14 @@ class CatalogRepositoryImpl @Inject constructor(
     override fun observeStore(storeId: String): Flow<Store?> =
         firestore.collection(FirestorePaths.STORES).document(storeId)
             .snapshotFlow()
-            .map { snap -> if (snap.exists()) snap.toStore() else null }
+            .map { snap -> if (snap.exists()) snap.toStore() else null }.orFallback(null)
 
     override fun observeStoreProducts(storeId: String): Flow<List<Product>> =
         products.whereEqualTo("storeId", storeId)
             .whereEqualTo("status", ProductStatus.ACTIVE.name)
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
     private suspend fun cache(items: List<Product>) {
         if (items.isEmpty()) return

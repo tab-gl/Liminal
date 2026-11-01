@@ -26,7 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +45,6 @@ import app.tab.store.core.designsystem.SproutlyTheme
 
 @Composable
 fun LoginScreen(
-    onSignedIn: () -> Unit,
     onRegister: () -> Unit,
     onForgotPassword: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel(),
@@ -57,9 +55,9 @@ fun LoginScreen(
         onError = { viewModel.showError(it) },
     )
 
-    LaunchedEffect(state.user) {
-        if (state.user != null) onSignedIn()
-    }
+    // No navigation here on success: SproutlyNavHost rebuilds the graph when the
+    // session changes, so navigating as well would race the controller being
+    // replaced (that race crashed the app right after sign-in).
 
     Column(
         modifier = Modifier
@@ -250,6 +248,6 @@ fun LoginScreen(
 @Composable
 private fun LoginPreview() {
     SproutlyTheme {
-        LoginScreen(onSignedIn = {}, onRegister = {}, onForgotPassword = {})
+        LoginScreen(onRegister = {}, onForgotPassword = {})
     }
 }

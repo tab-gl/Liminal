@@ -8,8 +8,12 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -21,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.model.UserRole
 import app.tab.store.feature.admin.AdminCategoriesScreen
 import app.tab.store.feature.admin.AdminDashboardScreen
@@ -80,6 +85,12 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     val currentRoute = backStackEntry?.destination?.route
     val cartViewModel: CartViewModel = hiltViewModel()
     val cartState by cartViewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Background stream failures surface here with the actionable message.
+    LaunchedEffect(Unit) {
+        AppErrors.messages.collect { snackbarHostState.showSnackbar(it) }
+    }
 
     // Search lives on an optional-argument route ("search?categoryId=…"), so
     // compare against the base route rather than the raw route pattern.
@@ -98,6 +109,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             if (showBottomBar) {
                 SproutlyBottomBar(
@@ -125,24 +137,12 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             // ------------------------------------------------------------- auth
             composable(Routes.LOGIN) {
                 LoginScreen(
-                    onSignedIn = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
-                        }
-                    },
                     onRegister = { go(Routes.REGISTER) },
                     onForgotPassword = { go(Routes.FORGOT_PASSWORD) },
                 )
             }
             composable(Routes.REGISTER) {
-                RegisterScreen(
-                    onRegistered = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
-                        }
-                    },
-                    onBack = { navController.popBackStack() },
-                )
+                RegisterScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.FORGOT_PASSWORD) {
                 ForgotPasswordScreen(onBack = { navController.popBackStack() })

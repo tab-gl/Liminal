@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,15 +34,12 @@ import app.tab.store.core.utils.Validators
 
 @Composable
 fun RegisterScreen(
-    onRegistered: () -> Unit,
     onBack: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state.user) {
-        if (state.user != null) onRegistered()
-    }
+    // The nav graph rebuilds when the session changes — see LoginScreen.
 
     Column(
         modifier = Modifier

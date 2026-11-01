@@ -48,7 +48,7 @@ class AuthRepositoryImpl @Inject constructor(
         } else {
             firestore.collection(FirestorePaths.USERS).document(uid)
                 .snapshotFlow()
-                .map { snap -> if (snap.exists()) snap.toUser() else pendingUser() }
+                .map { snap -> if (snap.exists()) snap.toUser() else pendingUser() }.orFallback(pendingUser())
         }
     }
 

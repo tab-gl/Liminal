@@ -85,13 +85,13 @@ class AdminRepositoryImpl @Inject constructor(
         stores.whereEqualTo("status", StoreStatus.PENDING.name)
             .orderBy("createdAt", Query.Direction.ASCENDING)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toStore() } }
+            .map { snap -> snap.documents.map { it.toStore() } }.orFallback(emptyList())
 
     override fun observeAllStores(): Flow<List<Store>> =
         stores.orderBy("createdAt", Query.Direction.DESCENDING)
             .limit(100)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toStore() } }
+            .map { snap -> snap.documents.map { it.toStore() } }.orFallback(emptyList())
 
     override suspend fun setStoreStatus(storeId: String, status: StoreStatus): DataResult<Unit> =
         firestoreResult {
@@ -108,7 +108,7 @@ class AdminRepositoryImpl @Inject constructor(
         users.orderBy("createdAt", Query.Direction.DESCENDING)
             .limit(100)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toUser() } }
+            .map { snap -> snap.documents.map { it.toUser() } }.orFallback(emptyList())
 
     override suspend fun setUserRole(uid: String, role: UserRole): DataResult<Unit> =
         firestoreResult {
@@ -124,7 +124,7 @@ class AdminRepositoryImpl @Inject constructor(
         products.whereEqualTo("reported", true)
             .limit(100)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }
+            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
     override suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit> =
         firestoreResult {
