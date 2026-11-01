@@ -11,6 +11,9 @@ name: Android Native
 
 on:
   push:
+    # Every push to main that touches the native app, plus release tags. Main
+    # should never sit unverified.
+    branches: ["main"]
     tags: ["v*-native"]
     paths:
       - "app-kotlin/**"
