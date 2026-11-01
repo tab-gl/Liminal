@@ -2,7 +2,9 @@ name: Android CI
 
 on:
   push:
-    branches: [main]
+    # Feature branches build too, so a long-lived branch can produce APKs
+    # without waiting for its PR to become mergeable.
+    branches: [main, sproutly-native]
     paths-ignore: ["docs/**", "**/*.md"]
   pull_request:
     branches: [main]
