@@ -83,6 +83,7 @@ fun HomeScreen(
     onCart: () -> Unit,
     onProfile: () -> Unit,
     onNotifications: () -> Unit,
+    onBecomeDeveloper: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -228,7 +229,9 @@ fun HomeScreen(
                             )
                             Spacer(Modifier.height(12.dp))
                             Surface(
-                                onClick = onSeeAll,
+                                // The third card invites developers to publish;
+                                // the others browse the store.
+                                onClick = if (page == promos.lastIndex) onBecomeDeveloper else onSeeAll,
                                 shape = SproutlyRadii.pill,
                                 color = if (page % 2 == 0) SproutlyPalette.Olive
                                 else SproutlyPalette.Lime,

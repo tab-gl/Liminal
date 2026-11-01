@@ -159,6 +159,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onCart = { goTab(Routes.CART) },
                     onProfile = { goTab(Routes.PROFILE) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
+                    onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
                 )
             }
             composable(
@@ -260,6 +261,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onOrders = { goTab(Routes.ORDERS) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onSellerHub = { go(Routes.SELLER_DASHBOARD) },
+                    onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
                     onAdmin = { go(Routes.ADMIN_DASHBOARD) },
                     onSettings = { go(Routes.SETTINGS) },
                 )
@@ -309,7 +311,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 SellerSetupScreen(
                     onBack = { navController.popBackStack() },
                     onCreated = {
-                        navController.navigate(Routes.SELLER_DASHBOARD) {
+                        // They came here to publish, so land on the publish form.
+                        navController.navigate(Routes.sellerProductEdit(null)) {
                             popUpTo(Routes.SELLER_SETUP) { inclusive = true }
                         }
                     },

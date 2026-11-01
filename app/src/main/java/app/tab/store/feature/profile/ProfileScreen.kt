@@ -32,6 +32,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +46,7 @@ import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTag
+import app.tab.store.feature.seller.DeveloperSwitchDialog
 
 @Composable
 fun ProfileScreen(
@@ -52,12 +56,14 @@ fun ProfileScreen(
     onOrders: () -> Unit,
     onNotifications: () -> Unit,
     onSellerHub: () -> Unit,
+    onBecomeDeveloper: () -> Unit,
     onAdmin: () -> Unit,
     onSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val user = state.user
+    var showDeveloperPrompt by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -137,7 +143,10 @@ fun ProfileScreen(
                 Icons.Filled.Storefront,
                 if (user?.isSeller == true) "Developer hub" else "Publish an app",
                 if (user?.isSeller == true) "Manage your apps" else "Open a developer profile",
-                onSellerHub,
+                onClick = {
+                    // Publishing needs a developer account: ask first.
+                    if (user?.isSeller == true) onSellerHub() else showDeveloperPrompt = true
+                },
             )
             if (user?.isAdmin == true) {
                 ProfileRow(
@@ -186,6 +195,16 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    if (showDeveloperPrompt) {
+        DeveloperSwitchDialog(
+            onDismiss = { showDeveloperPrompt = false },
+            onConfirm = {
+                showDeveloperPrompt = false
+                onBecomeDeveloper()
+            },
+        )
     }
 }
 
