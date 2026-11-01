@@ -7,9 +7,6 @@ import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -25,13 +22,8 @@ class SproutlyApp : Application(), Configuration.Provider {
         FirebaseApp.initializeApp(this)
 
         // App Check protects Firestore/Functions from traffic that is not our app.
-        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
-            if (BuildConfig.DEBUG) {
-                DebugAppCheckProviderFactory.getInstance()
-            } else {
-                PlayIntegrityAppCheckProviderFactory.getInstance()
-            },
-        )
+        // The provider itself is chosen per build type (debug vs release source set).
+        SproutlyAppCheck.install()
 
         createNotificationChannel()
         workScheduler.scheduleCatalogSync(this)
