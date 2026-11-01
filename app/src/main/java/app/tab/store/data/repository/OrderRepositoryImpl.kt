@@ -82,7 +82,9 @@ class OrderRepositoryImpl @Inject constructor(
                 val productRefs = lines.map {
                     firestore.collection(FirestorePaths.PRODUCTS).document(it.first)
                 }
-                val productSnaps = tx.getAll(*productRefs.toTypedArray())
+                // This SDK's Transaction only exposes get(DocumentReference),
+                // so each product is read transactionally, one by one.
+                val productSnaps = productRefs.map { ref -> tx.get(ref) }
 
                 val items = mutableListOf<Map<String, Any?>>()
                 var subtotal = 0L
