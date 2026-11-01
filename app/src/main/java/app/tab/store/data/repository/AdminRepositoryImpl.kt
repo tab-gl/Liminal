@@ -111,27 +111,40 @@ class AdminRepositoryImpl @Inject constructor(
             .snapshotFlow()
             .map { snap -> snap.documents.map { it.toUser() } }.orFallback(emptyList())
 
-    override suspend fun setUserRole(uid: String, role: UserRole): DataResult<Unit> = try {
-        if (role == UserRole.SELLER) {
-            val target = users.document(uid).get().await()
-            if (!target.exists()) return DataResult.Failure("This user profile no longer exists.")
-            val storeId = target.getString("storeId")
-                ?: return DataResult.Failure("This user must create a store before becoming a seller.")
-            val store = stores.document(storeId).get().await()
-            if (!store.exists() || store.getString("ownerId") != uid) {
-                return DataResult.Failure("This user does not own the linked store.")
+    /**
+     * Promoting to SELLER requires a store the target user actually owns, so a
+     * role can never be granted without a developer profile behind it.
+     *
+     * Block body (not `= try { ... }`) because the guards return early — Kotlin
+     * forbids `return` inside an expression-bodied function.
+     */
+    override suspend fun setUserRole(uid: String, role: UserRole): DataResult<Unit> {
+        return try {
+            if (role == UserRole.SELLER) {
+                val target = users.document(uid).get().await()
+                if (!target.exists()) {
+                    return DataResult.Failure("This user profile no longer exists.")
+                }
+                val storeId = target.getString("storeId")
+                    ?: return DataResult.Failure(
+                        "This user must create a store before becoming a seller.",
+                    )
+                val store = stores.document(storeId).get().await()
+                if (!store.exists() || store.getString("ownerId") != uid) {
+                    return DataResult.Failure("This user does not own the linked store.")
+                }
             }
+            firestoreResult {
+                val updates = mutableMapOf<String, Any?>(
+                    "role" to role.name,
+                    "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                )
+                if (role == UserRole.CUSTOMER) updates["storeId"] = null
+                users.document(uid).set(updates, SetOptions.merge()).await()
+            }
+        } catch (t: Throwable) {
+            DataResult.Failure(t.toUserMessage(), t)
         }
-        firestoreResult {
-            val updates = mutableMapOf<String, Any?>(
-                "role" to role.name,
-                "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
-            )
-            if (role == UserRole.CUSTOMER) updates["storeId"] = null
-            users.document(uid).set(updates, SetOptions.merge()).await()
-        }
-    } catch (t: Throwable) {
-        DataResult.Failure(t.toUserMessage(), t)
     }
 
     override fun observeReportedProducts(): Flow<List<Product>> =
