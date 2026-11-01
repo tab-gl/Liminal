@@ -24,10 +24,16 @@ class AddressTest {
     }
 
     @Test
-    fun `short pincode or phone fails validation`() {
+    fun `short pincode or missing street fails validation`() {
         assertFalse(complete.copy(pincode = "5600").isComplete())
-        assertFalse(complete.copy(phone = "98765").isComplete())
         assertFalse(complete.copy(line1 = "").isComplete())
+        assertFalse(complete.copy(city = "").isComplete())
+    }
+
+    @Test
+    fun `phone is optional because nothing is delivered`() {
+        assertTrue(complete.copy(phone = "").isComplete())
+        assertTrue(complete.copy(phone = "98765").isComplete())
     }
 
     @Test
