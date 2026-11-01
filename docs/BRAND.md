@@ -52,5 +52,11 @@ screen hardcodes padding.
 
 ## Motion
 
-Screen transitions: fade + 12% horizontal slide, 220–260ms. Shimmer skeletons
-run a 1100ms linear gradient sweep. Nothing bounces; the brand reads calm.
+Material 3 **Expressive** motion via `MotionScheme.expressive()` — spring-based
+spatial and effects specs, and component shape morphing on press, selection and
+expansion. Screen transitions stay restrained: fade + 12% horizontal slide,
+220–260ms.
+
+Loading uses the M3e `LoadingIndicator` (`SproutlyLoader`): a single shape that
+morphs through the Material shape set on a spring. Shimmer is reserved for image
+placeholders, where a morph would be noise.

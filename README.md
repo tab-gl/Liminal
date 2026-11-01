@@ -4,8 +4,10 @@ A native Android multi-vendor marketplace — Kotlin, Jetpack Compose, Material 
 Firebase and Cloudinary. Customers browse and buy, sellers run a storefront,
 admins moderate the platform.
 
-> **Design identity:** Lime `#DBE6A1` · Olive `#3F4C06` · Espresso `#3C3130`,
-> with the monstera mark as the app icon. See [docs/BRAND.md](docs/BRAND.md).
+> **Design identity:** Material 3 **Expressive** — Lime `#DBE6A1` · Olive
+> `#3F4C06` · Espresso `#3C3130`, the monstera mark as the app icon, springy
+> shape-morph motion, and the M3e shape-morph `LoadingIndicator` for every wait
+> state. See [docs/BRAND.md](docs/BRAND.md).
 
 ---
 
@@ -20,6 +22,14 @@ admins moderate the platform.
 | `.github/workflows/` | Android CI (build + ARM32 verification) and Functions deploy |
 | `tools/seed/` | One-time setup script for the category taxonomy |
 | `docs/` | Setup, architecture, data model, brand, CI/CD |
+
+**Toolchain:** AGP 8.13.2 · Gradle 8.14.3 · Kotlin 2.2.20 · Compose 1.8.1 ·
+material3 **1.5.0-alpha08** · compileSdk/targetSdk 36 · minSdk 24.
+
+`material3 1.5.0-alpha08` is the one pre-release pin, and it is deliberate: it
+is the first line that ships `MaterialExpressiveTheme`,
+`MotionScheme.expressive()` and the `LoadingIndicator` shape-morph loader while
+still supporting AGP 8.x. The later betas require AGP 9.1 and compileSdk 37.
 
 ## Feature coverage
 
@@ -38,6 +48,16 @@ incoming orders with a fulfilment state machine, and an analytics dashboard
 **Admin** — platform overview, store approval and suspension, user role
 management, reported-product moderation, category management. Every admin
 action is authorised **server-side**.
+
+## Design system
+
+`core/designsystem` holds the tokens (colour, type, shapes, spacing) plus the
+composables every screen is built from. The theme is `MaterialExpressiveTheme`
+with `MotionScheme.expressive()`, so buttons, chips, sheets and indicators use
+Material's springy expressive motion and shape morphing rather than the older
+linear specs. `SproutlyLoader` wraps the M3e `LoadingIndicator` — one shape
+morphing through the Material shape set — and replaces spinners everywhere the
+app is waiting on data.
 
 ## Architecture in one paragraph
 
