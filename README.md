@@ -97,11 +97,21 @@ Nothing sensitive lives in this repository:
 
 ## Verification status
 
-- Cloud Functions: `tsc --noEmit` and `tsc` both pass cleanly (TypeScript 5.5,
-  strict mode, `noUnusedLocals`).
-- Android: the project is complete and self-consistent but has **not** been
-  compiled in this environment — there is no Android SDK or JDK here. The first
-  `./gradlew assembleUniversalDebug` run happens in CI or Codespaces.
+Both CI workflows are green on `sproutly-native`:
+
+| Check | Result |
+| --- | --- |
+| Cloud Functions `tsc` (strict, `noUnusedLocals`) | pass |
+| Kotlin compile + 24 unit tests | pass |
+| Android lint | pass |
+| `assembleUniversalDebug` / `assembleArm32Debug` | pass |
+| `assembleUniversalRelease` / `assembleArm32Release` (R8) | pass |
+| ARM32 APK contains `lib/armeabi-v7a/*.so` and no arm64 payload | verified in CI |
+| Universal APK contains both `armeabi-v7a` and `arm64-v8a` | verified in CI |
+
+Release APKs are R8-minified and resource-shrunk (~3.5 MB). CI signs them with
+the release keystore when the four `SPROUTLY_*` secrets are present, and falls
+back to debug signing when they are not — see [docs/CI-CD.md](docs/CI-CD.md).
 
 ## Further reading
 
