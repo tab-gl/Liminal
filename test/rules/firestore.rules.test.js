@@ -18,7 +18,8 @@ const {
   assertSucceeds,
 } = require("@firebase/rules-unit-testing");
 const {
-  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, serverTimestamp,
+  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, getDocs,
+  query, where, serverTimestamp,
 } = require("firebase/firestore");
 
 let env;
@@ -42,6 +43,8 @@ const owner = () => env.authenticatedContext("owner-1", { role: "user" }).firest
 const stranger = () => env.authenticatedContext("stranger-1", { role: "user" }).firestore();
 const admin = () => env.authenticatedContext("admin-1", { role: "admin" }).firestore();
 const anon = () => env.unauthenticatedContext().firestore();
+// A regular customer has no admin/developer custom claims.
+const customer = () => env.authenticatedContext("customer-1").firestore();
 
 function applicationDoc(overrides = {}) {
   return {
@@ -149,6 +152,26 @@ test("an admin can moderate", async () => {
 test("drafts are not readable by strangers", async () => {
   await seed("applications/secret-draft", applicationDoc({ createdAt: new Date() }));
   await assertFails(getDoc(doc(stranger(), "applications/secret-draft")));
+});
+
+test("a regular customer without a role claim can query approved listings", async () => {
+  await seed("applications/public", applicationDoc({
+    status: "approved",
+    createdAt: new Date(),
+  }));
+  const snapshot = await getDocs(query(
+    collection(customer(), "applications"),
+    where("status", "==", "approved"),
+  ));
+  assert.equal(snapshot.size, 1);
+});
+
+test("regular customers cannot read suspended listings", async () => {
+  await seed("applications/suspended", applicationDoc({
+    status: "suspended",
+    createdAt: new Date(),
+  }));
+  await assertFails(getDoc(doc(customer(), "applications/suspended")));
 });
 
 // ------------------------------------------------------------------ reviews

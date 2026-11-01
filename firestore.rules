@@ -18,7 +18,8 @@ service cloud.firestore {
       return request.auth.uid;
     }
     function role() {
-      return request.auth.token.role;
+      // Customers do not receive a privileged custom claim.
+      return signedIn() ? request.auth.token.get('role', 'user') : 'guest';
     }
     function isAdmin() {
       return signedIn() && role() == 'admin';
@@ -84,7 +85,8 @@ service cloud.firestore {
         return signedIn() && resource.data.ownerId == uid();
       }
       function isVisible() {
-        return resource.data.status == 'approved' || resource.data.status == 'suspended';
+        // Only approved listings belong in the public customer catalog.
+        return resource.data.status == 'approved';
       }
       // Allowlist of fields an owner may write. Everything else - counters,
       // ranking (trendingScore, lastActivityAt), moderation, sponsorship - is
