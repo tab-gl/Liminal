@@ -163,6 +163,8 @@ class DiscoveryRepositoryImpl implements DiscoveryRepository {
   Future<List<UserProfile>> popularDevelopers({int limit = 10}) async {
     return guard(() async {
       final QuerySnapshot<Map<String, dynamic>> snapshot = await FirestorePaths.usersRef
+          // Firestore rules are not filters: prove that each returned profile is public.
+          .where('isPublic', isEqualTo: true)
           .where('publishedAppCount', isGreaterThan: 0)
           .orderBy('publishedAppCount', descending: true)
           .limit(limit)

@@ -298,6 +298,46 @@ test("anonymous users cannot read anything but public categories", async () => {
   await assertSucceeds(getDoc(doc(anon(), "categories/productivity")));
 });
 
+test("customers can query public developer profiles when visibility is constrained", async () => {
+  await seed("users/public-developer", {
+    uid: "public-developer",
+    displayName: "Public Developer",
+    role: "developer",
+    isDeveloper: true,
+    isPublic: true,
+    publishedAppCount: 2,
+    followerCount: 0,
+    reviewCount: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  const snapshot = await getDocs(query(
+    collection(customer(), "users"),
+    where("isPublic", "==", true),
+    where("publishedAppCount", ">", 0),
+  ));
+  assert.equal(snapshot.size, 1);
+});
+
+test("customer developer queries cannot omit the public-profile constraint", async () => {
+  await seed("users/public-developer", {
+    uid: "public-developer",
+    displayName: "Public Developer",
+    role: "developer",
+    isDeveloper: true,
+    isPublic: true,
+    publishedAppCount: 2,
+    followerCount: 0,
+    reviewCount: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  await assertFails(getDocs(query(
+    collection(customer(), "users"),
+    where("publishedAppCount", ">", 0),
+  )));
+});
+
 test("audit logs are admin-only and never client-writable", async () => {
   await assertFails(setDoc(doc(admin(), "admin_audit_logs/log-1"), { action: "fake" }));
   await assertSucceeds(getDoc(doc(admin(), "admin_audit_logs/log-1")));
