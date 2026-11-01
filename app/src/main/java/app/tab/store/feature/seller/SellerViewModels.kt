@@ -34,7 +34,6 @@ import kotlinx.coroutines.launch
 data class SellerSetupUiState(
     val storeName: String = "",
     val tagline: String = "",
-    val city: String = "",
     val isCreating: Boolean = false,
     val error: String? = null,
     val createdStoreId: String? = null,
@@ -52,7 +51,6 @@ class SellerSetupViewModel @Inject constructor(
 
     fun onName(value: String) = _uiState.update { it.copy(storeName = value, error = null) }
     fun onTagline(value: String) = _uiState.update { it.copy(tagline = value.take(80)) }
-    fun onCity(value: String) = _uiState.update { it.copy(city = value) }
 
     fun createStore() {
         val state = _uiState.value
@@ -63,7 +61,7 @@ class SellerSetupViewModel @Inject constructor(
                 val res = sellerRepository.createStore(
                     name = state.storeName,
                     tagline = state.tagline,
-                    city = state.city,
+                    city = "",
                 )
             ) {
                 is DataResult.Failure -> _uiState.update {

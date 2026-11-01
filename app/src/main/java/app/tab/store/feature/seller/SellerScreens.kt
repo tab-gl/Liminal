@@ -113,12 +113,6 @@ fun SellerSetupScreen(
                 placeholder = "Plants and pots for small homes",
                 helperText = "${state.tagline.length}/80",
             )
-            SproutlyTextField(
-                value = state.city,
-                onValueChange = viewModel::onCity,
-                label = "City",
-                placeholder = "Bengaluru",
-            )
 
             if (state.error != null) {
                 Surface(
@@ -272,7 +266,7 @@ fun SellerDashboardScreen(
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
-                            "${state.stats.activeProducts} live apps · ${state.store?.city.orEmpty()}",
+                            "${state.stats.activeProducts} live apps",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

@@ -138,11 +138,6 @@ private fun AddressCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(
-                address.phone,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             Row {
                 TextButton(onClick = onEdit) { Text("Edit") }
                 TextButton(onClick = onDelete) {
@@ -183,14 +178,6 @@ fun AddressEditScreen(
                 value = state.address.fullName,
                 onValueChange = { v -> viewModel.update { it.copy(fullName = v) } },
                 label = "Full name",
-            )
-            SproutlyTextField(
-                value = state.address.phone,
-                onValueChange = { v ->
-                    viewModel.update { it.copy(phone = v.filter { c -> c.isDigit() }.take(13)) }
-                },
-                label = "Phone",
-                keyboardType = KeyboardType.Phone,
             )
             SproutlyTextField(
                 value = state.address.line1,

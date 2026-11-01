@@ -100,14 +100,6 @@ fun ProfileEditScreen(
                 onValueChange = viewModel::onNameChange,
                 label = "Full name",
             )
-            SproutlyTextField(
-                value = state.phone,
-                onValueChange = viewModel::onPhoneChange,
-                label = "Phone number",
-                placeholder = "10-digit mobile",
-                keyboardType = KeyboardType.Phone,
-                helperText = "Used only for delivery updates.",
-            )
 
             if (state.error != null) {
                 Surface(

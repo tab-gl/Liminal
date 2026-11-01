@@ -17,8 +17,13 @@ data class Address(
             .filter { it.isNotBlank() }
             .joinToString(", ")
 
+    /**
+     * Phone is deliberately not required: an app store has nothing to deliver,
+     * so billing details are collected only where they are actually needed
+     * (paid apps and tax invoices) and never to browse or install.
+     */
     fun isComplete(): Boolean =
-        fullName.isNotBlank() && phone.length >= 10 &&
+        fullName.isNotBlank() &&
             line1.isNotBlank() && city.isNotBlank() &&
             state.isNotBlank() && pincode.length == 6
 }

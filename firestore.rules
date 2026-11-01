@@ -163,9 +163,13 @@ service cloud.firestore {
           && request.resource.data.stock >= 0;
       }
 
-      allow read: if isPublic()
+      // Split so the storefront's list queries never depend on get(): Firestore
+      // does not evaluate get() for list operations, and a rule that needs it
+      // denies the whole query.
+      allow get: if isPublic()
         || (isSeller() && resource.data.storeId == myStoreId())
         || isAdmin();
+      allow list: if isPublic();
 
       allow create: if isSeller()
         && request.resource.data.storeId == myStoreId()
@@ -229,11 +233,10 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && userId == uid();
 
       match /items/{addressId} {
+        // Billing details only. No phone requirement: nothing is delivered.
         allow read, write: if isSignedIn() && userId == uid()
           && request.resource.data.pincode is string
           && request.resource.data.pincode.matches('^[0-9]{6}$')
-          && request.resource.data.phone is string
-          && request.resource.data.phone.size() >= 10
           && request.resource.data.line1 is string
           && request.resource.data.line1.size() >= 4;
       }
@@ -296,7 +299,9 @@ service cloud.firestore {
           && myStoreId() in resource.data.storeIds;
       }
 
-      allow read: if isParticipant() || isAdmin();
+      allow get: if isParticipant() || isAdmin();
+      // Buyer's own list stays get()-free so "My apps" always loads.
+      allow list: if isSignedIn() && resource.data.buyerId == uid();
 
       // Prices and stock are verified against the product documents, so a
       // tampered cart cannot change what is charged.
