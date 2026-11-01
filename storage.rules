@@ -1,0 +1,73 @@
+rules_version = '2';
+
+// Sproutly - Cloud Storage rules.
+// Public read for published marketing assets, owner-only write, hard caps on
+// size and content type. Ownership is resolved against Firestore.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn() && request.auth.token.role == 'admin';
+    }
+    function ownsApp(appId) {
+      return signedIn() && firestore.get(
+        /databases/(default)/documents/applications/$(appId)).data.ownerId == request.auth.uid;
+    }
+    // Before a draft is saved there is no application document to check
+    // ownership against, so the client stages uploads under its own uid. This
+    // keeps the namespace per-user without letting anyone write into another
+    // person's folder.
+    function ownsStaging(appId) {
+      return signedIn() && appId == request.auth.uid;
+    }
+    function isImage(maxMb) {
+      return request.resource.size < maxMb * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+    }
+
+    // App icons: 512x512 max, 2 MB.
+    match /app_icons/{appId}/{fileName} {
+      allow read: if true;
+      allow write: if (ownsApp(appId) || ownsStaging(appId)) && isImage(2);
+      allow delete: if ownsApp(appId) || ownsStaging(appId) || isAdmin();
+    }
+
+    // Screenshots and preview images: 8 MB each.
+    match /screenshots/{appId}/{fileName} {
+      allow read: if true;
+      allow write: if (ownsApp(appId) || ownsStaging(appId)) && isImage(8);
+      allow delete: if ownsApp(appId) || ownsStaging(appId) || isAdmin();
+    }
+
+    // Promotional banners: 8 MB.
+    match /banners/{appId}/{fileName} {
+      allow read: if true;
+      allow write: if (ownsApp(appId) || ownsStaging(appId)) && isImage(8);
+      allow delete: if ownsApp(appId) || ownsStaging(appId) || isAdmin();
+    }
+
+    // Campaign creatives live under the campaign, resolved via Firestore.
+    match /campaign_creatives/{campaignId}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn() && firestore.get(
+        /databases/(default)/documents/advertising_campaigns/$(campaignId)).data.ownerId == request.auth.uid
+        && isImage(4);
+      allow delete: if signedIn() && firestore.get(
+        /databases/(default)/documents/advertising_campaigns/$(campaignId)).data.ownerId == request.auth.uid;
+    }
+
+    // Avatars: 2 MB.
+    match /avatars/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == userId && isImage(2);
+      allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
