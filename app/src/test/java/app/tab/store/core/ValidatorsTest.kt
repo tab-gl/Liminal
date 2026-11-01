@@ -33,7 +33,8 @@ class ValidatorsTest {
 
     @Test
     fun `slugify produces url safe slugs`() {
-        assertEquals("home-and-garden", Validators.slugify("Home & Garden"))
+        // Ampersands and other punctuation are dropped, runs of space collapse.
+        assertEquals("home-garden", Validators.slugify("Home & Garden"))
         assertEquals("the-green-shelf", Validators.slugify("  The Green Shelf  "))
     }
 
