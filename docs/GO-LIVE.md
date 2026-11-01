@@ -1,113 +1,127 @@
 # Go live
 
-Everything in this file is a step that needs credentials I do not hold (Firebase
-console, Cloudinary, GitHub Actions secrets). Each one is a single command or a
-single console action. Work top to bottom.
+Everything here needs credentials I do not hold (Firebase console, Cloudinary,
+GitHub Actions secrets). Each step is a command or a console action, with a way
+to verify it worked.
 
-## Already done and verified
+## Release signing fingerprints
 
-| | Status |
-| --- | --- |
-| Native app built (Kotlin + Compose + M3 Expressive) | ✅ 1.0.1 |
-| Cloud Functions typecheck (strict TS) | ✅ green in CI |
-| Kotlin compile, 24 unit tests, lint | ✅ green in CI |
-| 4 APK variants, ARM32 + universal ABI assertions | ✅ green in CI |
-| Release APKs signed (RSA 4096, v2 + v3) | ✅ delivered |
-| Branch pushed, PR #2 open and mergeable | ✅ |
+Package `app.tab.store`, key alias `sproutly`, valid until 2056-10-24.
 
-## 0. Enable the sign-in providers
-
-Firebase Console → **Authentication → Sign-in method** → enable
-**Email/Password** and **Google**. A new project has every provider switched
-off, and `createUserWithEmailAndPassword` fails with
-`auth/operation-not-allowed` until this is done.
-
-If a screen reports a Firebase error, the app now names the cause and appends
-the raw Firebase text — for example "Email sign-in is switched off for this
-Firebase project · An internal error has occurred. [ OPERATION_NOT_ALLOWED ]".
-
-## 1. Sign the CI builds
-
-CI currently debug-signs the release APKs because the signing secrets are not
-set. Run this once, as yourself:
-
-```bash
-gh auth login
-./scripts/setup-ci-secrets.sh /path/to/sproutly-release.jks
+```
+SHA-1    03:B5:BB:53:E1:6B:1A:77:E5:19:65:05:FA:92:9D:58:0C:95:A5:9E
+SHA-256  9F:A9:32:31:8A:17:F6:A8:5A:19:B7:BF:02:B8:7A:F6:B4:32:6E:E5:CD:5A:58:51:48:1F:05:AB:71:16:A2:12
 ```
 
-It prompts for the keystore password (never stored), registers
-`SPROUTLY_KEYSTORE_BASE64`, `SPROUTLY_KEYSTORE_PASSWORD`, `SPROUTLY_KEY_ALIAS`
-and `SPROUTLY_KEY_PASSWORD`, and prints the result.
-
-## 2. Firebase: rules and indexes
+Debug builds use `~/.android/debug.keystore`, whose SHA-1 is unique to your
+machine — add it too if you want Google Sign-In to work on debug installs:
 
 ```bash
+keytool -list -v -keystore ~/.android/debug.keystore \
+  -alias androiddebugkey -storepass android -keypass android | grep SHA1
+```
+
+## 0. Get the code
+
+The app lives on the `sproutly-native` branch until PR #2 is merged, so either
+merge first or check the branch out:
+
+```bash
+git clone https://github.com/tab-gl/Sproutly.git
+cd Sproutly
+git checkout sproutly-native      # skip once PR #2 is merged
+```
+
+Everything below runs from that directory. If you would rather not clone, the
+only step that truly needs files is #1 (rules + indexes) — you can download
+`firestore.rules` and `firestore.indexes.json` from the branch and deploy them
+from an empty folder containing a `firebase.json` that points at those two
+files. Cloning is simpler and you need it again for #3 and #4.
+
+## 1. Deploy Firestore rules and indexes
+
+Nothing in the app can read or write until this runs — the project is still on
+the default deny-all rules.
+
+```bash
+npm install -g firebase-tools
 firebase login
 firebase use tab-gl
 firebase deploy --only firestore:rules,firestore:indexes
 ```
 
-Index builds take a few minutes. Until they finish, list queries surface as
-"This list needs a moment to load. Please retry."
+Verify: Firebase Console → Firestore → **Rules** shows your rules with a recent
+timestamp, and **Indexes** lists 23 entries building to "Enabled" (5–20 minutes).
 
-## 3. Cloudinary secret
+While indexes build, list queries fail with "This list needs a moment to load."
+
+## 2. Sign in
+
+The account `aceyash-dev@proton.me` already exists — the first sign-up attempt
+created it before the profile write was denied. Use **Sign in**, not Create
+account. On 1.0.2 any new email registers cleanly.
+
+## 3. Cloudinary secret and Cloud Functions
 
 ```bash
 firebase functions:secrets:set CLOUDINARY_URL
 # paste: cloudinary://<api_key>:<api_secret>@<cloud_name>
-```
 
-Rotate the key first if it has ever been pasted into chat or a ticket — the one
-from the original brief was shared in plain text.
-
-## 4. Deploy the functions
-
-```bash
 cd functions && npm ci && npm run build && cd ..
 firebase deploy --only functions
 ```
 
-All functions deploy to `asia-south1`.
+Cloud Functions require the Blaze plan. Deploy targets `asia-south1`.
 
-To deploy from CI instead, add two secrets and one variable (the workflow
-already references them):
+Verify: `firebase functions:list` shows `createOrder`, `registerSeller`,
+`getCloudinaryUploadSignature`, `adminSetStoreStatus` and the rest.
 
-```bash
-gh secret set GCP_WORKLOAD_IDENTITY_PROVIDER --repo tab-gl/Sproutly
-gh secret set GCP_SERVICE_ACCOUNT             --repo tab-gl/Sproutly
-gh variable set FIREBASE_PROJECT_ID --repo tab-gl/Sproutly --body tab-gl
-```
+Rotate the Cloudinary key first if it has ever been pasted into chat — the one
+from the original brief was.
 
-## 5. Category taxonomy
+## 4. Seed the category taxonomy
 
 ```bash
 cd tools/seed && npm ci
+# Firebase Console → Project settings → Service accounts → Generate new private key
+# save the JSON as tools/seed/service-account.json
 GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node seed.mjs
+rm service-account.json
 ```
 
-Creates the eight categories the home rails and search filters read. Delete the
-service-account key afterwards.
+Verify: Firestore → `categories` has 8 documents. Delete the key file.
 
-## 6. First administrator
+## 5. Make yourself an administrator
 
-1. Sign up in the app.
-2. Firestore → `users/{your-uid}` → set `role` to `ADMIN`.
-3. Reopen the app; Profile now shows **Admin console**.
+Sign in, then Firestore → `users/{your-uid}` → set `role` to `ADMIN`. The app
+reads the role from Firestore live, so Profile → **Admin console** appears
+without a restart. Every later role change goes through Admin → Users.
 
-Every later role change goes through Admin → Users, and the client can never
-promote itself.
+## 6. Register the fingerprints
 
-## 7. Google Sign-In fingerprints
+Firebase Console → Project settings → Your apps → `app.tab.store` → **Add
+fingerprint** → paste the SHA-1, then repeat for SHA-256. Google Sign-In fails
+in release builds until this is done.
 
-Firebase Console → Project settings → Your apps → add both fingerprints from
-`sproutly-signing-bundle.zip` (SHA-1 and SHA-256). Release builds cannot sign in
-with Google until this is done.
+## 7. Sign the CI builds
 
-## 8. Merge the branch
+CI debug-signs release APKs until these four secrets exist:
 
-PR #2 replaces the Flutter tree on `main` with the native app. Review the diff,
-then merge — after that, pushes to `main` run CI and publish signed APKs.
+```bash
+./scripts/setup-ci-secrets.sh /path/to/sproutly-release.jks
+```
+
+or Settings → Secrets and variables → Actions → New repository secret, four
+times: `SPROUTLY_KEYSTORE_BASE64` (base64 of the .jks), `SPROUTLY_KEYSTORE_PASSWORD`,
+`SPROUTLY_KEY_ALIAS` (`sproutly`), `SPROUTLY_KEY_PASSWORD`.
+
+Verify: the next "Android CI" run's release step no longer prints
+"No release keystore configured".
+
+## 8. Merge PR #2
+
+Replaces the Flutter tree on `main` with this app. After merging, pushes to
+`main` build and publish signed APKs.
 
 ---
 
