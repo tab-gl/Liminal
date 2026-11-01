@@ -1,0 +1,12 @@
+{
+  "name": "sproutly-seed",
+  "private": true,
+  "type": "module",
+  "description": "One-time category taxonomy seed for Sproutly",
+  "scripts": {
+    "seed": "node seed.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.5.0"
+  }
+}

@@ -1,156 +1,163 @@
 # Setup
 
-## 1. Toolchain
+Everything here is a one-time step per environment. The app will not work
+against a fresh Firebase project until steps 1–5 are done.
 
-| Tool | Version used | Notes |
-| --- | --- | --- |
-| Flutter | 3.47.x stable | `material_ui` will not resolve on older SDKs |
-| Dart | 3.13.x | Ships with Flutter 3.47 |
-| Node | 20 | Cloud Functions runtime |
-| Firebase CLI | 14+ | `npm i -g firebase-tools` |
-| FlutterFire CLI | latest | `dart pub global activate flutterfire_cli` |
+## 0. Prerequisites
 
-`flutter --version` must report 3.47 or newer. The Material library was
-decoupled from the SDK in that release, and Sproutly imports
-`package:material_ui/material_ui.dart` rather than `package:flutter/material.dart`.
+- JDK 17, Android SDK 35 (`compileSdk`), Gradle 8.9
+- Node 20 (Cloud Functions)
+- `firebase-tools` (`npm i -g firebase-tools`)
+- A Firebase project — this repo is wired to **`tab-gl`**
+  (`app/google-services.json`)
 
-## 2. Firebase project
+## 1. Firebase project
 
-```bash
-firebase login
-firebase projects:create sproutly-prod      # or use an existing project
-firebase use sproutly-prod
+`app/google-services.json` already targets:
 
-# Registers the Android and iOS apps and writes the config file
-flutterfire configure --project=sproutly-prod
-```
+- project id `tab-gl`
+- package `app.tab.store`
+- a web OAuth client used by Google Sign-In
 
-`flutterfire configure` overwrites `lib/core/config/firebase_options.dart`,
-which is git-ignored. Until you run it, that file throws a readable
-`UnsupportedError` at startup instead of failing obscurely.
+If you use a different project:
 
-Enable in the console:
-
-1. **Authentication** → Email/Password and Google.
-2. **Firestore** → create the database in `asia-south1` (production mode).
-3. **Storage** → default bucket, `asia-south1`.
-4. **App Check** → register Android (Play Integrity), iOS (DeviceCheck), and add
-   the debug token printed by the app on first run.
-5. **Cloud Messaging** → upload an APNs key for iOS push.
-6. **Crashlytics** → enable, then upload the iOS `dSYM` on release.
-
-## 3. Deploy the backend
+1. Create the Android app with package `app.tab.store`.
+2. Download the new `google-services.json` into `app/`.
+3. Add your SHA-1 and SHA-256 fingerprints (required for Google Sign-In):
 
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes,storage:rules,functions
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey \
+  -storepass android -keypass android
 ```
 
-Indexes take a few minutes to build. Until they finish, composite queries fail
-with `failed-precondition` - the app surfaces that as a retryable error.
+4. Update `.firebaserc` to the new project id.
 
-## 4. Secrets
+## 2. Enable services
 
-Never put secrets in the client or in `--dart-define`. Cloud Functions read them
-from Secret Manager:
+In the Firebase console, for `tab-gl`:
 
-```bash
-firebase functions:secrets:set RAZORPAY_KEY_ID
-firebase functions:secrets:set RAZORPAY_KEY_SECRET
-firebase functions:secrets:set RAZORPAY_WEBHOOK_SECRET
-firebase functions:secrets:set STRIPE_SECRET_KEY
-firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
-```
-
-The client only receives **publishable** values at build time:
-
-```bash
-flutter build apk \
-  --dart-define=SPROUTLY_ENV=prod \
-  --dart-define=RAZORPAY_KEY_ID=rzp_live_xxxxxxxx \
-  --dart-define=STRIPE_PUBLISHABLE_KEY=pk_live_xxxxxxxx
-```
-
-## 5. Payment webhooks
-
-| Provider | Endpoint |
+| Service | Setting |
 | --- | --- |
-| Razorpay | `https://asia-south1-<project>.cloudfunctions.net/razorpayWebhook` |
-| Stripe | `https://asia-south1-<project>.cloudfunctions.net/stripeWebhook` |
+| Authentication | Enable **Email/Password** and **Google** |
+| Cloud Firestore | Create in **asia-south1** (Mumbai), production mode |
+| Cloud Functions | Requires the Blaze plan |
+| Cloud Messaging | Enabled by default |
+| App Check | Register the Android app with **Play Integrity**; add a debug token for local builds |
 
-Register both in the respective dashboards. **Budget is credited only by these
-webhooks** - the client's success callback means "submitted", not "paid".
-
-## 6. First administrator
-
-Roles live in custom claims, so the first admin must be bootstrapped once:
+## 3. Firestore rules and indexes
 
 ```bash
-node -e "
-const admin = require('firebase-admin');
-admin.initializeApp({ projectId: 'sproutly-prod' });
-admin.auth().getUserByEmail('you@example.com')
-  .then(u => admin.auth().setCustomUserClaims(u.uid, { role: 'admin' }))
-  .then(() => console.log('done'));
-"
+firebase deploy --only firestore:rules,firestore:indexes
 ```
 
-Then mirror it in Firestore so the UI shows it immediately:
+Index creation takes a few minutes. Queries will throw
+`FAILED_PRECONDITION` until the composite indexes finish building — the app
+surfaces that as "This list needs a moment to load. Please retry."
+
+## 4. Cloudinary
+
+<a id="cloudinary"></a>
+
+Create (or reuse) a Cloudinary account and note the API environment variable,
+which has the shape:
 
 ```
-users/{uid} → { "role": "admin", "isDeveloper": true }
+cloudinary://<api_key>:<api_secret>@<cloud_name>
 ```
 
-Every subsequent role change goes through the `setUserRole` callable, which
-writes both the claim and the document and appends an audit log entry.
-
-## 6b. AdMob
-
-The AdMob SDK needs its app id in the native manifest, which cannot come from a
-dart-define. After `flutter create .` generates `android/` and `ios/`:
+Store it as a secret — **never** in the repository, Gradle file or APK:
 
 ```bash
-bash tool/configure_platform.sh
+firebase functions:secrets:set CLOUDINARY_URL
+# paste the cloudinary:// value when prompted
+firebase functions:secrets:access CLOUDINARY_URL   # verify
 ```
 
-Details, including why interstitials are disabled until a second ad unit exists:
-**docs/ADS.md**.
+What the client gets instead, per upload: `cloudName`, the public `apiKey`, a
+`timestamp`, a SHA-1 `signature` over `folder` + `timestamp`, and the upload
+URL. `getCloudinaryUploadSignature` returns only that, after checking the
+caller is signed in and that the target folder is one of
+`sproutly/products`, `sproutly/avatars`, `sproutly/store-logos`,
+`sproutly/store-banners`.
 
-## 7. Deep links
+> **If a Cloudinary secret has ever been pasted into chat, a ticket or a
+> screenshot, rotate it in the Cloudinary console** and update the secret:
+> `firebase functions:secrets:set CLOUDINARY_URL`.
 
-Both `sproutly.app/app/<id>` and `sproutly.app/developer/<uid>` must be
-associated with the app:
-
-- **Android** - host `/.well-known/assetlinks.json` with the release signing
-  SHA-256. `AndroidManifest.xml` already declares the intent filter.
-- **iOS** - host `/.well-known/apple-app-site-association` with your Team ID.
-
-## 8. Emulator run
+## 5. Deploy functions
 
 ```bash
-firebase emulators:start --only auth,firestore,functions,storage
-flutter run --dart-define=USE_FIREBASE_EMULATORS=true \
-            --dart-define=FIREBASE_EMULATOR_HOST=10.0.2.2   # 10.0.2.2 on Android emulator, localhost on iOS
+cd functions
+npm ci
+npm run build
+cd ..
+firebase deploy --only functions
 ```
 
-## Known gaps in this repository
+All functions deploy to `asia-south1`. The first deploy creates the secret
+bindings.
 
-Stated plainly, because they matter more than the parts that work:
+## 6. Seed the category taxonomy
 
-1. **Not compiled here.** This environment has no Flutter SDK, so the Dart code
-   has not been analysed or run. The TypeScript functions *have* been
-   type-checked (`npx tsc --noEmit` passes). Expect a handful of small
-   signature fixes on first `flutter analyze` - most likely in the three M3E
-   components (see docs/DESIGN_SYSTEM.md) and in package APIs that moved
-   between minor versions.
-2. **`firebase_options.dart` is a stub** until `flutterfire configure` runs.
-3. **No native Google Sign-In SDK.** Google sign-in goes through
-   `signInWithProvider(GoogleAuthProvider())`, which needs the SHA-1 registered
-   on Android. If you want the native account picker, add `google_sign_in` and
-   swap the method in `AuthRepositoryImpl`.
-4. **Stripe uses hosted Checkout** in the system browser rather than a native
-   payment sheet, so no card data touches the app. A native sheet would need
-   `flutter_stripe` plus PaymentSheet setup.
-5. **Images are uploaded at the picker's compression**, not re-encoded on the
-   client. For stricter limits, add a resize step or a Storage extension.
-6. **Search is prefix + keyword matching**, not full-text. Firestore has no
-   full-text index; for fuzzy search add Algolia or Typesense behind a callable.
+Categories are real configuration data that the home rails and search filters
+read from Firestore. Seed them once:
+
+```bash
+cd tools/seed
+npm ci
+GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node seed.mjs
+cd ../..
+```
+
+Create the service account key in **Project settings → Service accounts**.
+Delete the key file afterwards.
+
+## 7. Make yourself an admin
+
+New accounts are always `CUSTOMER`. To bootstrap the first administrator:
+
+1. Sign up in the app.
+2. In Firestore, open `users/{your-uid}` and set `role` to `ADMIN`.
+3. Reopen the app — the Profile tab now shows **Admin console**.
+
+From then on, use **Admin → Users** to change anyone's role. The client can
+never promote itself: `firestore.rules` blocks writes to `role`, and
+`setUserRole` checks the caller's stored role server-side.
+
+## 8. Local development
+
+```bash
+# Emulators (auth, firestore, functions, UI)
+firebase emulators:start --only auth,firestore,functions
+
+# Point the app at them (optional): see docs/ARCHITECTURE.md#emulator
+./gradlew :app:assembleUniversalDebug
+```
+
+For App Check in debug builds the app installs the **debug** provider; copy the
+debug token from logcat into **App Check → Apps → Manage debug tokens**.
+
+## 9. Release signing
+
+Local:
+
+```bash
+cp keystore.properties.example keystore.properties
+# fill in storeFile / storePassword / keyAlias / keyPassword
+./gradlew :app:assembleUniversalRelease
+```
+
+CI: add the secrets listed in [CI-CD.md](CI-CD.md). Without them the release
+build falls back to debug signing so the pipeline still produces installable
+artifacts.
+
+## Troubleshooting
+
+| Symptom | Cause |
+| --- | --- |
+| `PERMISSION_DENIED` on first sign-in | `firestore.rules` deployed? User doc missing? |
+| Google Sign-In returns `10` | SHA-1 not registered, or `GOOGLE_WEB_CLIENT_ID` is wrong |
+| Uploads fail with 401 from Cloudinary | Secret missing/stale, or device clock skew |
+| Empty home rails | No `ACTIVE` products yet, or indexes still building |
+| `FAILED_PRECONDITION` on search | Composite index still building |
+| Functions say `unauthenticated` | App Check token missing (debug token not registered) |

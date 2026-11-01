@@ -1,302 +1,229 @@
 rules_version = '2';
 
-// Sproutly - Firestore security rules.
+// ---------------------------------------------------------------------------
+// Sproutly Firestore security rules
 //
 // Principles:
-//  * Deny by default. Every collection is matched explicitly.
-//  * Roles come from custom claims, never from client-supplied fields.
-//  * Aggregates (ratings, counters, spend, moderation state) are written by
-//    Cloud Functions only, so a compromised client cannot forge them.
+//   1. Roles are read from users/{uid} on the server side of every check —
+//      never from a claim supplied by the client.
+//   2. Money, stock, order totals and moderation state are written only by
+//      Cloud Functions (which run with the Admin SDK and bypass these rules).
+//   3. A shopper can always read their own data and never anyone else's.
+// ---------------------------------------------------------------------------
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---------------------------------------------------------------- helpers
-    function signedIn() {
+    function isSignedIn() {
       return request.auth != null;
     }
+
     function uid() {
       return request.auth.uid;
     }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(uid())).data;
+    }
+
     function role() {
-      return request.auth.token.role;
+      return isSignedIn() ? userDoc().role : 'GUEST';
     }
+
     function isAdmin() {
-      return signedIn() && role() == 'admin';
-    }
-    function isDeveloper() {
-      return signedIn() && (role() == 'developer' || role() == 'admin');
-    }
-    function changed() {
-      return request.resource.data.diff(resource.data).affectedKeys();
-    }
-    function onlyChanged(keys) {
-      return changed().hasOnly(keys);
-    }
-    function unchanged(keys) {
-      return !changed().hasAny(keys);
-    }
-    function validUrl(value) {
-      return value is string && value.size() <= 2048 && value.matches('^https://.*');
-    }
-    function validText(value, max) {
-      return value is string && value.size() <= max;
+      return isSignedIn() && role() == 'ADMIN';
     }
 
-    // ------------------------------------------------------------------ users
-    // Public profile fields are readable by any signed-in user. Email and
-    // moderation fields stay with the owner and admins.
+    function isSeller() {
+      return isSignedIn() && (role() == 'SELLER' || role() == 'ADMIN');
+    }
+
+    function myStoreId() {
+      return isSignedIn() ? userDoc().storeId : null;
+    }
+
+    function storeDoc(storeId) {
+      return get(/databases/$(database)/documents/stores/$(storeId)).data;
+    }
+
+    function ownsStore(storeId) {
+      return isSignedIn() && storeId != null && storeDoc(storeId).ownerId == uid();
+    }
+
+    function unchanged(field) {
+      return !(field in request.resource.data.diff(resource.data).affectedKeys());
+    }
+
+    // --------------------------------------------------------------- users
     match /users/{userId} {
-      allow read: if signedIn() &&
-        (uid() == userId || isAdmin() || resource.data.get('isPublic', true) == true);
-
-      allow create: if uid() == userId
-        && request.resource.data.uid == userId
-        && request.resource.data.role == 'user'
-        && request.resource.data.isDeveloper == false
-        && request.resource.data.createdAt == request.time
-        && request.resource.data.keys().hasOnly([
-             'uid', 'displayName', 'photoUrl', 'bio', 'websiteUrl', 'links',
-             'role', 'isDeveloper', 'isPublic', 'createdAt', 'updatedAt',
-             'followerCount', 'publishedAppCount', 'reviewCount', 'onboarded'
-           ]);
-
-      allow update: if uid() == userId
-        && unchanged(['uid', 'role', 'isDeveloper', 'createdAt',
-                      'followerCount', 'publishedAppCount', 'reviewCount'])
-        && onlyChanged(['displayName', 'photoUrl', 'bio', 'websiteUrl', 'links',
-                        'isPublic', 'updatedAt', 'onboarded'])
-        && request.resource.data.updatedAt == request.time;
-
-      allow update: if isAdmin()
-        && onlyChanged(['role', 'isDeveloper', 'isPublic', 'updatedAt',
-                        'followerCount', 'publishedAppCount', 'reviewCount']);
-
+      allow read: if isSignedIn() && (userId == uid() || isAdmin());
+      allow create: if isSignedIn() && userId == uid()
+        && request.resource.data.uid == uid()
+        && request.resource.data.role == 'CUSTOMER'
+        && request.resource.data.email is string
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 80;
+      // A user may edit their own profile, but never their role or store link.
+      allow update: if isSignedIn() && userId == uid()
+        && unchanged('role')
+        && unchanged('storeId')
+        && unchanged('createdAt')
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 1
+        && request.resource.data.displayName.size() <= 80;
+      allow update: if isAdmin();
       allow delete: if isAdmin();
 
-      match /private/{docId} {
-        allow read, write: if uid() == userId || isAdmin();
+      // Device tokens are private to the user.
+      match /tokens/{tokenId} {
+        allow read, write: if isSignedIn() && userId == uid();
       }
     }
 
-    // ----------------------------------------------------------- applications
-    match /applications/{appId} {
-      function isOwner() {
-        return signedIn() && resource.data.ownerId == uid();
-      }
-      function isVisible() {
-        return resource.data.status == 'approved' || resource.data.status == 'suspended';
-      }
-      // Server-owned fields: a client can never set or move these.
-      function serverOwned() {
-        return ['rating', 'reviewCount', 'viewCount', 'uniqueViewerCount',
-                'clickCount', 'downloadCount', 'bookmarkCount', 'sponsored',
-                'featured', 'moderation', 'updatedBy', 'search'];
-      }
-
-      allow read: if (signedIn() && (isOwner() || isAdmin()))
-        || isVisible();
-
-      allow create: if signedIn()
-        && request.resource.data.ownerId == uid()
-        && request.resource.data.status in ['draft', 'pending_review']
-        && request.resource.data.rating == 0
-        && request.resource.data.reviewCount == 0
-        && request.resource.data.viewCount == 0
-        && request.resource.data.clickCount == 0
-        && request.resource.data.bookmarkCount == 0
-        && request.resource.data.sponsored == false
-        && request.resource.data.featured == false
-        && validText(request.resource.data.name, 80)
-        && validText(request.resource.data.tagline, 140)
-        && request.resource.data.createdAt == request.time;
-
-      // Owner edits content, and may only move between draft/pending_review
-      // (i.e. submit, or withdraw before a moderator picks it up).
-      allow update: if isOwner()
-        && unchanged(serverOwned())
-        && request.resource.data.ownerId == resource.data.ownerId
-        && (
-             request.resource.data.status == resource.data.status
-             || (resource.data.status == 'draft'
-                 && request.resource.data.status == 'pending_review')
-             || (resource.data.status == 'pending_review'
-                 && request.resource.data.status == 'draft')
-             || (resource.data.status == 'rejected'
-                 && request.resource.data.status == 'draft')
-           )
-        && request.resource.data.updatedAt == request.time;
-
-      allow update: if isAdmin();
-      allow delete: if isOwner() && resource.data.status == 'draft';
-
-      // Per-day analytics rollups, written by scheduled functions only.
-      match /analytics/{day} {
-        allow read: if isAdmin() || (signedIn() && get(
-          /databases/$(database)/documents/applications/$(appId)).data.ownerId == uid());
-        allow write: if false;
-      }
+    // -------------------------------------------------------------- stores
+    match /stores/{storeId} {
+      allow read: if true;
+      // Stores are created by the registerSeller function only.
+      allow create: if false;
+      allow update: if (isSeller() && resource.data.ownerId == uid()
+          && unchanged('ownerId')
+          && unchanged('status')
+          && unchanged('rating')
+          && unchanged('ratingCount')
+          && unchanged('createdAt')
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 3
+          && request.resource.data.name.size() <= 60)
+        || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // --------------------------------------------------------------- reviews
-    match /reviews/{reviewId} {
-      allow read: if resource.data.status == 'published' || isAdmin() ||
-        (signedIn() && resource.data.userId == uid());
-
-      allow create: if signedIn()
-        && request.resource.data.userId == uid()
-        && request.resource.data.status == 'published'
-        && request.resource.data.rating is int
-        && request.resource.data.rating >= 1
-        && request.resource.data.rating <= 5
-        && validText(request.resource.data.body, 2000)
-        && request.resource.data.createdAt == request.time
-        && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.ownerId != uid()
-        && reviewId == request.resource.data.applicationId + '_' + uid();
-
-      allow update: if signedIn() && resource.data.userId == uid()
-        && unchanged(['userId', 'applicationId', 'createdAt'])
-        && onlyChanged(['rating', 'body', 'updatedAt']);
-
-      allow delete: if signedIn() && (resource.data.userId == uid() || isAdmin());
-
-      match /votes/{voteId} {
-        allow read: if signedIn();
-        allow write: if signedIn() && voteId == uid();
-      }
-    }
-
-    // ------------------------------------------------------------- bookmarks
-    // Document id is "<uid>_<applicationId>" so the same app cannot be
-    // bookmarked twice and a user cannot write another user's bookmark.
-    match /bookmarks/{bookmarkId} {
-      allow read: if signedIn() && resource.data.userId == uid();
-      allow create: if signedIn()
-        && request.resource.data.userId == uid()
-        && bookmarkId == uid() + '_' + request.resource.data.applicationId
-        && request.resource.data.createdAt == request.time;
-      allow delete: if signedIn() && resource.data.userId == uid();
-      allow update: if false;
-    }
-
-    // ------------------------------------------------------ developer follows
-    match /developer_follows/{followId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.followerId == uid()
-        && followId == uid() + '_' + request.resource.data.developerId
-        && request.resource.data.developerId != uid();
-      allow delete: if signedIn() && resource.data.followerId == uid();
-      allow update: if false;
-    }
-
-    // ------------------------------------------------------ application events
-    // Raw product events (view / click / download / share). Append-only by the
-    // client; readable by the app owner through aggregated functions only.
-    match /application_events/{eventId} {
-      allow read: if isAdmin();
-      allow create: if signedIn()
-        && request.resource.data.userId == uid()
-        && request.resource.data.type in ['view', 'unique_view', 'click', 'download', 'share']
-        && request.resource.data.createdAt == request.time
-        && validText(request.resource.data.applicationId, 128);
-      allow update, delete: if false;
-    }
-
-    // --------------------------------------------------- advertising campaigns
-    match /advertising_campaigns/{campaignId} {
-      function isOwner() {
-        return signedIn() && resource.data.ownerId == uid();
-      }
-      function serverOwned() {
-        return ['impressions', 'clicks', 'spend', 'status', 'approvedAt',
-                'approvedBy', 'rejectionReason', 'ownerId', 'applicationId',
-                'createdAt'];
+    // ------------------------------------------------------------ products
+    match /products/{productId} {
+      function isPublic() {
+        return resource.data.status == 'ACTIVE';
       }
 
-      allow read: if isAdmin() || (signedIn() && isOwner());
+      allow read: if isPublic()
+        || (isSeller() && resource.data.storeId == myStoreId())
+        || isAdmin();
 
-      // Any signed-in owner of the advertised application may create a
-      // campaign. Ownership of the app is the real authorisation here, so this
-      // does not depend on the developer role.
-      allow create: if signedIn()
-        && request.resource.data.ownerId == uid()
-        && request.resource.data.status == 'pending_approval'
-        && request.resource.data.impressions == 0
-        && request.resource.data.clicks == 0
-        && request.resource.data.spend == 0
-        && request.resource.data.budget is num
-        && request.resource.data.budget >= 500
-        && validText(request.resource.data.name, 80)
-        && request.resource.data.createdAt == request.time
-        && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.ownerId == uid();
+      function validProduct() {
+        return request.resource.data.title is string
+          && request.resource.data.title.size() >= 3
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.price is int
+          && request.resource.data.price > 0
+          && request.resource.data.stock is int
+          && request.resource.data.stock >= 0
+          && request.resource.data.categoryId is string
+          && request.resource.data.categoryId.size() > 0
+          && request.resource.data.images is list
+          && request.resource.data.images.size() <= 6
+          && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED'];
+      }
 
-      // Owners may pause/resume a live campaign and adjust creative copy.
-      // Budget and targeting are locked once approved to keep billing honest.
-      allow update: if isOwner()
-        && unchanged(serverOwned().concat(['budget', 'targeting', 'objective',
-                                           'startDate', 'endDate']))
-        && onlyChanged(['status', 'name', 'creative', 'updatedAt'])
-        && resource.data.status == 'active' && request.resource.data.status == 'paused'
-        || isOwner()
-        && unchanged(serverOwned().concat(['budget', 'targeting', 'objective',
-                                           'startDate', 'endDate']))
-        && onlyChanged(['status', 'name', 'creative', 'updatedAt'])
-        && resource.data.status == 'paused' && request.resource.data.status == 'active';
-
-      allow update: if isAdmin();
-      allow delete: if isAdmin() || (isOwner() && resource.data.status == 'draft');
+      allow create: if isSeller()
+        && request.resource.data.storeId == myStoreId()
+        && validProduct();
+      allow update: if isSeller()
+        && resource.data.storeId == myStoreId()
+        && unchanged('storeId')
+        && unchanged('unitsSold')
+        && unchanged('rating')
+        && unchanged('ratingCount')
+        && validProduct();
+      // Deletion goes through the deleteProduct function so media is purged.
+      allow delete: if false;
     }
 
-    // Impression / click rows are produced by the tracking Cloud Function.
-    match /campaign_events/{eventId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.ownerId == uid());
-      allow write: if false;
-    }
-
-    // --------------------------------------------------------- notifications
-    match /notifications/{notificationId} {
-      allow read: if signedIn() && resource.data.userId == uid();
-      allow update: if signedIn() && resource.data.userId == uid()
-        && onlyChanged(['readAt']);
-      allow create, delete: if false;
-    }
-
-    // ----------------------------------------------------------------- reports
-    match /reports/{reportId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.reporterId == uid());
-      allow create: if signedIn()
-        && request.resource.data.reporterId == uid()
-        && request.resource.data.status == 'open'
-        && request.resource.data.createdAt == request.time
-        && validText(request.resource.data.reason, 1000);
+    // ---------------------------------------------------------- categories
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2;
       allow update, delete: if isAdmin();
     }
 
-    // -------------------------------------------------------- admin audit log
-    match /admin_audit_logs/{logId} {
+    // ---------------------------------------------------------------- cart
+    match /carts/{userId} {
+      allow read, write: if isSignedIn() && userId == uid();
+
+      match /lines/{productId} {
+        allow read, delete: if isSignedIn() && userId == uid();
+        allow create, update: if isSignedIn() && userId == uid()
+          && request.resource.data.quantity is int
+          && request.resource.data.quantity > 0
+          && request.resource.data.quantity <= 99
+          && request.resource.data.productId == productId;
+      }
+    }
+
+    // ------------------------------------------------------------ wishlist
+    match /wishlists/{userId} {
+      allow read, write: if isSignedIn() && userId == uid();
+
+      match /items/{productId} {
+        allow read, write: if isSignedIn() && userId == uid()
+          && request.resource.data.productId == productId;
+      }
+    }
+
+    // ----------------------------------------------------------- addresses
+    match /addresses/{userId} {
+      allow read, write: if isSignedIn() && userId == uid();
+
+      match /items/{addressId} {
+        allow read, write: if isSignedIn() && userId == uid()
+          && request.resource.data.pincode is string
+          && request.resource.data.pincode.matches('^[0-9]{6}$')
+          && request.resource.data.phone is string
+          && request.resource.data.phone.size() >= 10
+          && request.resource.data.line1 is string
+          && request.resource.data.line1.size() >= 4;
+      }
+    }
+
+    // -------------------------------------------------------------- orders
+    match /orders/{orderId} {
+      function isParticipant() {
+        return isSignedIn() && (
+          resource.data.buyerId == uid()
+          || (resource.data.storeIds is list && myStoreId() in resource.data.storeIds)
+        );
+      }
+
+      allow read: if isParticipant() || isAdmin();
+      // Orders are created, cancelled and advanced by Cloud Functions only.
+      allow create, update, delete: if false;
+    }
+
+    // ------------------------------------------------------- notifications
+    match /notifications/{userId} {
+      allow read, write: if isSignedIn() && userId == uid();
+
+      match /items/{itemId} {
+        allow read: if isSignedIn() && userId == uid();
+        // The client may only flip the read flag.
+        allow update: if isSignedIn() && userId == uid()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+        allow create, delete: if false;
+      }
+    }
+
+    // ------------------------------------------------------------ platform
+    match /platform/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /media_usage/{docId} {
       allow read: if isAdmin();
-      allow write: if false;
-    }
-
-    // -------------------------------------------------------------- categories
-    match /categories/{categoryId} {
-      allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ---------------------------------------------------------------- payments
-    match /payments/{paymentId} {
-      allow read: if signedIn() && (resource.data.userId == uid() || isAdmin());
-      allow write: if false;
-    }
-
-    // ------------------------------------------------------------- config/app
-    match /config/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // ------------------------------------------------------------------ deny
+    // Deny anything not explicitly allowed above.
     match /{document=**} {
       allow read, write: if false;
     }

@@ -1,36 +1,21 @@
-# Flutter
-.dart_tool/
-.packages
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
 *.iml
-.idea/
-.vscode/
-coverage/
-
-# Secrets - never commit these.
-# firebase_options.dart is intentionally NOT ignored: it holds only public
-# per-platform app ids, and the app will not compile without it.
-lib/core/config/secrets.dart
-android/app/google-services.json
-ios/Runner/GoogleService-Info.plist
-ios/firebase_app_id_file.json
-functions/.env
-functions/lib/
-node_modules/
-
-# Native (Kotlin) app
-app-kotlin/.gradle/
-app-kotlin/build/
-app-kotlin/app/build/
-app-kotlin/local.properties
-app-kotlin/keystore.properties
-app-kotlin/*.jks
-app-kotlin/*.keystore
-app-kotlin/.kotlin/
-
-# Release signing (Flutter shell)
-android/key.properties
+.gradle/
+/local.properties
+/keystore.properties
 *.jks
 *.keystore
+.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+/app/google-services.json.bak
+node_modules/
+/functions/lib
+.env
+.env.*
+!.env.example
+*.apk
+*.aab
+docs/*.zip

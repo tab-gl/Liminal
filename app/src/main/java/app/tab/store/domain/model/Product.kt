@@ -1,0 +1,42 @@
+package app.tab.store.domain.model
+
+enum class ProductStatus { DRAFT, ACTIVE, ARCHIVED, BLOCKED;
+    companion object {
+        fun from(value: String?): ProductStatus =
+            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: DRAFT
+    }
+}
+
+data class ProductImage(val url: String, val publicId: String?)
+
+data class Product(
+    val id: String = "",
+    val storeId: String = "",
+    val storeName: String = "",
+    val title: String = "",
+    val description: String = "",
+    val categoryId: String = "",
+    val categoryLabel: String = "",
+    val images: List<ProductImage> = emptyList(),
+    val price: Long = 0L,
+    val compareAtPrice: Long? = null,
+    val currency: String = "INR",
+    val stock: Int = 0,
+    val status: ProductStatus = ProductStatus.DRAFT,
+    val rating: Double = 0.0,
+    val ratingCount: Int = 0,
+    val unitsSold: Int = 0,
+    val tags: List<String> = emptyList(),
+    val createdAt: Long = 0L,
+    val updatedAt: Long = 0L,
+) {
+    val primaryImage: String? get() = images.firstOrNull()?.url
+    val isOutOfStock: Boolean get() = stock <= 0
+    val isPurchasable: Boolean get() = status == ProductStatus.ACTIVE && stock > 0
+    val discountPercent: Int
+        get() {
+            val compare = compareAtPrice ?: return 0
+            if (compare <= price) return 0
+            return (((compare - price) * 100) / compare).toInt()
+        }
+}

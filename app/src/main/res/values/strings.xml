@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sproutly</string>
+    <string name="app_tagline">Fresh finds, local sellers</string>
+    <string name="notifications_channel_id">sproutly_default</string>
+    <string name="notifications_channel_name">Sproutly updates</string>
+    <string name="notifications_channel_description">Order and store updates from Sproutly</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_cart">Cart</string>
+    <string name="nav_orders">Orders</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="action_retry">Try again</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_back">Back</string>
+    <string name="state_loading">Loading…</string>
+    <string name="state_empty">Nothing here yet</string>
+    <string name="state_error">Something went wrong</string>
+</resources>
