@@ -16,5 +16,6 @@ export {
 export { onReviewWritten, respondToReview } from "./reviews";
 export { onNotificationCreated } from "./notifications";
 export { aggregateApplicationEvents, onBookmarkWritten, onFollowWritten } from "./analytics";
+export { recordApplicationEvent } from "./events";
 export { resolveReport } from "./reports";
 export { platformStats } from "./stats";

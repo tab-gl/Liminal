@@ -292,7 +292,7 @@ class _CampaignModerationTab extends ConsumerWidget {
                   Text(campaign.name, style: context.text.titleSmall),
                   const SizedBox(height: 3),
                   Text(
-                    '${campaign.applicationName} · budget ${campaign.budgetPaise ~/ 100} INR · '
+                    '${campaign.applicationName} · requested ${campaign.requestedBudgetPaise ~/ 100} INR, funded ${campaign.budgetPaise ~/ 100} INR · '
                     '${campaign.placements.length} placements',
                     style: context.text.labelSmall,
                   ),

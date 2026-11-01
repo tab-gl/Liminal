@@ -1,7 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db, COLLECTIONS, FieldValue, Timestamp } from "./config";
 import { LIMITS } from "./config";
-import { audit, optionalString, requireAdmin, requireUser, sendNotification } from "./util";
+import { remainingPaise } from "./billing";
+import { buildAdContext, matchesTargeting } from "./targeting";
+import { optionalString, requireAdmin, requireUser, sendNotification } from "./util";
 
 interface ServedAd {
   campaignId: string;
@@ -9,17 +11,23 @@ interface ServedAd {
   headline: string;
 }
 
+function hourBucket(): string {
+  return new Date().toISOString().slice(0, 13);
+}
+
 /**
  * Picks which sponsored placements to serve.
  *
  * Selection, pacing and billing all happen here. The client receives app ids and
- * nothing else, so it cannot inflate its own impressions, and a campaign that has
- * run out of budget simply stops appearing.
+ * nothing else, so it cannot inflate its own impressions. Every charge is made
+ * inside a transaction that re-reads the campaign, so concurrent requests cannot
+ * both spend the same remaining balance or double-count one impression.
  */
 export const serveAds = onCall(async (request) => {
   const ctx = await requireUser(request);
   const placement = optionalString(request.data?.placement) ?? "sponsoredCard";
   const limit = Math.min(Math.max(Number(request.data?.limit ?? 3), 1), 5);
+  const adContext = buildAdContext(request.data, request.rawRequest?.headers as Record<string, unknown>);
 
   const now = Timestamp.now();
   const active = await db
@@ -30,18 +38,19 @@ export const serveAds = onCall(async (request) => {
     .get();
 
   type CampaignDoc = Record<string, any> & { id: string };
+  const costPaise = Math.round(LIMITS.cpmPaise / 1000);
+
   const candidates: CampaignDoc[] = active.docs
     .map((doc) => ({ id: doc.id, ...(doc.data() as Record<string, any>) }) as CampaignDoc)
     .filter((c) => {
+      // Never bill an advertiser for their own browsing.
+      if (c.ownerId === ctx.uid) return false;
       const placements: string[] = c.placements ?? [];
       if (!placements.includes(placement)) return false;
       const start = c.startDate?.toDate?.() ?? new Date(0);
       if (start > new Date()) return false;
-      const remaining = Number(c.budget ?? 0) - Number(c.spend ?? 0);
-      if (remaining <= 0) return false;
-      const categories: string[] = c.targeting?.categoryIds ?? [];
-      // Empty targeting means "everyone".
-      return categories.length === 0 || categories.length > 0;
+      if (remainingPaise(c) < costPaise) return false;
+      return matchesTargeting(c.targeting, adContext);
     })
     // Under-delivering campaigns go first so budgets are spent evenly.
     .sort((a, b) => {
@@ -51,61 +60,55 @@ export const serveAds = onCall(async (request) => {
     })
     .slice(0, limit);
 
-  if (candidates.length === 0) {
-    return { applicationIds: [], campaigns: [] };
-  }
-
   const served: ServedAd[] = [];
-  const batch = db.batch();
+  const bucket = hourBucket();
 
-  for (const campaign of candidates) {
-    const campaignRef = db.collection(COLLECTIONS.campaigns).doc(campaign.id);
-
-    // One impression per user per campaign per hour, recorded as a document so
-    // a refresh loop cannot burn a budget.
-    const hourBucket = new Date().toISOString().slice(0, 13);
+  for (const candidate of candidates) {
+    const campaignRef = db.collection(COLLECTIONS.campaigns).doc(candidate.id);
+    // One impression per user per campaign per hour.
     const dedupeRef = db
       .collection(COLLECTIONS.campaignEvents)
-      .doc(`${campaign.id}_${ctx.uid}_${hourBucket}`);
+      .doc(`${candidate.id}_${ctx.uid}_${bucket}`);
 
-    const existing = await dedupeRef.get();
-    if (existing.exists) continue;
+    const result = await db.runTransaction(async (tx) => {
+      const [campaignSnap, dedupeSnap] = await Promise.all([tx.get(campaignRef), tx.get(dedupeRef)]);
+      if (!campaignSnap.exists || dedupeSnap.exists) return null;
+      const campaign = campaignSnap.data()!;
 
-    const costPaise = Math.round(LIMITS.cpmPaise / 1000);
-    const remaining = Number(campaign.budget ?? 0) - Number(campaign.spend ?? 0);
-    if (remaining < costPaise) continue;
+      if (campaign.status !== "active") return null;
+      const end = campaign.endDate?.toDate?.();
+      if (end && end <= new Date()) return null;
+      const remaining = remainingPaise(campaign);
+      if (remaining < costPaise) return null;
 
-    batch.set(dedupeRef, {
-      campaignId: campaign.id,
-      ownerId: campaign.ownerId,
-      applicationId: campaign.applicationId,
-      userId: ctx.uid,
-      kind: "impression",
-      costPaise,
-      createdAt: FieldValue.serverTimestamp(),
+      tx.create(dedupeRef, {
+        campaignId: candidate.id,
+        ownerId: campaign.ownerId,
+        applicationId: campaign.applicationId,
+        userId: ctx.uid,
+        kind: "impression",
+        costPaise,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+
+      const update: Record<string, unknown> = {
+        impressions: FieldValue.increment(1),
+        spend: FieldValue.increment(costPaise),
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+      // Cannot afford another impression: stop delivering.
+      if (remaining - costPaise < costPaise) update.status = "exhausted";
+      tx.update(campaignRef, update);
+
+      return {
+        campaignId: candidate.id,
+        applicationId: campaign.applicationId as string,
+        headline: (campaign.creative?.headline as string | undefined) ?? "",
+      };
     });
 
-    batch.update(campaignRef, {
-      impressions: FieldValue.increment(1),
-      spend: FieldValue.increment(costPaise),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-
-    const exhausted = remaining - costPaise <= 0;
-    if (exhausted) {
-      batch.update(campaignRef, { status: "exhausted" });
-    }
-
-    served.push({
-      campaignId: campaign.id,
-      applicationId: campaign.applicationId,
-      headline: campaign.creative?.headline ?? "",
-    });
+    if (result) served.push(result);
   }
-
-  if (served.length === 0) return { applicationIds: [], campaigns: [] };
-
-  await batch.commit();
 
   return {
     applicationIds: served.map((ad) => ad.applicationId),
@@ -113,7 +116,13 @@ export const serveAds = onCall(async (request) => {
   };
 });
 
-/** Clicks. Impressions are counted at serve time; clicks are counted here. */
+/**
+ * Clicks. Impressions are counted at serve time; clicks are counted here.
+ *
+ * A click is only counted when this user was actually served the campaign
+ * within the last day, and at most once per user per campaign per hour. The
+ * advertiser's own clicks are ignored.
+ */
 export const trackCampaignEvent = onCall(async (request) => {
   const ctx = await requireUser(request);
   const campaignId = request.data?.campaignId;
@@ -122,18 +131,37 @@ export const trackCampaignEvent = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "campaignId and a valid kind are required.");
   }
 
+  // Impressions are only ever recorded by serveAds.
+  if (kind !== "click") return { ok: true, counted: false };
+
   const campaignRef = db.collection(COLLECTIONS.campaigns).doc(campaignId);
   const snap = await campaignRef.get();
   if (!snap.exists) throw new HttpsError("not-found", "Unknown campaign.");
   const campaign = snap.data()!;
 
-  if (campaign.status !== "active") {
-    // Silently accept clicks on campaigns that just stopped, without billing.
+  if (campaign.status !== "active" || campaign.ownerId === ctx.uid) {
+    // Silently accept clicks on campaigns that just stopped, without counting.
     return { ok: true, counted: false };
   }
 
-  if (kind === "click") {
-    await db.collection(COLLECTIONS.campaignEvents).add({
+  const served = await db
+    .collection(COLLECTIONS.campaignEvents)
+    .where("campaignId", "==", campaignId)
+    .where("userId", "==", ctx.uid)
+    .where("kind", "==", "impression")
+    .where("createdAt", ">", Timestamp.fromMillis(Date.now() - 24 * 3600 * 1000))
+    .limit(1)
+    .get();
+  if (served.empty) return { ok: true, counted: false };
+
+  const dedupeRef = db
+    .collection(COLLECTIONS.campaignEvents)
+    .doc(`${campaignId}_${ctx.uid}_click_${hourBucket()}`);
+
+  const counted = await db.runTransaction(async (tx) => {
+    const dedupeSnap = await tx.get(dedupeRef);
+    if (dedupeSnap.exists) return false;
+    tx.create(dedupeRef, {
       campaignId,
       ownerId: campaign.ownerId,
       applicationId: campaign.applicationId,
@@ -142,16 +170,17 @@ export const trackCampaignEvent = onCall(async (request) => {
       costPaise: 0,
       createdAt: FieldValue.serverTimestamp(),
     });
-    await campaignRef.update({
+    tx.update(campaignRef, {
       clicks: FieldValue.increment(1),
       updatedAt: FieldValue.serverTimestamp(),
     });
-  }
+    return true;
+  });
 
-  return { ok: true, counted: true };
+  return { ok: true, counted };
 });
 
-/** Approval gate for new campaigns. */
+/** Approval gate for new campaigns. A campaign cannot go live without funds. */
 export const moderateCampaign = onCall(async (request) => {
   const admin = await requireAdmin(request);
   const campaignId = request.data?.campaignId;
@@ -166,21 +195,37 @@ export const moderateCampaign = onCall(async (request) => {
   }
 
   const ref = db.collection(COLLECTIONS.campaigns).doc(campaignId);
-  const snap = await ref.get();
-  if (!snap.exists) throw new HttpsError("not-found", "Unknown campaign.");
-  const campaign = snap.data()!;
+  const { campaign, status } = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new HttpsError("not-found", "Unknown campaign.");
+    const data = snap.data()!;
+    if (data.status !== "pending_approval") {
+      throw new HttpsError("failed-precondition", "Only campaigns awaiting approval can be moderated.");
+    }
+    if (approve && remainingPaise(data) <= 0) {
+      throw new HttpsError("failed-precondition", "This campaign has no confirmed payment yet.");
+    }
 
-  const start = campaign.startDate?.toDate?.() ?? new Date();
-  const end = campaign.endDate?.toDate?.() ?? new Date();
-  const now = new Date();
-  const status = approve ? (now > end ? "completed" : now < start ? "paused" : "active") : "rejected";
+    const start = data.startDate?.toDate?.() ?? new Date();
+    const end = data.endDate?.toDate?.() ?? new Date();
+    const now = new Date();
+    const next = approve ? (now > end ? "completed" : now < start ? "paused" : "active") : "rejected";
 
-  await ref.update({
-    status,
-    approvedAt: approve ? FieldValue.serverTimestamp() : null,
-    approvedBy: approve ? admin.uid : null,
-    rejectionReason: approve ? null : reason,
-    updatedAt: FieldValue.serverTimestamp(),
+    tx.update(ref, {
+      status: next,
+      approvedAt: approve ? FieldValue.serverTimestamp() : null,
+      approvedBy: approve ? admin.uid : null,
+      rejectionReason: approve ? null : reason,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    tx.create(db.collection(COLLECTIONS.audit).doc(), {
+      actorUid: admin.uid,
+      action: approve ? "approve_campaign" : "reject_campaign",
+      target: campaignId,
+      detail: { reason: reason ?? null },
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    return { campaign: data, status: next };
   });
 
   await sendNotification({
@@ -194,6 +239,5 @@ export const moderateCampaign = onCall(async (request) => {
     data: { campaignId },
   });
 
-  await audit(admin.uid, approve ? "approve_campaign" : "reject_campaign", campaignId, { reason });
   return { ok: true, status };
 });

@@ -1,7 +1,9 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/constants/categories.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/page.dart';
@@ -176,6 +178,7 @@ class DiscoveryRepositoryImpl implements DiscoveryRepository {
   Future<List<AppListing>> sponsored({
     required AdPlacement placement,
     int limit = 3,
+    String? categoryId,
   }) async {
     // Server-side selection: the function enforces approval, budget, targeting
     // and pacing, and returns app ids it is willing to serve right now.
@@ -183,7 +186,10 @@ class DiscoveryRepositoryImpl implements DiscoveryRepository {
       final Map<String, dynamic> response = await _callables.call('serveAds', <String, dynamic>{
         'placement': placement.name,
         'limit': limit,
-        'categories': AppCategory.ids,
+        // Delivery context the server matches campaign targeting against.
+        'platform': defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android',
+        'country': PlatformDispatcher.instance.locale.countryCode,
+        if (categoryId != null) 'categoryId': categoryId,
       });
       final List<String> ids = (response['applicationIds'] as List<dynamic>? ?? <dynamic>[])
           .whereType<String>()

@@ -46,5 +46,5 @@ abstract class DiscoveryRepository {
 
   /// Sponsored placements are chosen and priced on the server; the client only
   /// renders what it is given and reports the impression.
-  Future<List<AppListing>> sponsored({required AdPlacement placement, int limit});
+  Future<List<AppListing>> sponsored({required AdPlacement placement, int limit, String? categoryId});
 }

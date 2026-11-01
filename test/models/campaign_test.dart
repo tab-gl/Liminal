@@ -54,4 +54,27 @@ void main() {
     final Campaign campaign = Campaign.fromDoc('c2', <String, dynamic>{'status': 'something_new'});
     expect(campaign.status, CampaignStatus.draft);
   });
+
+  test('a new campaign is created unfunded; the request is stored separately', () {
+    final Campaign campaign = _campaign(budget: 250000, spend: 0, impressions: 0, clicks: 0);
+    final Map<String, dynamic> map = campaign.toCreateMap();
+    expect(map['budget'], 0, reason: 'only a verified payment may credit funds');
+    expect(map['requestedBudget'], 250000);
+    expect(map['spend'], 0);
+    expect(map['status'], 'pending_approval');
+  });
+
+  test('reads the funded balance and the requested amount independently', () {
+    final Campaign campaign = Campaign.fromDoc('c2', <String, dynamic>{
+      'ownerId': 'dev-1',
+      'applicationId': 'app-1',
+      'budget': 0,
+      'requestedBudget': 100000,
+      'status': 'pending_approval',
+    });
+    expect(campaign.budgetPaise, 0);
+    expect(campaign.requestedBudgetPaise, 100000);
+    expect(campaign.isFunded, isFalse);
+    expect(campaign.remainingPaise, 0);
+  });
 }

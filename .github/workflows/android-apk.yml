@@ -20,7 +20,15 @@ name: Android APK
 
 on:
   push:
+    branches: ["main"]
     tags: ["v*"]
+    paths:
+      - "lib/**"
+      - "test/**"
+      - "android/**"
+      - "pubspec.yaml"
+      - "tool/**"
+      - ".github/workflows/android-apk.yml"
   workflow_dispatch:
   pull_request:
     paths:
@@ -38,7 +46,8 @@ jobs:
   # ------------------------------------------------------------------ validate
   validate:
     name: Validate
-    if: github.event_name == 'pull_request'
+    # Pull requests and every push to main. Main must never sit unverified.
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -81,9 +90,8 @@ jobs:
         run: flutter pub get
 
       - name: Analyse
-        # Reported, not gated: the value here is the log, and a lint infraction
-        # should not block a pull request from being reviewed.
-        run: flutter analyze --no-fatal-infos || true
+        # Gated: errors and warnings fail the build. Infos (style hints) do not.
+        run: flutter analyze --no-fatal-infos
 
       - name: Test
         run: flutter test --reporter expanded
@@ -94,7 +102,8 @@ jobs:
   # --------------------------------------------------------------------- build
   build:
     name: ${{ matrix.abi }}
-    if: github.event_name != 'pull_request'
+    # Signed release builds: tags and manual runs only, never plain pushes.
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 40
 

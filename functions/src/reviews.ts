@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { AggregateField } from "firebase-admin/firestore";
 import { db, COLLECTIONS, FieldValue } from "./config";
 import { requireUser, sendNotification } from "./util";
 
@@ -15,21 +16,20 @@ export const onReviewWritten = onDocumentWritten("reviews/{reviewId}", async (ev
   const applicationId = after?.applicationId ?? before?.applicationId;
   if (!applicationId) return;
 
-  const published = await db
+  // Server-side aggregation over *all* published reviews (no page cap).
+  const aggregate = await db
     .collection(COLLECTIONS.reviews)
     .where("applicationId", "==", applicationId)
     .where("status", "==", "published")
-    .limit(500)
+    .aggregate({ count: AggregateField.count(), average: AggregateField.average("rating") })
     .get();
+  const { count, average } = aggregate.data();
+  const rating = count === 0 || average === null ? 0 : Math.round(average * 10) / 10;
 
-  const count = published.size;
-  const total = published.docs.reduce((sum, doc) => sum + Number(doc.data().rating ?? 0), 0);
-  const rating = count === 0 ? 0 : Math.round((total / count) * 10) / 10;
-
-  await db.collection(COLLECTIONS.applications).doc(applicationId).update({
-    rating,
-    reviewCount: count,
-  });
+  const appRef = db.collection(COLLECTIONS.applications).doc(applicationId);
+  if ((await appRef.get()).exists) {
+    await appRef.update({ rating, reviewCount: count });
+  }
 
   // A new review notifies the developer once (not on edit or delete).
   if (!before && after) {

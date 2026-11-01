@@ -86,24 +86,43 @@ service cloud.firestore {
       function isVisible() {
         return resource.data.status == 'approved' || resource.data.status == 'suspended';
       }
-      // Server-owned fields: a client can never set or move these.
-      function serverOwned() {
-        return ['rating', 'reviewCount', 'viewCount', 'uniqueViewerCount',
-                'clickCount', 'downloadCount', 'bookmarkCount', 'sponsored',
-                'featured', 'moderation', 'updatedBy', 'search'];
+      // Allowlist of fields an owner may write. Everything else - counters,
+      // ranking (trendingScore, lastActivityAt), moderation, sponsorship - is
+      // server-owned simply by not being listed, so a field added later is
+      // protected by default.
+      function clientEditable() {
+        return ['name', 'tagline', 'description', 'categoryId', 'tags', 'iconUrl',
+                'bannerUrl', 'screenshots', 'previewImages', 'websiteUrl',
+                'launchUrl', 'downloadUrl', 'platforms', 'pricingModel',
+                'priceLabel', 'isOpenSource', 'features', 'documentationUrl',
+                'supportEmail', 'privacyPolicyUrl', 'termsUrl', 'search',
+                'status', 'updatedAt'];
+      }
+      // Fields present at creation: the editable ones plus identity and the
+      // counters, which must start at their zero values.
+      function createFields() {
+        return clientEditable().concat(
+          ['ownerId', 'ownerName', 'ownerPhotoUrl', 'createdAt', 'rating',
+           'reviewCount', 'viewCount', 'uniqueViewerCount', 'clickCount',
+           'downloadCount', 'bookmarkCount', 'trendingScore', 'sponsored',
+           'featured']);
       }
 
       allow read: if (signedIn() && (isOwner() || isAdmin()))
         || isVisible();
 
       allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(createFields())
         && request.resource.data.ownerId == uid()
         && request.resource.data.status in ['draft', 'pending_review']
         && request.resource.data.rating == 0
         && request.resource.data.reviewCount == 0
         && request.resource.data.viewCount == 0
+        && request.resource.data.uniqueViewerCount == 0
         && request.resource.data.clickCount == 0
+        && request.resource.data.downloadCount == 0
         && request.resource.data.bookmarkCount == 0
+        && request.resource.data.trendingScore == 0
         && request.resource.data.sponsored == false
         && request.resource.data.featured == false
         && validText(request.resource.data.name, 80)
@@ -113,7 +132,7 @@ service cloud.firestore {
       // Owner edits content, and may only move between draft/pending_review
       // (i.e. submit, or withdraw before a moderator picks it up).
       allow update: if isOwner()
-        && unchanged(serverOwned())
+        && onlyChanged(clientEditable())
         && request.resource.data.ownerId == resource.data.ownerId
         && (
              request.resource.data.status == resource.data.status
@@ -153,9 +172,15 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.ownerId != uid()
         && reviewId == request.resource.data.applicationId + '_' + uid();
 
+      // Updates repeat the create-time validation, so an edit cannot push an
+      // out-of-range rating or an oversized body into the aggregate.
       allow update: if signedIn() && resource.data.userId == uid()
-        && unchanged(['userId', 'applicationId', 'createdAt'])
-        && onlyChanged(['rating', 'body', 'updatedAt']);
+        && onlyChanged(['rating', 'body', 'updatedAt'])
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && validText(request.resource.data.body, 2000)
+        && request.resource.data.updatedAt == request.time;
 
       allow delete: if signedIn() && (resource.data.userId == uid() || isAdmin());
 
@@ -190,16 +215,13 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------ application events
-    // Raw product events (view / click / download / share). Append-only by the
-    // client; readable by the app owner through aggregated functions only.
+    // Raw product events (view / click / download / share). Written only by the
+    // recordApplicationEvent function, which checks the app exists and is
+    // approved and de-duplicates per user, app, type and time bucket. A client
+    // write here would let anyone forge views, clicks and ranking signals.
     match /application_events/{eventId} {
       allow read: if isAdmin();
-      allow create: if signedIn()
-        && request.resource.data.userId == uid()
-        && request.resource.data.type in ['view', 'unique_view', 'click', 'download', 'share']
-        && request.resource.data.createdAt == request.time
-        && validText(request.resource.data.applicationId, 128);
-      allow update, delete: if false;
+      allow write: if false;
     }
 
     // --------------------------------------------------- advertising campaigns
@@ -207,41 +229,45 @@ service cloud.firestore {
       function isOwner() {
         return signedIn() && resource.data.ownerId == uid();
       }
-      function serverOwned() {
-        return ['impressions', 'clicks', 'spend', 'status', 'approvedAt',
-                'approvedBy', 'rejectionReason', 'ownerId', 'applicationId',
-                'createdAt'];
+      // Owner-editable fields only. `budget` is the FUNDED balance and is not
+      // among them: it is credited by the verified payment webhook alone.
+      function ownerEditable() {
+        return ['status', 'name', 'creative', 'updatedAt'];
+      }
+      // The only status changes an owner may make themselves.
+      function pauseOrResume() {
+        return (resource.data.status == 'active' && request.resource.data.status == 'paused')
+            || (resource.data.status == 'paused' && request.resource.data.status == 'active');
       }
 
       allow read: if isAdmin() || (signedIn() && isOwner());
 
       // Any signed-in owner of the advertised application may create a
       // campaign. Ownership of the app is the real authorisation here, so this
-      // does not depend on the developer role.
+      // does not depend on the developer role. A new campaign starts with a
+      // funded balance of zero: `requestedBudget` records what the owner wants
+      // to spend, and money only arrives through a verified payment.
       allow create: if signedIn()
         && request.resource.data.ownerId == uid()
         && request.resource.data.status == 'pending_approval'
         && request.resource.data.impressions == 0
         && request.resource.data.clicks == 0
         && request.resource.data.spend == 0
-        && request.resource.data.budget is num
-        && request.resource.data.budget >= 500
+        && request.resource.data.budget == 0
+        && request.resource.data.requestedBudget is int
+        && request.resource.data.requestedBudget >= 50000
+        && request.resource.data.requestedBudget <= 50000000
         && validText(request.resource.data.name, 80)
         && request.resource.data.createdAt == request.time
         && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.ownerId == uid();
 
-      // Owners may pause/resume a live campaign and adjust creative copy.
-      // Budget and targeting are locked once approved to keep billing honest.
+      // Owners may pause/resume a live campaign and edit name and creative.
+      // `status` is deliberately not "unchanged": the allowed change is the one
+      // pause/resume transition, and nothing else about money or targeting moves.
       allow update: if isOwner()
-        && unchanged(serverOwned().concat(['budget', 'targeting', 'objective',
-                                           'startDate', 'endDate']))
-        && onlyChanged(['status', 'name', 'creative', 'updatedAt'])
-        && resource.data.status == 'active' && request.resource.data.status == 'paused'
-        || isOwner()
-        && unchanged(serverOwned().concat(['budget', 'targeting', 'objective',
-                                           'startDate', 'endDate']))
-        && onlyChanged(['status', 'name', 'creative', 'updatedAt'])
-        && resource.data.status == 'paused' && request.resource.data.status == 'active';
+        && onlyChanged(ownerEditable())
+        && (unchanged(['status']) || pauseOrResume())
+        && request.resource.data.updatedAt == request.time;
 
       allow update: if isAdmin();
       allow delete: if isAdmin() || (isOwner() && resource.data.status == 'draft');

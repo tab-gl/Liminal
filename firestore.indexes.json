@@ -201,6 +201,25 @@
         { "fieldPath": "developerId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    }    ,
+    {
+      "collectionGroup": "reviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "applicationId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "campaign_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "campaignId", "order": "ASCENDING" },
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "kind", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

@@ -108,7 +108,7 @@ class MediaService {
       final UploadTask task = ref.putFile(
         File(file.path),
         SettableMetadata(
-          contentType: 'image/$ext',
+          contentType: _mimeType(ext),
           cacheControl: 'public, max-age=31536000',
         ),
       );
@@ -134,6 +134,13 @@ class MediaService {
       // Already gone, or not ours. Not worth interrupting the user.
     }
   }
+
+  /// Storage rules accept `image/png|jpeg|webp`; `image/jpg` is not a MIME type.
+  static String _mimeType(String ext) => switch (ext) {
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        _ => 'image/jpeg',
+      };
 
   static String _extension(String name) {
     final int dot = name.lastIndexOf('.');

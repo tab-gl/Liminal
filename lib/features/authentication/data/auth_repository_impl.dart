@@ -112,10 +112,15 @@ class AuthRepositoryImpl implements AuthRepository {
     final User? user = _auth.currentUser;
     if (user == null) return;
     try {
-      // The callable removes the profile, listings and campaigns first; the
-      // auth record can only be deleted by the client that owns the session.
+      // The server removes the person's data and then the Auth record itself
+      // (it requires a sign-in within the last few minutes). Afterwards the
+      // local session is just cleared.
       await _callables.call('deleteAccount');
-      await user.delete();
+      try {
+        await _auth.signOut();
+      } catch (_) {
+        // The account is already gone; a failed local sign-out changes nothing.
+      }
     } catch (error, stack) {
       throw mapError(error, stack);
     }

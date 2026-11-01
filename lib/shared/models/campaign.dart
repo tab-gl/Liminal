@@ -64,6 +64,7 @@ class Campaign {
     required this.name,
     required this.objective,
     required this.budgetPaise,
+    this.requestedBudgetPaise = 0,
     required this.startDate,
     required this.endDate,
     required this.createdAt,
@@ -89,7 +90,11 @@ class Campaign {
   final String? applicationIconUrl;
   final String name;
   final CampaignObjective objective;
+  /// Funded balance: credited only by a verified payment, never by the client.
   final int budgetPaise;
+
+  /// What the owner asked to spend. Informational until payment confirms it.
+  final int requestedBudgetPaise;
   final int spendPaise;
   final DateTime startDate;
   final DateTime endDate;
@@ -110,6 +115,7 @@ class Campaign {
   double get spendRatio => budgetPaise == 0 ? 0 : (spendPaise / budgetPaise).clamp(0, 1);
   double get cpcPaise => clicks == 0 ? 0 : spendPaise / clicks;
   bool get isLive => status.isDelivering;
+  bool get isFunded => budgetPaise > 0;
 
   factory Campaign.fromDoc(String id, Map<String, dynamic> map) {
     return Campaign(
@@ -121,6 +127,7 @@ class Campaign {
       name: Codec.str(map['name'], fallback: 'Untitled campaign'),
       objective: CampaignObjective.parse(map['objective']),
       budgetPaise: Codec.integer(map['budget']),
+      requestedBudgetPaise: Codec.integer(map['requestedBudget']),
       spendPaise: Codec.integer(map['spend']),
       startDate: Codec.dateOrNow(map['startDate']),
       endDate: Codec.dateOrNow(map['endDate']),
@@ -148,7 +155,10 @@ class Campaign {
       'applicationIconUrl': applicationIconUrl,
       'name': name.trim(),
       'objective': objective.name,
-      'budget': budgetPaise,
+      // A new campaign starts unfunded. `budgetPaise` here is the amount the
+      // owner asked for; the funded balance is credited by the payment webhook.
+      'budget': 0,
+      'requestedBudget': budgetPaise,
       'spend': 0,
       'impressions': 0,
       'clicks': 0,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../firebase/callable_client.dart';
 import '../../../firebase/firestore_paths.dart';
 import '../../../shared/models/application.dart';
 import '../../../shared/models/enums.dart';
@@ -14,11 +15,14 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
   ApplicationRepositoryImpl({
     required FirebaseFirestore firestore,
     required String? Function() uid,
+    required CallableClient callables,
   })  : _db = firestore,
-        _uid = uid;
+        _uid = uid,
+        _callables = callables;
 
   final FirebaseFirestore _db;
   final String? Function() _uid;
+  final CallableClient _callables;
 
   @override
   Stream<AppListing?> watch(String applicationId) {
@@ -48,12 +52,11 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
     final String? uid = _uid();
     if (uid == null) return; // Anonymous views are not tracked.
     try {
-      await FirestorePaths.eventsRef.add(<String, dynamic>{
+      // Ingested by the server, which validates the app and de-duplicates.
+      await _callables.call('recordApplicationEvent', <String, dynamic>{
         'applicationId': applicationId,
-        'userId': uid,
         'type': type.wire,
         'platform': 'flutter',
-        'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (_) {
       // Telemetry must never surface an error to the reader.
@@ -104,6 +107,7 @@ final Provider<ApplicationRepository> applicationRepositoryProvider =
   return ApplicationRepositoryImpl(
     firestore: ref.watch(firestoreProvider),
     uid: () => ref.read(currentUserProvider)?.uid,
+    callables: ref.watch(callableProvider),
   );
 });
 

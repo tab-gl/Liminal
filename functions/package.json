@@ -13,7 +13,9 @@
     "serve": "npm run build && firebase emulators:start --only functions,firestore,auth,storage",
     "lint": "eslint --ext .ts src",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test": "npm run build && node --test test/*.test.js",
+    "test:emulator": "npm run build && npx --yes firebase-tools emulators:exec --only firestore --project sproutly-functions-test \"node --test test/emulator/\""
   },
   "dependencies": {
     "firebase-admin": "^13.4.0",

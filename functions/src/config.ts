@@ -22,6 +22,7 @@ export const COLLECTIONS = {
   bookmarks: "bookmarks",
   follows: "developer_follows",
   events: "application_events",
+  eventMarkers: "event_markers",
   campaigns: "advertising_campaigns",
   campaignEvents: "campaign_events",
   notifications: "notifications",

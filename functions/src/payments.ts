@@ -1,10 +1,12 @@
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import Razorpay from "razorpay";
 import Stripe from "stripe";
-import { db, COLLECTIONS, FieldValue, Timestamp } from "./config";
+import { db, COLLECTIONS, FieldValue } from "./config";
 import { LIMITS } from "./config";
-import { audit, requireUser } from "./util";
+import { validateCapture, type CaptureVerdict } from "./billing";
+import { requireUser } from "./util";
 
 const razorpayKeyId = defineSecret("RAZORPAY_KEY_ID");
 const razorpayKeySecret = defineSecret("RAZORPAY_KEY_SECRET");
@@ -22,12 +24,112 @@ function stripe(): Stripe {
   return new Stripe(stripeSecretKey.value());
 }
 
-async function assertCampaignOwnership(campaignId: string, uid: string): Promise<void> {
+/** Campaigns that can still receive funds. */
+const FUNDABLE = ["pending_approval", "active", "paused", "exhausted"];
+
+async function assertFundable(campaignId: string, uid: string): Promise<void> {
   const snap = await db.collection(COLLECTIONS.campaigns).doc(campaignId).get();
   if (!snap.exists) throw new HttpsError("not-found", "Unknown campaign.");
-  if (snap.data()!.ownerId !== uid) {
+  const campaign = snap.data()!;
+  if (campaign.ownerId !== uid) {
     throw new HttpsError("permission-denied", "You can only fund your own campaign.");
   }
+  if (!FUNDABLE.includes(campaign.status)) {
+    throw new HttpsError("failed-precondition", "This campaign can no longer be funded.");
+  }
+}
+
+function assertAmount(amountPaise: number): void {
+  if (
+    !Number.isInteger(amountPaise) ||
+    amountPaise < LIMITS.minCampaignBudgetPaise ||
+    amountPaise > LIMITS.maxCampaignBudgetPaise
+  ) {
+    throw new HttpsError("invalid-argument", "That amount is outside the allowed range.");
+  }
+}
+
+export type CreditResult = CaptureVerdict | "unknown_payment" | "unknown_campaign" | "credited";
+
+/**
+ * The only place a campaign balance is ever increased.
+ *
+ * Runs in one transaction: the payment is re-read, validated against the order
+ * the server created (provider, amount, currency, status), and then the payment
+ * is marked captured and the stored campaign credited together. A second,
+ * concurrent delivery of the same webhook sees `captured` after the first
+ * commits (Firestore retries the loser) and credits nothing. The campaign id
+ * comes from the stored order, never from the webhook payload.
+ */
+export async function creditCapturedPayment(input: {
+  paymentId: string;
+  provider: "razorpay" | "stripe";
+  amountPaise: number;
+  currency: string;
+  providerFields: Record<string, unknown>;
+}): Promise<CreditResult> {
+  const paymentRef = db.collection(COLLECTIONS.payments).doc(input.paymentId);
+
+  return db.runTransaction(async (tx): Promise<CreditResult> => {
+    const paymentSnap = await tx.get(paymentRef);
+    if (!paymentSnap.exists) return "unknown_payment";
+    const payment = paymentSnap.data()!;
+
+    const verdict = validateCapture(payment, {
+      provider: input.provider,
+      amountPaise: input.amountPaise,
+      currency: input.currency,
+    });
+    if (verdict === "duplicate") return "duplicate";
+    if (verdict !== "ok") {
+      tx.update(paymentRef, {
+        status: "flagged",
+        flagReason: verdict,
+        flaggedAt: FieldValue.serverTimestamp(),
+      });
+      return verdict;
+    }
+
+    const campaignRef = db.collection(COLLECTIONS.campaigns).doc(String(payment.campaignId));
+    const campaignSnap = await tx.get(campaignRef);
+    if (!campaignSnap.exists) {
+      tx.update(paymentRef, {
+        status: "flagged",
+        flagReason: "unknown_campaign",
+        flaggedAt: FieldValue.serverTimestamp(),
+      });
+      return "unknown_campaign";
+    }
+    const campaign = campaignSnap.data()!;
+
+    tx.update(paymentRef, {
+      ...input.providerFields,
+      status: "captured",
+      capturedAt: FieldValue.serverTimestamp(),
+    });
+
+    const update: Record<string, unknown> = {
+      budget: FieldValue.increment(input.amountPaise),
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    // Topping up a campaign that ran dry brings it back, but only if a moderator
+    // already approved it and it has not finished. Everything else keeps its
+    // status: funding never approves a campaign and never pauses a live one.
+    const end = campaign.endDate?.toDate?.();
+    if (campaign.status === "exhausted" && campaign.approvedAt && (!end || end > new Date())) {
+      update.status = "active";
+    }
+    tx.update(campaignRef, update);
+
+    tx.create(db.collection(COLLECTIONS.audit).doc(), {
+      actorUid: "system",
+      action: `${input.provider}_capture`,
+      target: input.paymentId,
+      detail: { campaignId: payment.campaignId, amountPaise: input.amountPaise },
+      createdAt: FieldValue.serverTimestamp(),
+    });
+    return "credited";
+  });
 }
 
 /**
@@ -41,16 +143,13 @@ export const createRazorpayOrder = onCall({ secrets }, async (request) => {
   const amountPaise = Number(request.data?.amountPaise);
 
   if (typeof campaignId !== "string") throw new HttpsError("invalid-argument", "campaignId is required.");
-  if (!Number.isInteger(amountPaise) || amountPaise < LIMITS.minCampaignBudgetPaise || amountPaise > LIMITS.maxCampaignBudgetPaise) {
-    throw new HttpsError("invalid-argument", "That amount is outside the allowed range.");
-  }
-
-  await assertCampaignOwnership(campaignId, ctx.uid);
+  assertAmount(amountPaise);
+  await assertFundable(campaignId, ctx.uid);
 
   const order = await razorpay().orders.create({
     amount: amountPaise,
     currency: "INR",
-    receipt: `sproutly_${campaignId}_${Date.now()}`,
+    receipt: `sproutly_${campaignId}_${Date.now()}`.slice(0, 40),
     notes: { campaignId, uid: ctx.uid },
   });
 
@@ -67,58 +166,48 @@ export const createRazorpayOrder = onCall({ secrets }, async (request) => {
   return { orderId: order.id, amountPaise, currency: "INR" };
 });
 
+function validSignature(raw: string, signature: unknown, secret: string): boolean {
+  if (typeof signature !== "string") return false;
+  const expected = createHmac("sha256", secret).update(raw).digest("hex");
+  const a = Buffer.from(signature, "utf8");
+  const b = Buffer.from(expected, "utf8");
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 /**
  * Razorpay webhook. This - not the client - is what credits a campaign budget.
  * Signature verification is mandatory; an unsigned request is dropped.
+ *
+ * Permanent outcomes (credited, duplicate, mismatched, unknown) answer 200 so the
+ * provider stops retrying. A thrown error answers 500 so it retries.
  */
 export const razorpayWebhook = onRequest({ secrets }, async (req, res) => {
-  const signature = req.headers["x-razorpay-signature"];
   const raw = req.rawBody.toString();
-
-  const crypto = await import("node:crypto");
-  const expected = crypto
-    .createHmac("sha256", razorpayWebhookSecret.value())
-    .update(raw)
-    .digest("hex");
-
-  if (typeof signature !== "string" || signature !== expected) {
+  if (!validSignature(raw, req.headers["x-razorpay-signature"], razorpayWebhookSecret.value())) {
     res.status(400).send("invalid signature");
     return;
   }
 
-  const event = req.body?.event;
-  const payment = req.body?.payload?.payment?.entity;
+  try {
+    const event = req.body?.event;
+    const payment = req.body?.payload?.payment?.entity;
 
-  if (event === "payment.captured" && payment) {
-    const paymentRef = db.collection(COLLECTIONS.payments).doc(payment.order_id);
-    const existing = await paymentRef.get();
-    if (existing.exists && existing.data()?.status === "captured") {
-      res.status(200).send("already processed");
+    if (event === "payment.captured" && payment?.order_id && payment.status === "captured") {
+      const result = await creditCapturedPayment({
+        paymentId: String(payment.order_id),
+        provider: "razorpay",
+        amountPaise: Number(payment.amount),
+        currency: String(payment.currency ?? ""),
+        providerFields: { razorpayPaymentId: String(payment.id ?? "") },
+      });
+      res.status(200).send(result);
       return;
     }
-
-    const campaignId = payment.notes?.campaignId ?? existing.data()?.campaignId;
-    const amountPaise = Number(payment.amount ?? 0);
-
-    await paymentRef.set(
-      {
-        status: "captured",
-        capturedAt: FieldValue.serverTimestamp(),
-        razorpayPaymentId: payment.id,
-      },
-      { merge: true },
-    );
-
-    if (campaignId) {
-      await db.collection(COLLECTIONS.campaigns).doc(campaignId).update({
-        budget: FieldValue.increment(amountPaise),
-        updatedAt: FieldValue.serverTimestamp(),
-        status: "pending_approval",
-      });
-    }
+    res.status(200).send("ignored");
+  } catch (error) {
+    console.error("razorpayWebhook failed", error);
+    res.status(500).send("retry");
   }
-
-  res.status(200).send("ok");
 });
 
 /** Stripe Checkout for international cards. Same rules: server decides amounts. */
@@ -128,10 +217,8 @@ export const createStripeCheckout = onCall({ secrets }, async (request) => {
   const amountPaise = Number(request.data?.amountPaise);
 
   if (typeof campaignId !== "string") throw new HttpsError("invalid-argument", "campaignId is required.");
-  if (!Number.isInteger(amountPaise) || amountPaise < LIMITS.minCampaignBudgetPaise || amountPaise > LIMITS.maxCampaignBudgetPaise) {
-    throw new HttpsError("invalid-argument", "That amount is outside the allowed range.");
-  }
-  await assertCampaignOwnership(campaignId, ctx.uid);
+  assertAmount(amountPaise);
+  await assertFundable(campaignId, ctx.uid);
 
   const session = await stripe().checkout.sessions.create({
     mode: "payment",
@@ -178,34 +265,25 @@ export const stripeWebhook = onRequest({ secrets }, async (req, res) => {
     return;
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const campaignId = session.metadata?.campaignId;
-    const paymentRef = db.collection(COLLECTIONS.payments).doc(session.id);
-    const existing = await paymentRef.get();
-    if (existing.data()?.status === "captured") {
-      res.status(200).send("already processed");
-      return;
+  try {
+    if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      // `completed` fires before delayed payment methods settle; only credit paid sessions.
+      if (session.payment_status === "paid") {
+        const result = await creditCapturedPayment({
+          paymentId: session.id,
+          provider: "stripe",
+          amountPaise: Number(session.amount_total ?? 0),
+          currency: String(session.currency ?? ""),
+          providerFields: { stripePaymentIntent: String(session.payment_intent ?? "") },
+        });
+        res.status(200).send(result);
+        return;
+      }
     }
-
-    await paymentRef.set(
-      {
-        status: "captured",
-        capturedAt: FieldValue.serverTimestamp(),
-        stripePaymentIntent: String(session.payment_intent ?? ""),
-      },
-      { merge: true },
-    );
-
-    if (campaignId) {
-      await db.collection(COLLECTIONS.campaigns).doc(campaignId).update({
-        budget: FieldValue.increment(Number(session.amount_total ?? 0)),
-        status: "pending_approval",
-        updatedAt: Timestamp.now(),
-      });
-    }
-    await audit("system", "stripe_capture", session.id, { campaignId });
+    res.status(200).send("ignored");
+  } catch (error) {
+    console.error("stripeWebhook failed", error);
+    res.status(500).send("retry");
   }
-
-  res.status(200).send("ok");
 });

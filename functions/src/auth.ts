@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { getStorage } from "firebase-admin/storage";
 import { db, auth, COLLECTIONS, FieldValue } from "./config";
 import { audit, optionalString, requireAdmin, requireUser } from "./util";
 
@@ -81,42 +82,96 @@ export const requestDeveloperAccess = onCall(async (request) => {
   return { ok: true };
 });
 
+/** Deletes every document a query returns, in pages that fit a write batch. */
+async function purge(query: FirebaseFirestore.Query, apply?: "delete" | ((doc: FirebaseFirestore.QueryDocumentSnapshot) => Record<string, unknown>)): Promise<number> {
+  let total = 0;
+  for (;;) {
+    const page = await query.limit(400).get();
+    if (page.empty) return total;
+    const batch = db.batch();
+    for (const doc of page.docs) {
+      if (typeof apply === "function") batch.update(doc.ref, apply(doc));
+      else batch.delete(doc.ref);
+    }
+    await batch.commit();
+    total += page.size;
+    // An update-style purge must not re-read the same rows forever.
+    if (typeof apply === "function" || page.size < 400) return total;
+  }
+}
+
+/** How recently the caller must have signed in to delete their account. */
+const RECENT_LOGIN_SECONDS = 5 * 60;
+
 /**
- * Deletes the caller's data, then the auth record is removed client side.
- * Applications are kept but anonymised rather than deleted, so reviews written
- * about them do not dangle.
+ * Server-managed account deletion.
+ *
+ * Requires a recent sign-in, then removes the person's data in pages (no fixed
+ * caps), and finally the profile and the Auth record itself. The profile goes
+ * last, so a failure part-way leaves the account intact and the call can simply
+ * be retried; every step is idempotent. Applications are kept but anonymised and
+ * suspended so reviews written about them do not dangle. Payment records and the
+ * audit log are retained for financial and security accountability.
  */
 export const deleteAccount = onCall(async (request) => {
   const ctx = await requireUser(request);
-
-  const apps = await db
-    .collection(COLLECTIONS.applications)
-    .where("ownerId", "==", ctx.uid)
-    .limit(200)
-    .get();
-
-  const batch = db.batch();
-  for (const app of apps.docs) {
-    batch.update(app.ref, {
-      status: "suspended",
-      ownerName: "Former member",
-      updatedAt: FieldValue.serverTimestamp(),
-    });
+  const authTime = Number((request.auth?.token as Record<string, unknown> | undefined)?.auth_time ?? 0);
+  if (Date.now() / 1000 - authTime > RECENT_LOGIN_SECONDS) {
+    throw new HttpsError("unauthenticated", "recent-login-required: sign in again to delete your account.");
   }
-  batch.delete(db.collection(COLLECTIONS.users).doc(ctx.uid));
-  await batch.commit();
+  const uid = ctx.uid;
 
-  const campaigns = await db
-    .collection(COLLECTIONS.campaigns)
-    .where("ownerId", "==", ctx.uid)
-    .limit(200)
-    .get();
-  await Promise.all(
-    campaigns.docs.map((doc) =>
-      doc.ref.update({ status: "paused", updatedAt: FieldValue.serverTimestamp() }),
-    ),
+  // Listings: anonymise and suspend. Suspended rows drop out of the query, so
+  // looping until it is empty pages through every listing.
+  let apps = 0;
+  for (;;) {
+    const batchOfApps = await db
+      .collection(COLLECTIONS.applications)
+      .where("ownerId", "==", uid)
+      .where("status", "in", ["draft", "pending_review", "approved", "rejected"])
+      .limit(400)
+      .get();
+    if (batchOfApps.empty) break;
+    const batch = db.batch();
+    for (const doc of batchOfApps.docs) {
+      batch.update(doc.ref, {
+        status: "suspended",
+        ownerName: "Former member",
+        ownerPhotoUrl: null,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+    apps += batchOfApps.size;
+  }
+
+  // Campaigns stop serving immediately.
+  const campaigns = await purge(
+    db.collection(COLLECTIONS.campaigns).where("ownerId", "==", uid).where("status", "in", ["active", "pending_approval", "paused", "exhausted"]),
+    () => ({ status: "completed", updatedAt: FieldValue.serverTimestamp() }),
   );
 
-  await audit(ctx.uid, "delete_account", ctx.uid, { apps: apps.size });
+  await purge(db.collection(COLLECTIONS.reviews).where("userId", "==", uid));
+  await purge(db.collection(COLLECTIONS.bookmarks).where("userId", "==", uid));
+  await purge(db.collection(COLLECTIONS.follows).where("followerId", "==", uid));
+  await purge(db.collection(COLLECTIONS.follows).where("developerId", "==", uid));
+  await purge(db.collection(COLLECTIONS.notifications).where("userId", "==", uid));
+  await purge(db.collection("reports").where("reporterId", "==", uid));
+
+  // Uploaded media.
+  const bucket = getStorage().bucket();
+  for (const folder of ["avatars", "app_icons", "screenshots", "banners"]) {
+    await bucket.deleteFiles({ prefix: `${folder}/${uid}/`, force: true });
+  }
+
+  // Profile and private subcollection last, then the Auth record.
+  await db.recursiveDelete(db.collection(COLLECTIONS.users).doc(uid));
+  try {
+    await auth.deleteUser(uid);
+  } catch (error) {
+    if ((error as { code?: string }).code !== "auth/user-not-found") throw error;
+  }
+
+  await audit(uid, "delete_account", uid, { apps, campaigns });
   return { ok: true };
 });

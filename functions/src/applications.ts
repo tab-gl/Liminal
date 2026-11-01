@@ -77,6 +77,8 @@ export const submitApplication = onCall(async (request) => {
   }
 
   await ref.update({
+    // The client computes `search`; never let a forged title steer the duplicate check.
+    "search.title": String(app.name).trim().toLowerCase(),
     status: "pending_review",
     moderation: {
       state: "queued",
