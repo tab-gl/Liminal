@@ -2,6 +2,7 @@ package app.tab.store.data.repository
 
 import android.util.Log
 import app.tab.store.core.datastore.SessionStore
+import app.tab.store.core.firebase.orFallback
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.utils.toAuthMessage
 import app.tab.store.data.remote.FirestorePaths
