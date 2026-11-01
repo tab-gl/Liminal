@@ -15,6 +15,17 @@ single console action. Work top to bottom.
 | Release APKs signed (RSA 4096, v2 + v3) | ✅ delivered |
 | Branch pushed, PR #2 open and mergeable | ✅ |
 
+## 0. Enable the sign-in providers
+
+Firebase Console → **Authentication → Sign-in method** → enable
+**Email/Password** and **Google**. A new project has every provider switched
+off, and `createUserWithEmailAndPassword` fails with
+`auth/operation-not-allowed` until this is done.
+
+If a screen reports a Firebase error, the app now names the cause and appends
+the raw Firebase text — for example "Email sign-in is switched off for this
+Firebase project · An internal error has occurred. [ OPERATION_NOT_ALLOWED ]".
+
 ## 1. Sign the CI builds
 
 CI currently debug-signs the release APKs because the signing secrets are not

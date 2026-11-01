@@ -1,8 +1,9 @@
 package app.tab.store.data.repository
 
+import android.util.Log
 import app.tab.store.core.datastore.SessionStore
 import app.tab.store.core.firebase.snapshotFlow
-import app.tab.store.core.firebase.toUserMessage
+import app.tab.store.core.utils.toAuthMessage
 import app.tab.store.data.remote.FirestorePaths
 import app.tab.store.data.remote.toUser
 import app.tab.store.domain.model.User
@@ -25,6 +26,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
+
+private const val TAG = "AuthRepository"
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
@@ -68,32 +71,45 @@ class AuthRepositoryImpl @Inject constructor(
         ensureProfile(user)
         DataResult.Success(loadProfile(user.uid))
     } catch (t: Throwable) {
-        DataResult.Failure(t.toUserMessage(), t)
+        Log.e(TAG, "auth call failed", t)
+        DataResult.Failure(t.toAuthMessage(), t)
     }
 
     override suspend fun registerWithEmail(name: String, email: String, password: String): DataResult<User> = try {
         val result = auth.createUserWithEmailAndPassword(email.trim(), password).await()
         val user = result.user ?: return DataResult.Failure("Registration did not complete.")
-        user.updateProfile(
-            UserProfileChangeRequest.Builder().setDisplayName(name.trim()).build(),
-        ).await()
-        firestore.collection(FirestorePaths.USERS).document(user.uid)
-            .set(
-                mapOf(
-                    "uid" to user.uid,
-                    "email" to user.email.orEmpty(),
-                    "displayName" to name.trim(),
-                    "photoUrl" to null,
-                    "phone" to null,
-                    "role" to UserRole.CUSTOMER.name,
-                    "storeId" to null,
-                    "createdAt" to FieldValue.serverTimestamp(),
-                ),
-                SetOptions.merge(),
+
+        // The account exists from here on. Anything below is best-effort: if the
+        // profile document cannot be written (rules not deployed, App Check,
+        // offline) we must not strand the user with "email already in use" on a
+        // retry. ensureProfile() repairs it on the next sign-in.
+        runCatching {
+            user.updateProfile(
+                UserProfileChangeRequest.Builder().setDisplayName(name.trim()).build(),
             ).await()
+        }.onFailure { Log.w(TAG, "updateProfile failed during sign-up", it) }
+
+        runCatching {
+            firestore.collection(FirestorePaths.USERS).document(user.uid)
+                .set(
+                    mapOf(
+                        "uid" to user.uid,
+                        "email" to user.email.orEmpty(),
+                        "displayName" to name.trim(),
+                        "photoUrl" to null,
+                        "phone" to null,
+                        "role" to UserRole.CUSTOMER.name,
+                        "storeId" to null,
+                        "createdAt" to FieldValue.serverTimestamp(),
+                    ),
+                    SetOptions.merge(),
+                ).await()
+        }.onFailure { Log.w(TAG, "users/${user.uid} write failed during sign-up", it) }
+
         DataResult.Success(loadProfile(user.uid))
     } catch (t: Throwable) {
-        DataResult.Failure(t.toUserMessage(), t)
+        Log.e(TAG, "auth call failed", t)
+        DataResult.Failure(t.toAuthMessage(), t)
     }
 
     override suspend fun signInWithGoogle(idToken: String): DataResult<User> = try {
@@ -103,14 +119,16 @@ class AuthRepositoryImpl @Inject constructor(
         ensureProfile(user)
         DataResult.Success(loadProfile(user.uid))
     } catch (t: Throwable) {
-        DataResult.Failure(t.toUserMessage(), t)
+        Log.e(TAG, "auth call failed", t)
+        DataResult.Failure(t.toAuthMessage(), t)
     }
 
     override suspend fun sendPasswordReset(email: String): DataResult<Unit> = try {
         auth.sendPasswordResetEmail(email.trim()).await()
         DataResult.Success(Unit)
     } catch (t: Throwable) {
-        DataResult.Failure(t.toUserMessage(), t)
+        Log.e(TAG, "auth call failed", t)
+        DataResult.Failure(t.toAuthMessage(), t)
     }
 
     override suspend fun signOut() {
@@ -122,7 +140,8 @@ class AuthRepositoryImpl @Inject constructor(
         val uid = auth.currentUser?.uid ?: return DataResult.Failure("You are signed out.")
         DataResult.Success(loadProfile(uid))
     } catch (t: Throwable) {
-        DataResult.Failure(t.toUserMessage(), t)
+        Log.e(TAG, "auth call failed", t)
+        DataResult.Failure(t.toAuthMessage(), t)
     }
 
     /** Creates the users/{uid} document on first sign-in, preserving any existing role. */

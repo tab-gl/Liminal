@@ -1,5 +1,6 @@
 package app.tab.store.core.firebase
 
+import app.tab.store.core.utils.toDataMessage
 import app.tab.store.domain.repository.DataResult
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -53,21 +54,4 @@ suspend fun <T> firestoreResultOf(block: suspend () -> T): DataResult<T> = try {
     DataResult.Failure(t.toUserMessage(), t)
 }
 
-fun Throwable.toUserMessage(): String {
-    val raw = message.orEmpty()
-    return when {
-        raw.contains("PERMISSION_DENIED", ignoreCase = true) ->
-            "You do not have permission to do that."
-        raw.contains("UNAUTHENTICATED", ignoreCase = true) ->
-            "Please sign in again to continue."
-        raw.contains("FAILED_PRECONDITION", ignoreCase = true) ||
-            raw.contains("index", ignoreCase = true) ->
-            "This list needs a moment to load. Please retry."
-        raw.contains("UNAVAILABLE", ignoreCase = true) ||
-            raw.contains("network", ignoreCase = true) ->
-            "You appear to be offline. Check your connection."
-        raw.contains("RESOURCE_EXHAUSTED", ignoreCase = true) ->
-            "Too many requests just now. Try again shortly."
-        else -> "Something went wrong. Please try again."
-    }
-}
+fun Throwable.toUserMessage(): String = toDataMessage()
