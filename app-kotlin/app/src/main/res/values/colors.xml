@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Flat launch surface: no logo splash, so the app looks loaded instantly. -->
+    <color name="sproutly_surface">#FAF9F2</color>
+    <color name="sproutly_surface_dark">#16170F</color>
+</resources>
