@@ -78,13 +78,28 @@ export const setUserRole = onCall(
       throw new HttpsError("failed-precondition", "You cannot remove your own admin access.");
     }
 
+    const targetRef = db().collection("users").doc(uid);
+    const target = await targetRef.get();
+    if (!target.exists) throw new HttpsError("not-found", "That user profile does not exist.");
+
     const updates: Record<string, unknown> = {
       role,
       updatedAt: FieldValue.serverTimestamp(),
     };
-    if (role === "CUSTOMER") updates.storeId = null;
+    if (role === "CUSTOMER") {
+      updates.storeId = null;
+    } else if (role === "SELLER") {
+      const storeId = target.get("storeId");
+      if (typeof storeId !== "string" || !storeId) {
+        throw new HttpsError("failed-precondition", "The user must create a store before receiving the seller role.");
+      }
+      const store = await db().collection("stores").doc(storeId).get();
+      if (!store.exists || store.get("ownerId") !== uid) {
+        throw new HttpsError("failed-precondition", "The user must own the linked store before receiving the seller role.");
+      }
+    }
 
-    await db().collection("users").doc(uid).set(updates, { merge: true });
+    await targetRef.set(updates, { merge: true });
     return { ok: true };
   },
 );

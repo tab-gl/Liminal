@@ -111,7 +111,17 @@ class AdminRepositoryImpl @Inject constructor(
             .snapshotFlow()
             .map { snap -> snap.documents.map { it.toUser() } }.orFallback(emptyList())
 
-    override suspend fun setUserRole(uid: String, role: UserRole): DataResult<Unit> =
+    override suspend fun setUserRole(uid: String, role: UserRole): DataResult<Unit> = try {
+        if (role == UserRole.SELLER) {
+            val target = users.document(uid).get().await()
+            if (!target.exists()) return DataResult.Failure("This user profile no longer exists.")
+            val storeId = target.getString("storeId")
+                ?: return DataResult.Failure("This user must create a store before becoming a seller.")
+            val store = stores.document(storeId).get().await()
+            if (!store.exists() || store.getString("ownerId") != uid) {
+                return DataResult.Failure("This user does not own the linked store.")
+            }
+        }
         firestoreResult {
             val updates = mutableMapOf<String, Any?>(
                 "role" to role.name,
@@ -120,6 +130,9 @@ class AdminRepositoryImpl @Inject constructor(
             if (role == UserRole.CUSTOMER) updates["storeId"] = null
             users.document(uid).set(updates, SetOptions.merge()).await()
         }
+    } catch (t: Throwable) {
+        DataResult.Failure(t.toUserMessage(), t)
+    }
 
     override fun observeReportedProducts(): Flow<List<Product>> =
         products.whereEqualTo("reported", true)

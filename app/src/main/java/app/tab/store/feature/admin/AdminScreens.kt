@@ -399,7 +399,8 @@ fun AdminUsersScreen(
                             Spacer(Modifier.height(4.dp))
                             Row {
                                 UserRole.entries.forEach { role ->
-                                    if (role != user.role) {
+                                    val canAssign = role != UserRole.SELLER || !user.storeId.isNullOrBlank()
+                                    if (role != user.role && canAssign) {
                                         TextButton(
                                             onClick = { viewModel.setRole(user, role) },
                                             enabled = state.busyUid != user.uid,

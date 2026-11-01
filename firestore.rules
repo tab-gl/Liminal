@@ -86,8 +86,20 @@ service cloud.firestore {
             && storeDoc(request.resource.data.storeId).ownerId == uid())
         );
 
-      // Admins manage roles and store links (Admin → Users).
-      allow update: if isAdmin();
+      // Admins may change only role and store linkage. SELLER is valid only
+      // when the target user already owns the linked store; a role label alone
+      // must never unlock seller routes without a real store.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['role', 'storeId', 'updatedAt'])
+        && (
+          request.resource.data.role == 'ADMIN'
+          || (request.resource.data.role == 'CUSTOMER'
+            && request.resource.data.storeId == null)
+          || (request.resource.data.role == 'SELLER'
+            && request.resource.data.storeId is string
+            && storeDoc(request.resource.data.storeId).ownerId == userId)
+        );
       allow delete: if isAdmin();
 
       match /tokens/{tokenId} {
