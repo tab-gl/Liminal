@@ -5,7 +5,6 @@ import android.net.Uri
 import app.tab.store.data.FirestorePaths
 import app.tab.store.data.model.AppListing
 import app.tab.store.data.model.Campaign
-import app.tab.store.data.model.Report
 import app.tab.store.data.model.Review
 import app.tab.store.data.model.UserProfile
 import com.google.firebase.firestore.DocumentSnapshot

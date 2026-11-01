@@ -30,7 +30,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.tab.store.data.model.AppListing
 import app.tab.store.data.model.Campaign
-import app.tab.store.data.model.Report
+import app.tab.store.data.repo.Report
 import app.tab.store.data.model.UserProfile
 import app.tab.store.di.ServiceGraph
 import app.tab.store.ui.components.AppCardSkeleton
