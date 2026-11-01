@@ -1,29 +1,26 @@
-# Sproutly release rules
--keepattributes Signature, *Annotation*, EnclosingMethod, InnerClasses
--keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+# ---------------------------------------------------------------------------
+# Sproutly R8 rules
+#
+# Deliberately minimal. Hilt, Room, Firebase, OkHttp and Compose all ship
+# consumer rules inside their AARs, so repeating them here only adds risk —
+# over-broad keeps are a common source of R8 failures and of APK bloat.
+# ---------------------------------------------------------------------------
 
-# Firebase / Firestore model reflection
--keepclassmembers class app.tab.store.data.remote.dto.** { *; }
--keep class app.tab.store.data.remote.dto.** { *; }
+# Domain models are read field-by-field from Firestore maps and their enum
+# names are persisted as strings, so names must survive obfuscation.
+-keep class app.tab.store.domain.model.** { <fields>; }
 
-# Keep enums used by Firestore serialization
+# Enum names are written to Firestore ("ACTIVE", "PENDING", ...).
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
-# Kotlin serialization-free DTOs
--dontwarn kotlinx.parcelize.**
-
-# Hilt
--keep,allowobfuscation @interface dagger.hilt.**
--keep class dagger.hilt.** { *; }
-
-# OkHttp / Okio
+# OkHttp / Okio optional platform integrations.
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -dontwarn org.conscrypt.**
 
-# Play services
--keep class com.google.android.gms.** { *; }
+# Firebase and Play Services reference optional classes that are not bundled.
+-dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
