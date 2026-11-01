@@ -1,0 +1,12 @@
+# Keep shell scripts LF and executable. A CRLF shebang breaks `#!/usr/bin/env bash`
+# on Linux runners, and a lost +x bit breaks `./script.sh` - both have bitten this
+# project once, so they are pinned here.
+* text=auto eol=lf
+*.sh text eol=lf
+*.dart text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.ttf binary
+*.otf binary
+*.png binary
+*.jpg binary

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "919591212641",
+    "project_id": "tab-gl",
+    "storage_bucket": "tab-gl.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919591212641:android:964c46fb584ac734d9bc20",
+        "android_client_info": {
+          "package_name": "app.tab.store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919591212641-haoe16l24oej5pbvrdmc5csceumduv5l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_XOdhIY7qOKQqXmsYEuLKrJirtCbk6lU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919591212641-7m696qr165fh1ir4uo6d761jn7nnk4kg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,8 @@
+# Copy to android/key.properties and fill in, or let tool/configure_signing.sh
+# write it from environment variables in CI.
+#
+# NEVER commit key.properties or the .jks. Both are in .gitignore.
+storePassword=REPLACE_ME
+keyPassword=REPLACE_ME
+keyAlias=upload
+storeFile=upload-keystore.jks
