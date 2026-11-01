@@ -1,5 +1,6 @@
 package app.tab.store.feature.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,8 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -29,12 +30,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.R
 import app.tab.store.core.designsystem.BrandMark
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyPalette
@@ -52,7 +54,7 @@ fun LoginScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val launchGoogle = rememberGoogleSignIn(
         onToken = viewModel::signInWithGoogle,
-        onError = { /* surfaced through the shared error slot */ },
+        onError = { viewModel.showError(it) },
     )
 
     LaunchedEffect(state.user) {
@@ -66,32 +68,38 @@ fun LoginScreen(
             .verticalScroll(rememberScrollState())
             .imePadding(),
     ) {
-        // Brand hero — the lime panel with the monstera mark
-        Box(
+        // Brand hero — the lime panel with the monstera mark.
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(268.dp)
                 .background(SproutlyPalette.Lime)
-                .padding(horizontal = 28.dp, vertical = 32.dp),
+                .padding(horizontal = 24.dp)
+                .padding(top = 20.dp, bottom = 26.dp),
         ) {
-            Column(Modifier.align(Alignment.BottomStart)) {
-                BrandMark(size = 62.dp)
-                Spacer(Modifier.height(18.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BrandMark(size = 40.dp)
+                Spacer(Modifier.width(10.dp))
                 Text(
-                    text = "Fresh finds,\nlocal sellers.",
-                    style = MaterialTheme.typography.displaySmall,
+                    text = "Sproutly",
+                    style = MaterialTheme.typography.headlineSmall,
                     color = SproutlyPalette.OliveDeep,
                 )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = "Sproutly connects you with independent stores around you.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = SproutlyPalette.Olive,
-                )
             }
+            Spacer(Modifier.height(22.dp))
+            Text(
+                text = "Everything you\nlove, in one store.",
+                style = MaterialTheme.typography.displaySmall,
+                color = SproutlyPalette.OliveDeep,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = "Thousands of products from verified sellers — one cart, one checkout.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SproutlyPalette.Olive,
+            )
         }
 
-        Column(Modifier.padding(horizontal = 24.dp, vertical = 26.dp)) {
+        Column(Modifier.padding(horizontal = 24.dp, vertical = 22.dp)) {
             Text("Welcome back", style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.height(4.dp))
             Text(
@@ -99,7 +107,7 @@ fun LoginScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(20.dp))
 
             SproutlyTextField(
                 value = state.email,
@@ -118,7 +126,8 @@ fun LoginScreen(
                 trailing = {
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
                         Icon(
-                            if (state.passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            if (state.passwordVisible) Icons.Filled.VisibilityOff
+                            else Icons.Filled.Visibility,
                             contentDescription = "Toggle password visibility",
                         )
                     }
@@ -141,10 +150,11 @@ fun LoginScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
+            // Always tappable: validation happens on submit and reports inline,
+            // which is friendlier than a permanently disabled primary button.
             SproutlyButton(
                 text = "Sign in",
                 onClick = viewModel::signIn,
-                enabled = state.canSubmitLogin,
                 loading = state.isLoading,
             )
 
@@ -198,21 +208,21 @@ fun LoginScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box(
-                        Modifier
-                            .size(20.dp)
-                            .clip(CircleShape)
-                            .background(SproutlyPalette.Olive),
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_google_g),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
                     )
-                    Spacer(Modifier.size(10.dp))
+                    Spacer(Modifier.width(10.dp))
                     Text("Continue with Google", style = MaterialTheme.typography.labelLarge)
                 }
             }
 
-            Spacer(Modifier.height(26.dp))
+            Spacer(Modifier.height(24.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     "New to Sproutly?",
@@ -223,7 +233,7 @@ fun LoginScreen(
                     Text("Create account", style = MaterialTheme.typography.labelLarge)
                 }
             }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(10.dp))
             Text(
                 "By continuing you agree to Sproutly's Terms of Service and Privacy Policy.",
                 style = MaterialTheme.typography.bodySmall,
@@ -231,6 +241,7 @@ fun LoginScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
+            Spacer(Modifier.height(12.dp))
         }
     }
 }

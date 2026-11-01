@@ -30,7 +30,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -127,6 +128,7 @@ fun SproutlyTopBar(
 // Buttons
 // ---------------------------------------------------------------------------
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SproutlyButton(
     text: String,
@@ -154,9 +156,9 @@ fun SproutlyButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
+                // M3 Expressive shape-morph loader.
+                LoadingIndicator(
+                    modifier = Modifier.size(22.dp),
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
@@ -456,18 +458,48 @@ fun ErrorState(
     )
 }
 
+/**
+ * The Material 3 Expressive loading indicator: a single shape that morphs
+ * through the Material shape set with spring motion. Used everywhere the app
+ * is genuinely waiting on data, so loading always looks like Sproutly rather
+ * than like a generic spinner.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun LoadingColumn(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        repeat(4) {
-            ShimmerBox(
-                Modifier
-                    .fillMaxWidth()
-                    .height(96.dp)
-                    .padding(vertical = 6.dp),
-                corner = 22.dp,
+fun SproutlyLoader(
+    modifier: Modifier = Modifier,
+    label: String? = null,
+    size: Dp = 44.dp,
+    color: Color = MaterialTheme.colorScheme.primary,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        LoadingIndicator(
+            modifier = Modifier.size(size),
+            color = color,
+        )
+        if (label != null) {
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Composable
+fun LoadingColumn(modifier: Modifier = Modifier, label: String? = null) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 56.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        SproutlyLoader(label = label)
     }
 }
 

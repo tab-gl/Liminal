@@ -2,7 +2,9 @@ package app.tab.store.core.designsystem
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -142,8 +144,11 @@ fun SproutlyTheme(
         }
     }
 
-    MaterialTheme(
+    // Material 3 Expressive: springy, shape-morphing motion for every M3
+    // component (buttons, chips, sheets, and the loading indicator).
+    MaterialExpressiveTheme(
         colorScheme = colors,
+        motionScheme = MotionScheme.expressive(),
         typography = SproutlyTypography,
         shapes = SproutlyShapes,
     ) {

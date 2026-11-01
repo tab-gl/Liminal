@@ -68,8 +68,8 @@ private data class Promo(
 )
 
 private val promos = listOf(
-    Promo("New this week", "Small stores,\nbig finds", "Handpicked independent sellers, delivered across India.", "Browse new"),
-    Promo("Sproutly picks", "Up to 40% off\nseason edits", "Fresh markdowns from stores near you.", "Shop the edit"),
+    Promo("New this week", "New drops,\nevery week", "Fresh arrivals from verified sellers, shipped across India.", "Browse new"),
+    Promo("Sproutly picks", "Up to 40% off\nseason edits", "Markdowns across every category, while stock lasts.", "Shop the edit"),
     Promo("Sell with us", "Your shelf,\nour reach", "Open a store in minutes and reach shoppers everywhere.", "Start selling"),
 )
 
@@ -136,7 +136,7 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        text = "What are we growing today?",
+                        text = "What are you shopping for today?",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

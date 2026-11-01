@@ -64,9 +64,19 @@ class AuthViewModel @Inject constructor(
     fun togglePasswordVisibility() = _uiState.update { it.copy(passwordVisible = !it.passwordVisible) }
     fun clearMessages() = _uiState.update { it.copy(error = null, info = null) }
 
+    /** Surfaces an error raised outside the form (e.g. Google sign-in). */
+    fun showError(message: String) = _uiState.update { it.copy(error = message) }
+
     fun signIn() {
         val state = _uiState.value
-        if (!state.canSubmitLogin) return
+        when {
+            state.email.isBlank() ->
+                return _uiState.update { it.copy(error = "Enter your email address.") }
+            !Validators.isValidEmail(state.email) ->
+                return _uiState.update { it.copy(error = "That email address does not look right.") }
+            state.password.isBlank() ->
+                return _uiState.update { it.copy(error = "Enter your password.") }
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             when (val res = authRepository.signInWithEmail(state.email, state.password)) {
@@ -82,7 +92,14 @@ class AuthViewModel @Inject constructor(
 
     fun register() {
         val state = _uiState.value
-        if (!state.canSubmitRegister) return
+        when {
+            state.name.trim().length < 2 ->
+                return _uiState.update { it.copy(error = "Enter your name.") }
+            !Validators.isValidEmail(state.email) ->
+                return _uiState.update { it.copy(error = "That email address does not look right.") }
+            !Validators.isValidPassword(state.password) ->
+                return _uiState.update { it.copy(error = "Use a password of at least 8 characters.") }
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             when (val res = authRepository.registerWithEmail(state.name, state.email, state.password)) {

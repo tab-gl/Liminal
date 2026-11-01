@@ -54,7 +54,7 @@ fun RegisterScreen(
         SproutlyTopBar(title = "Create your account", onBack = onBack)
         Column(Modifier.padding(horizontal = 24.dp)) {
             Text(
-                "One account to shop every Sproutly store.",
+                "One account to shop every seller on Sproutly.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
