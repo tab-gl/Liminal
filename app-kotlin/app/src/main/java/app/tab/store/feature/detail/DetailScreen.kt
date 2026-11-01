@@ -303,5 +303,4 @@ private fun ReviewDialog(
         },
         dismissButton = { SproutlyTextButton(label = "Cancel", onClick = onDismiss) },
     )
-    }
 }
