@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Sproutly</string>
-    <string name="app_tagline">Every seller, one checkout</string>
+    <string name="app_tagline">Build it. Publish it. Grow it.</string>
     <string name="notifications_channel_id">sproutly_default</string>
     <string name="notifications_channel_name">Sproutly updates</string>
     <string name="notifications_channel_description">Order and store updates from Sproutly</string>

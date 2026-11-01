@@ -9,17 +9,18 @@ import androidx.compose.ui.unit.dp
  * controls stay pill-shaped so the UI feels friendly rather than clinical.
  */
 val SproutlyShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(18.dp),
-    large = RoundedCornerShape(26.dp),
-    extraLarge = RoundedCornerShape(34.dp),
+    extraSmall = RoundedCornerShape(12.dp),
+    small = RoundedCornerShape(16.dp),
+    medium = RoundedCornerShape(22.dp),
+    large = RoundedCornerShape(30.dp),
+    extraLarge = RoundedCornerShape(38.dp),
 )
 
 object SproutlyRadii {
-    val card = RoundedCornerShape(22.dp)
-    val hero = RoundedCornerShape(30.dp)
+    val card = RoundedCornerShape(28.dp)
+    val hero = RoundedCornerShape(36.dp)
     val pill = RoundedCornerShape(percent = 50)
-    val sheet = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-    val thumb = RoundedCornerShape(14.dp)
+    val sheet = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp)
+    val thumb = RoundedCornerShape(18.dp)
+    val nav = RoundedCornerShape(30.dp)
 }

@@ -60,7 +60,7 @@ fun CheckoutScreen(
             .fillMaxSize()
             .imePadding(),
     ) {
-        SproutlyTopBar(title = "Checkout", onBack = onBack)
+        SproutlyTopBar(title = "Get apps", onBack = onBack)
 
         LazyColumn(
             modifier = Modifier.weight(1f),
@@ -71,7 +71,7 @@ fun CheckoutScreen(
         ) {
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Deliver to", style = MaterialTheme.typography.headlineSmall)
+                    Text("Billing details", style = MaterialTheme.typography.headlineSmall)
                     Spacer(Modifier.weight(1f))
                     TextButton(onClick = onManageAddresses) {
                         Text("Manage", style = MaterialTheme.typography.labelLarge)
@@ -252,7 +252,7 @@ fun CheckoutScreen(
                 }
                 Spacer(Modifier.height(12.dp))
                 SproutlyButton(
-                    text = if (state.selectedAddress == null) "Add an address to continue" else "Place order",
+                    text = if (state.selectedAddress == null) "Add an address to continue" else "Install",
                     onClick = viewModel::placeOrder,
                     enabled = state.canPlaceOrder,
                     loading = state.isPlacingOrder,

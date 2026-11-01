@@ -70,7 +70,7 @@ fun SellerSetupScreen(
             .verticalScroll(rememberScrollState())
             .imePadding(),
     ) {
-        SproutlyTopBar(title = "Open your store", onBack = onBack)
+        SproutlyTopBar(title = "Become a developer", onBack = onBack)
         Column(Modifier.padding(horizontal = 24.dp)) {
             Surface(
                 shape = SproutlyRadii.hero,
@@ -86,12 +86,12 @@ fun SellerSetupScreen(
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(
-                        "Your shelf, our reach",
+                        "Build it. Publish it. Grow it.",
                         style = MaterialTheme.typography.headlineMedium,
                         color = SproutlyPalette.OliveDeep,
                     )
                     Text(
-                        "Set up a store in under a minute. Add products, manage stock and take orders — Sproutly handles the rest.",
+                        "Set up a developer profile in under a minute, publish your first app and track installs.",
                         style = MaterialTheme.typography.bodySmall,
                         color = SproutlyPalette.Olive,
                     )
@@ -102,9 +102,9 @@ fun SellerSetupScreen(
             SproutlyTextField(
                 value = state.storeName,
                 onValueChange = viewModel::onName,
-                label = "Store name",
+                label = "Developer name",
                 placeholder = "The Green Shelf",
-                helperText = "This is what shoppers will see.",
+                helperText = "This is what people installing your apps will see.",
             )
             SproutlyTextField(
                 value = state.tagline,
@@ -137,7 +137,7 @@ fun SellerSetupScreen(
             }
 
             SproutlyButton(
-                text = "Create store",
+                text = "Create developer profile",
                 onClick = viewModel::createStore,
                 enabled = state.canSubmit,
                 loading = state.isCreating,
@@ -172,17 +172,17 @@ fun SellerDashboardScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         SproutlyTopBar(
-            title = state.store?.name ?: "Seller hub",
+            title = state.store?.name ?: "Developer hub",
             subtitle = state.store?.status?.name?.lowercase()?.replaceFirstChar { it.uppercase() },
             onBack = onBack,
         )
 
         if (state.needsStore) {
             EmptyState(
-                title = "No store yet",
-                message = "Open a store to start listing products on Sproutly.",
+                title = "No developer profile yet",
+                message = "Open a developer profile to start publishing apps on Sproutly.",
                 icon = Icons.Filled.Storefront,
-                actionLabel = "Open a store",
+                actionLabel = "Get started",
                 onAction = onSetupStore,
             )
             return@Column
@@ -196,7 +196,7 @@ fun SellerDashboardScreen(
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Text(
-                        "TOTAL SALES",
+                        "TOTAL REVENUE",
                         style = MaterialTheme.typography.labelSmall,
                         color = SproutlyPalette.LimeSoft,
                     )
@@ -217,7 +217,7 @@ fun SellerDashboardScreen(
 
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                QuickAction(Icons.Filled.Add, "Add product", Modifier.weight(1f)) {
+                QuickAction(Icons.Filled.Add, "Publish app", Modifier.weight(1f)) {
                     onProducts()
                 }
                 QuickAction(Icons.Filled.Receipt, "Orders", Modifier.weight(1f)) {
@@ -230,7 +230,7 @@ fun SellerDashboardScreen(
 
             Spacer(Modifier.height(18.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Store", style = MaterialTheme.typography.headlineSmall)
+                Text("Developer profile", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.weight(1f))
                 Surface(
                     onClick = onStoreEdit,
@@ -272,7 +272,7 @@ fun SellerDashboardScreen(
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
-                            "${state.stats.activeProducts} live products · ${state.store?.city.orEmpty()}",
+                            "${state.stats.activeProducts} live apps · ${state.store?.city.orEmpty()}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -296,7 +296,7 @@ fun SellerDashboardScreen(
                 ) {
                     Column(Modifier.padding(14.dp)) {
                         Text(
-                            "Low stock",
+                            "Needs attention",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
@@ -312,11 +312,11 @@ fun SellerDashboardScreen(
             }
 
             Spacer(Modifier.height(18.dp))
-            Text("Recent orders", style = MaterialTheme.typography.headlineSmall)
+            Text("Recent installs", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             if (state.recentOrders.isEmpty()) {
                 Text(
-                    "No orders yet. Share your store link to get your first one.",
+                    "No installs yet. Share your app link to get your first one.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -430,7 +430,7 @@ fun SellerAnalyticsScreen(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 MetricTile("Units sold", stats.unitsSold.toString(), Modifier.weight(1f))
-                MetricTile("Low stock", stats.lowStockCount.toString(), Modifier.weight(1f))
+                MetricTile("Needs attention", stats.lowStockCount.toString(), Modifier.weight(1f))
             }
 
             Spacer(Modifier.height(20.dp))

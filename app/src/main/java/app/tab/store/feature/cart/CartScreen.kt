@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.EmptyState
-import app.tab.store.core.designsystem.QuantityStepper
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.SproutlyRadii
@@ -61,7 +60,7 @@ fun CartScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Your cart",
+                title = "Your library",
                 subtitle = if (state.cart.isEmpty) null
                 else "${state.cart.itemCount} item${if (state.cart.itemCount == 1) "" else "s"}",
                 actions = {
@@ -75,10 +74,10 @@ fun CartScreen(
 
             if (state.cart.isEmpty) {
                 EmptyState(
-                    title = "Your cart is empty",
-                    message = "Browse the marketplace and add something you like.",
+                    title = "Your library is empty",
+                    message = "Browse the store and add apps you want to keep.",
                     icon = Icons.Outlined.ShoppingBag,
-                    actionLabel = "Start shopping",
+                    actionLabel = "Browse apps",
                     onAction = onContinueShopping,
                 )
             } else {
@@ -98,7 +97,7 @@ fun CartScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Text(
-                                    "Some items are no longer available and will not be charged.",
+                                    "Some apps are no longer available and will not be charged.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer,
                                     modifier = Modifier.padding(12.dp),
@@ -132,7 +131,7 @@ fun CartScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Text(
-                                    "Add ${formatPrice(state.remainingForFreeShipping)} more for free delivery",
+                                    "Add ${formatPrice(state.remainingForFreeShipping)} more to skip the service fee",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -140,9 +139,9 @@ fun CartScreen(
                             }
                             Spacer(Modifier.height(12.dp))
                         }
-                        SummaryRow("Subtotal", formatPrice(state.cart.subtotal))
+                        SummaryRow("Apps", formatPrice(state.cart.subtotal))
                         SummaryRow(
-                            "Delivery",
+                            "Service fee",
                             if (state.shipping == 0L) "Free" else formatPrice(state.shipping),
                         )
                         Spacer(Modifier.height(8.dp))
@@ -158,7 +157,7 @@ fun CartScreen(
                         }
                         Spacer(Modifier.height(14.dp))
                         SproutlyButton(
-                            text = "Checkout",
+                            text = "Continue",
                             onClick = onCheckout,
                             enabled = !state.cart.isEmpty && !state.cart.hasUnavailable,
                         )
@@ -241,12 +240,10 @@ private fun CartLineRow(
                 }
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    QuantityStepper(
-                        quantity = line.quantity,
-                        onDecrease = onDecrease,
-                        onIncrease = onIncrease,
-                        max = line.stock,
-                        enabled = line.isAvailable,
+                    Text(
+                        "1 licence",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.weight(1f))
                     TextButton(onClick = onRemove) {

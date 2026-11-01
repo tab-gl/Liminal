@@ -109,7 +109,7 @@ fun SearchScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .focusRequester(focusRequester),
-                placeholder = { Text("Search products", style = MaterialTheme.typography.bodyMedium) },
+                placeholder = { Text("Search apps", style = MaterialTheme.typography.bodyMedium) },
                 leadingIcon = {
                     Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(20.dp))
                 },

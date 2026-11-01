@@ -58,17 +58,17 @@ fun OrdersScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Your orders",
+                title = "My apps",
                 subtitle = if (state.orders.isEmpty()) null
                 else "${state.orders.size} order${if (state.orders.size == 1) "" else "s"}",
             )
             when {
                 state.isLoading -> LoadingColumn(Modifier.padding(horizontal = 20.dp))
                 state.orders.isEmpty() -> EmptyState(
-                    title = "No orders yet",
-                    message = "When you place an order it will show up here with live tracking.",
+                    title = "No apps yet",
+                    message = "Apps you install will show up here, with updates as developers ship them.",
                     icon = Icons.Outlined.Receipt,
-                    actionLabel = "Browse products",
+                    actionLabel = "Browse the store",
                     onAction = onStartShopping,
                 )
                 else -> LazyColumn(

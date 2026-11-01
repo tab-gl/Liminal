@@ -1,44 +1,58 @@
 package app.tab.store.core.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingBag
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Receipt
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.HugeIcons
 
 data class TabDestination(
     val route: String,
     val label: String,
-    val selectedIcon: ImageVector,
-    val icon: ImageVector,
+    @DrawableRes val icon: Int,
 )
 
+/** Store · Search · Library · My apps · Profile */
 val mainTabs = listOf(
-    TabDestination(Routes.HOME, "Home", Icons.Filled.Home, Icons.Outlined.Home),
-    TabDestination(Routes.SEARCH, "Search", Icons.Filled.Search, Icons.Outlined.Search),
-    TabDestination(Routes.CART, "Cart", Icons.Filled.ShoppingBag, Icons.Outlined.ShoppingBag),
-    TabDestination(Routes.ORDERS, "Orders", Icons.Filled.Receipt, Icons.Outlined.Receipt),
-    TabDestination(Routes.PROFILE, "Profile", Icons.Filled.Person, Icons.Outlined.Person),
+    TabDestination(Routes.HOME, "Store", HugeIcons.Store),
+    TabDestination(Routes.SEARCH, "Search", HugeIcons.Search),
+    TabDestination(Routes.CART, "Library", HugeIcons.Library),
+    TabDestination(Routes.ORDERS, "My apps", HugeIcons.Download),
+    TabDestination(Routes.PROFILE, "Profile", HugeIcons.User),
 )
 
+/**
+ * Floating navigation bar: a rounded, elevated pill that hovers over the
+ * content. The selected destination expands to show its icon *and* label; the
+ * others stay icon-only, so the bar stays narrow but never hides where you are.
+ */
 @Composable
 fun SproutlyBottomBar(
     currentRoute: String?,
@@ -46,34 +60,98 @@ fun SproutlyBottomBar(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    NavigationBar(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp,
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp, vertical = 10.dp),
     ) {
-        mainTabs.forEach { tab ->
-            val selected = currentRoute == tab.route
-            NavigationBarItem(
-                selected = selected,
-                onClick = { if (!selected) onNavigate(tab.route) },
-                icon = {
-                    if (tab.route == Routes.CART && cartCount > 0) {
-                        BadgedBox(badge = { Badge { Text(cartCount.coerceAtMost(99).toString()) } }) {
-                            Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = tab.label)
-                        }
-                    } else {
-                        Icon(if (selected) tab.selectedIcon else tab.icon, contentDescription = tab.label)
-                    }
-                },
-                label = { Text(tab.label, style = MaterialTheme.typography.labelMedium) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-            )
+        Surface(
+            shape = RoundedCornerShape(30.dp),
+            color = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            shadowElevation = 14.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                mainTabs.forEach { tab ->
+                    FloatingTab(
+                        tab = tab,
+                        selected = currentRoute == tab.route,
+                        badgeCount = if (tab.route == Routes.CART) cartCount else 0,
+                        onClick = { if (currentRoute != tab.route) onNavigate(tab.route) },
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FloatingTab(
+    tab: TabDestination,
+    selected: Boolean,
+    badgeCount: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(24.dp)
+    val container by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+        label = "tabContainer",
+    )
+    val content by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+        else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "tabContent",
+    )
+    val iconSize by animateDpAsState(
+        targetValue = if (selected) 21.dp else 23.dp,
+        animationSpec = spring(dampingRatio = 0.7f, stiffness = 900f),
+        label = "iconSize",
+    )
+
+    Surface(
+        onClick = onClick,
+        shape = shape,
+        color = container,
+        contentColor = content,
+        modifier = modifier,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = if (selected) 14.dp else 11.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (badgeCount > 0) {
+                BadgedBox(
+                    badge = {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ) { Text(badgeCount.coerceAtMost(99).toString()) }
+                    },
+                ) {
+                    HugeIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
+                }
+            } else {
+                HugeIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
+            }
+
+            AnimatedVisibility(
+                visible = selected,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally(),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(Modifier.width(7.dp))
+                    Text(tab.label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                }
+            }
         }
     }
 }

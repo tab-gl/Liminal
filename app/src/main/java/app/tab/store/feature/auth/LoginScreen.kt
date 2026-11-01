@@ -85,13 +85,13 @@ fun LoginScreen(
             }
             Spacer(Modifier.height(22.dp))
             Text(
-                text = "Everything you\nlove, in one store.",
+                text = "Build it.\nPublish it.\nGrow it.",
                 style = MaterialTheme.typography.displaySmall,
                 color = SproutlyPalette.OliveDeep,
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "Thousands of products from verified sellers — one cart, one checkout.",
+                text = "The app store for independent developers — publish your app, reach the people who'll love it.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = SproutlyPalette.Olive,
             )
@@ -101,7 +101,7 @@ fun LoginScreen(
             Text("Welcome back", style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Sign in to keep shopping where you left off.",
+                "Sign in to keep shipping.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

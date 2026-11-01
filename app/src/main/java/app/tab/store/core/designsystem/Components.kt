@@ -319,7 +319,7 @@ fun SproutlyImage(
     url: String?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    corner: Dp = 14.dp,
+    corner: Dp = 18.dp,
     contentScale: ContentScale = ContentScale.Crop,
 ) {
     val shape = RoundedCornerShape(corner)
@@ -593,7 +593,7 @@ fun ProductCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
-                corner = 16.dp,
+                corner = 20.dp,
             )
             if (product.isOutOfStock) {
                 Box(

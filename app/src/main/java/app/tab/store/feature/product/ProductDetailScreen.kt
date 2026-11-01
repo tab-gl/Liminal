@@ -43,7 +43,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.ErrorState
 import app.tab.store.core.designsystem.PriceText
-import app.tab.store.core.designsystem.QuantityStepper
 import app.tab.store.core.designsystem.RatingBadge
 import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyButton
@@ -254,7 +253,7 @@ fun ProductDetailScreen(
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                                 Text(
-                                    "Visit store",
+                                    "View developer",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -263,7 +262,7 @@ fun ProductDetailScreen(
                     }
 
                     Spacer(Modifier.height(20.dp))
-                    Text("About this item", style = MaterialTheme.typography.headlineSmall)
+                    Text("About this app", style = MaterialTheme.typography.headlineSmall)
                     Spacer(Modifier.height(8.dp))
                     Text(
                         product.description.ifBlank { "No description provided by the seller yet." },
@@ -285,17 +284,6 @@ fun ProductDetailScreen(
                     }
 
                     Spacer(Modifier.height(24.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Quantity", style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.weight(1f))
-                        QuantityStepper(
-                            quantity = state.quantity,
-                            onDecrease = { viewModel.setQuantity(state.quantity - 1) },
-                            onIncrease = { viewModel.setQuantity(state.quantity + 1) },
-                            max = state.maxQuantity,
-                            enabled = product.isPurchasable,
-                        )
-                    }
                     Spacer(Modifier.height(20.dp))
                     Row {
                         Surface(
@@ -309,7 +297,7 @@ fun ProductDetailScreen(
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Text(
-                                    if (product.isOutOfStock) "Out of stock" else "Add to cart",
+                                    if (product.isOutOfStock) "Unavailable" else "Get",
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 )
@@ -318,7 +306,7 @@ fun ProductDetailScreen(
                         Spacer(Modifier.width(10.dp))
                         Box(Modifier.weight(1f)) {
                             SproutlyButton(
-                                text = "Buy now",
+                                text = "Install",
                                 onClick = { viewModel.addToCart(goToCart = true) },
                                 enabled = state.canAdd,
                                 loading = state.isAddingToCart,

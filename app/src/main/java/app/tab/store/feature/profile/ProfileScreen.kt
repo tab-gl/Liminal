@@ -125,18 +125,18 @@ fun ProfileScreen(
         Column(Modifier.padding(horizontal = 20.dp)) {
             Text("Account", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            ProfileRow(Icons.Filled.Receipt, "My orders", "Track and reorder", onOrders)
+            ProfileRow(Icons.Filled.Receipt, "My apps", "Installed and updates", onOrders)
             ProfileRow(Icons.Filled.FavoriteBorder, "Wishlist", "Saved for later", onWishlist)
             ProfileRow(Icons.Filled.LocationOn, "Addresses", "Delivery details", onAddresses)
             ProfileRow(Icons.Filled.Notifications, "Notifications", "Updates and offers", onNotifications)
 
             Spacer(Modifier.height(18.dp))
-            Text("Selling", style = MaterialTheme.typography.headlineSmall)
+            Text("Publishing", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             ProfileRow(
                 Icons.Filled.Storefront,
-                if (user?.isSeller == true) "Seller hub" else "Start selling",
-                if (user?.isSeller == true) "Manage your store" else "Open a store in minutes",
+                if (user?.isSeller == true) "Developer hub" else "Publish an app",
+                if (user?.isSeller == true) "Manage your apps" else "Open a developer profile",
                 onSellerHub,
             )
             if (user?.isAdmin == true) {

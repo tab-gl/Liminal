@@ -68,9 +68,9 @@ private data class Promo(
 )
 
 private val promos = listOf(
-    Promo("New this week", "New drops,\nevery week", "Fresh arrivals from verified sellers, shipped across India.", "Browse new"),
-    Promo("Sproutly picks", "Up to 40% off\nseason edits", "Markdowns across every category, while stock lasts.", "Shop the edit"),
-    Promo("Sell with us", "Your shelf,\nour reach", "Open a store in minutes and reach shoppers everywhere.", "Start selling"),
+    Promo("New this week", "Ship it,\nwe surface it", "Fresh releases from independent developers, updated daily.", "Browse new"),
+    Promo("Editor's picks", "Apps worth\nyour home screen", "Hand-picked by the Sproutly team this week.", "See the picks"),
+    Promo("Publish with us", "Build it.\nPublish it.\nGrow it.", "Open a developer profile and ship your first app today.", "Start building"),
 )
 
 @Composable
@@ -136,7 +136,7 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        text = "What are you shopping for today?",
+                        text = "Find your next favourite app.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -164,7 +164,7 @@ fun HomeScreen(
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
-                                "Search products, stores, categories",
+                                "Search apps, developers, categories",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -269,9 +269,9 @@ fun HomeScreen(
             } else if (!state.hasAnyContent) {
                 item {
                     EmptyState(
-                        title = "The shelves are being stocked",
-                        message = "No products are live yet. Once sellers publish their first items they will appear right here.",
-                        actionLabel = "Browse categories",
+                        title = "No apps yet",
+                        message = "Once developers publish their first apps they will appear right here.",
+                        actionLabel = "Browse the store",
                         onAction = onSeeAll,
                     )
                 }
@@ -279,7 +279,7 @@ fun HomeScreen(
                 if (state.featured.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Featured today",
+                            title = "Editor's picks",
                             modifier = Modifier.padding(horizontal = 20.dp),
                             actionLabel = "See all",
                             onAction = onSeeAll,
@@ -306,7 +306,7 @@ fun HomeScreen(
                 if (state.trending.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Trending now",
+                            title = "Top charts",
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                             actionLabel = "See all",
                             onAction = onSeeAll,
@@ -335,7 +335,7 @@ fun HomeScreen(
                 if (state.newArrivals.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Just landed",
+                            title = "New & updated",
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                         )
                     }
@@ -385,7 +385,7 @@ fun HomeScreen(
                 if (state.recommended.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Picked for you",
+                            title = "For you",
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                         )
                     }
@@ -401,7 +401,7 @@ fun HomeScreen(
                 if (state.recentlyViewed.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Recently viewed",
+                            title = "Recently opened",
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                         )
                     }

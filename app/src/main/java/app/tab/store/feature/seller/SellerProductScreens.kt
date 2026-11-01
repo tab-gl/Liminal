@@ -80,7 +80,7 @@ fun SellerProductsScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Products",
+                title = "Apps",
                 subtitle = "${state.products.size} total",
                 onBack = onBack,
                 actions = {
@@ -113,9 +113,9 @@ fun SellerProductsScreen(
             if (!state.isLoading && state.visible.isEmpty()) {
                 EmptyState(
                     title = "No products here",
-                    message = "Add your first product and it will appear in the marketplace once published.",
+                    message = "Publish your first app and it will appear in the store.",
                     icon = Icons.Outlined.Inventory2,
-                    actionLabel = "Add product",
+                    actionLabel = "Publish app",
                     onAction = { onEdit(null) },
                 )
             } else {
@@ -236,7 +236,7 @@ fun SellerProductEditScreen(
             .imePadding(),
     ) {
         SproutlyTopBar(
-            title = if (productId == null) "New product" else "Edit product",
+            title = if (productId == null) "New app" else "Edit app",
             onBack = onBack,
         )
         Column(Modifier.padding(horizontal = 20.dp)) {
@@ -294,7 +294,7 @@ fun SellerProductEditScreen(
             SproutlyTextField(
                 value = state.title,
                 onValueChange = viewModel::onTitle,
-                label = "Product title",
+                label = "App name",
                 placeholder = "Monstera deliciosa, 6 inch pot",
             )
             SproutlyTextField(
@@ -387,7 +387,7 @@ fun SellerProductEditScreen(
             }
 
             SproutlyButton(
-                text = if (productId == null) "Create product" else "Save product",
+                text = if (productId == null) "Publish app" else "Save app",
                 onClick = viewModel::save,
                 enabled = state.canSave,
                 loading = state.isSaving,
