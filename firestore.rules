@@ -1,0 +1,304 @@
+rules_version = '2';
+
+// Sproutly - Firestore security rules.
+//
+// Principles:
+//  * Deny by default. Every collection is matched explicitly.
+//  * Roles come from custom claims, never from client-supplied fields.
+//  * Aggregates (ratings, counters, spend, moderation state) are written by
+//    Cloud Functions only, so a compromised client cannot forge them.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------- helpers
+    function signedIn() {
+      return request.auth != null;
+    }
+    function uid() {
+      return request.auth.uid;
+    }
+    function role() {
+      return request.auth.token.role;
+    }
+    function isAdmin() {
+      return signedIn() && role() == 'admin';
+    }
+    function isDeveloper() {
+      return signedIn() && (role() == 'developer' || role() == 'admin');
+    }
+    function changed() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+    function onlyChanged(keys) {
+      return changed().hasOnly(keys);
+    }
+    function unchanged(keys) {
+      return !changed().hasAny(keys);
+    }
+    function validUrl(value) {
+      return value is string && value.size() <= 2048 && value.matches('^https://.*');
+    }
+    function validText(value, max) {
+      return value is string && value.size() <= max;
+    }
+
+    // ------------------------------------------------------------------ users
+    // Public profile fields are readable by any signed-in user. Email and
+    // moderation fields stay with the owner and admins.
+    match /users/{userId} {
+      allow read: if signedIn() &&
+        (uid() == userId || isAdmin() || resource.data.get('isPublic', true) == true);
+
+      allow create: if uid() == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.role == 'user'
+        && request.resource.data.isDeveloper == false
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.keys().hasOnly([
+             'uid', 'displayName', 'photoUrl', 'bio', 'websiteUrl', 'links',
+             'role', 'isDeveloper', 'isPublic', 'createdAt', 'updatedAt',
+             'followerCount', 'publishedAppCount', 'reviewCount', 'onboarded'
+           ]);
+
+      allow update: if uid() == userId
+        && unchanged(['uid', 'role', 'isDeveloper', 'createdAt',
+                      'followerCount', 'publishedAppCount', 'reviewCount'])
+        && onlyChanged(['displayName', 'photoUrl', 'bio', 'websiteUrl', 'links',
+                        'isPublic', 'updatedAt', 'onboarded'])
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isAdmin()
+        && onlyChanged(['role', 'isDeveloper', 'isPublic', 'updatedAt',
+                        'followerCount', 'publishedAppCount', 'reviewCount']);
+
+      allow delete: if isAdmin();
+
+      match /private/{docId} {
+        allow read, write: if uid() == userId || isAdmin();
+      }
+    }
+
+    // ----------------------------------------------------------- applications
+    match /applications/{appId} {
+      function isOwner() {
+        return signedIn() && resource.data.ownerId == uid();
+      }
+      function isVisible() {
+        return resource.data.status == 'approved' || resource.data.status == 'suspended';
+      }
+      // Server-owned fields: a client can never set or move these.
+      function serverOwned() {
+        return ['rating', 'reviewCount', 'viewCount', 'uniqueViewerCount',
+                'clickCount', 'downloadCount', 'bookmarkCount', 'sponsored',
+                'featured', 'moderation', 'updatedBy', 'search'];
+      }
+
+      allow read: if (signedIn() && (isOwner() || isAdmin()))
+        || isVisible();
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == uid()
+        && request.resource.data.status in ['draft', 'pending_review']
+        && request.resource.data.rating == 0
+        && request.resource.data.reviewCount == 0
+        && request.resource.data.viewCount == 0
+        && request.resource.data.clickCount == 0
+        && request.resource.data.bookmarkCount == 0
+        && request.resource.data.sponsored == false
+        && request.resource.data.featured == false
+        && validText(request.resource.data.name, 80)
+        && validText(request.resource.data.tagline, 140)
+        && request.resource.data.createdAt == request.time;
+
+      // Owner edits content, and may only move between draft/pending_review
+      // (i.e. submit, or withdraw before a moderator picks it up).
+      allow update: if isOwner()
+        && unchanged(serverOwned())
+        && request.resource.data.ownerId == resource.data.ownerId
+        && (
+             request.resource.data.status == resource.data.status
+             || (resource.data.status == 'draft'
+                 && request.resource.data.status == 'pending_review')
+             || (resource.data.status == 'pending_review'
+                 && request.resource.data.status == 'draft')
+             || (resource.data.status == 'rejected'
+                 && request.resource.data.status == 'draft')
+           )
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isAdmin();
+      allow delete: if isOwner() && resource.data.status == 'draft';
+
+      // Per-day analytics rollups, written by scheduled functions only.
+      match /analytics/{day} {
+        allow read: if isAdmin() || (signedIn() && get(
+          /databases/$(database)/documents/applications/$(appId)).data.ownerId == uid());
+        allow write: if false;
+      }
+    }
+
+    // --------------------------------------------------------------- reviews
+    match /reviews/{reviewId} {
+      allow read: if resource.data.status == 'published' || isAdmin() ||
+        (signedIn() && resource.data.userId == uid());
+
+      allow create: if signedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.status == 'published'
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && validText(request.resource.data.body, 2000)
+        && request.resource.data.createdAt == request.time
+        && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.ownerId != uid()
+        && reviewId == request.resource.data.applicationId + '_' + uid();
+
+      allow update: if signedIn() && resource.data.userId == uid()
+        && unchanged(['userId', 'applicationId', 'createdAt'])
+        && onlyChanged(['rating', 'body', 'updatedAt']);
+
+      allow delete: if signedIn() && (resource.data.userId == uid() || isAdmin());
+
+      match /votes/{voteId} {
+        allow read: if signedIn();
+        allow write: if signedIn() && voteId == uid();
+      }
+    }
+
+    // ------------------------------------------------------------- bookmarks
+    // Document id is "<uid>_<applicationId>" so the same app cannot be
+    // bookmarked twice and a user cannot write another user's bookmark.
+    match /bookmarks/{bookmarkId} {
+      allow read: if signedIn() && resource.data.userId == uid();
+      allow create: if signedIn()
+        && request.resource.data.userId == uid()
+        && bookmarkId == uid() + '_' + request.resource.data.applicationId
+        && request.resource.data.createdAt == request.time;
+      allow delete: if signedIn() && resource.data.userId == uid();
+      allow update: if false;
+    }
+
+    // ------------------------------------------------------ developer follows
+    match /developer_follows/{followId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.followerId == uid()
+        && followId == uid() + '_' + request.resource.data.developerId
+        && request.resource.data.developerId != uid();
+      allow delete: if signedIn() && resource.data.followerId == uid();
+      allow update: if false;
+    }
+
+    // ------------------------------------------------------ application events
+    // Raw product events (view / click / download / share). Append-only by the
+    // client; readable by the app owner through aggregated functions only.
+    match /application_events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.type in ['view', 'unique_view', 'click', 'download', 'share']
+        && request.resource.data.createdAt == request.time
+        && validText(request.resource.data.applicationId, 128);
+      allow update, delete: if false;
+    }
+
+    // --------------------------------------------------- advertising campaigns
+    match /advertising_campaigns/{campaignId} {
+      function isOwner() {
+        return signedIn() && resource.data.ownerId == uid();
+      }
+      function serverOwned() {
+        return ['impressions', 'clicks', 'spend', 'status', 'approvedAt',
+                'approvedBy', 'rejectionReason', 'ownerId', 'applicationId',
+                'createdAt'];
+      }
+
+      allow read: if isAdmin() || (signedIn() && isOwner());
+
+      // Any signed-in owner of the advertised application may create a
+      // campaign. Ownership of the app is the real authorisation here, so this
+      // does not depend on the developer role.
+      allow create: if signedIn()
+        && request.resource.data.ownerId == uid()
+        && request.resource.data.status == 'pending_approval'
+        && request.resource.data.impressions == 0
+        && request.resource.data.clicks == 0
+        && request.resource.data.spend == 0
+        && request.resource.data.budget is num
+        && request.resource.data.budget >= 500
+        && validText(request.resource.data.name, 80)
+        && request.resource.data.createdAt == request.time
+        && get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.ownerId == uid();
+
+      // Owners may pause/resume a live campaign and adjust creative copy.
+      // Budget and targeting are locked once approved to keep billing honest.
+      allow update: if isOwner()
+        && unchanged(serverOwned().concat(['budget', 'targeting', 'objective',
+                                           'startDate', 'endDate']))
+        && onlyChanged(['status', 'name', 'creative', 'updatedAt'])
+        && resource.data.status == 'active' && request.resource.data.status == 'paused'
+        || isOwner()
+        && unchanged(serverOwned().concat(['budget', 'targeting', 'objective',
+                                           'startDate', 'endDate']))
+        && onlyChanged(['status', 'name', 'creative', 'updatedAt'])
+        && resource.data.status == 'paused' && request.resource.data.status == 'active';
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (isOwner() && resource.data.status == 'draft');
+    }
+
+    // Impression / click rows are produced by the tracking Cloud Function.
+    match /campaign_events/{eventId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.ownerId == uid());
+      allow write: if false;
+    }
+
+    // --------------------------------------------------------- notifications
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && resource.data.userId == uid();
+      allow update: if signedIn() && resource.data.userId == uid()
+        && onlyChanged(['readAt']);
+      allow create, delete: if false;
+    }
+
+    // ----------------------------------------------------------------- reports
+    match /reports/{reportId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.reporterId == uid());
+      allow create: if signedIn()
+        && request.resource.data.reporterId == uid()
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time
+        && validText(request.resource.data.reason, 1000);
+      allow update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------- admin audit log
+    match /admin_audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------- categories
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------- payments
+    match /payments/{paymentId} {
+      allow read: if signedIn() && (resource.data.userId == uid() || isAdmin());
+      allow write: if false;
+    }
+
+    // ------------------------------------------------------------- config/app
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ------------------------------------------------------------------ deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
