@@ -38,11 +38,6 @@ android {
             "\"${secret("googleWebClientId", "SPROUTLY_GOOGLE_WEB_CLIENT_ID") ?: "919591212641-haoe16l24oej5pbvrdmc5csceumduv5l.apps.googleusercontent.com"}\"",
         )
         vectorDrawables.useSupportLibrary = true
-
-        ndk {
-            // ARM32 + ARM64 only, as required by the brief.
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
-        }
     }
 
     signingConfigs {
@@ -77,7 +72,9 @@ android {
         }
     }
 
-    // Dedicated ARM32 variant so CI can prove the 32-bit APK is real.
+    // ABI filters live on the flavours, not on defaultConfig: a filter set in
+    // defaultConfig is merged into every variant and would leak arm64-v8a into
+    // the arm32 APK.
     flavorDimensions += "abi"
     productFlavors {
         create("universal") {
