@@ -56,20 +56,28 @@ class OrderRepositoryImpl @Inject constructor(
         val uid = uid ?: return DataResult.Failure("Sign in to place an order.")
         val orderRef = orders.document()
         return try {
-            val orderId = firestore.runTransaction { tx ->
-                val cartSnap = tx.get(firestore.collection(FirestorePaths.cartLines(uid)))
-                if (cartSnap.isEmpty) error("Your cart is empty.")
+            // The cart is read outside the transaction (Transaction has no
+            // collection read); products are re-read *inside* it, so stock and
+            // price are always the transactional values.
+            val cartSnap = firestore.collection(FirestorePaths.cartLines(uid)).get().await()
+            if (cartSnap.isEmpty) return DataResult.Failure("Your cart is empty.")
 
+            val lines = cartSnap.documents.mapNotNull { doc ->
+                val qty = (doc.get("quantity") as? Number)?.toInt() ?: 0
+                if (qty > 0) doc.id to qty else null
+            }
+            if (lines.isEmpty()) return DataResult.Failure("Your cart is empty.")
+            val cartRefs = cartSnap.documents.map { it.reference }
+
+            // Captured for the seller notification below.
+            var placedItems: List<Map<String, Any?>> = emptyList()
+            var placedSubtotal = 0L
+
+            val orderId = firestore.runTransaction { tx ->
                 val addressSnap = tx.get(
                     firestore.collection(FirestorePaths.addressItems(uid)).document(addressId),
                 )
                 if (!addressSnap.exists()) error("That delivery address no longer exists.")
-
-                val lines = cartSnap.documents.mapNotNull { doc ->
-                    val qty = (doc.get("quantity") as? Number)?.toInt() ?: 0
-                    if (qty > 0) doc.id to qty else null
-                }
-                if (lines.isEmpty()) error("Your cart is empty.")
 
                 val productRefs = lines.map {
                     firestore.collection(FirestorePaths.PRODUCTS).document(it.first)
@@ -118,7 +126,6 @@ class OrderRepositoryImpl @Inject constructor(
                 }
 
                 val shipping = if (subtotal >= FREE_SHIPPING_PAISE) 0L else FLAT_SHIPPING_PAISE
-                val now = System.currentTimeMillis()
                 val address = addressSnap.data ?: emptyMap()
 
                 tx.set(
@@ -150,17 +157,23 @@ class OrderRepositoryImpl @Inject constructor(
                         "placedAt" to FieldValue.serverTimestamp(),
                         "updatedAt" to FieldValue.serverTimestamp(),
                         "timeline" to listOf(
-                            mapOf("status" to OrderStatus.PENDING.name, "at" to now, "note" to "Order placed"),
+                            mapOf(
+                                "status" to OrderStatus.PENDING.name,
+                                "at" to System.currentTimeMillis(),
+                                "note" to "Order placed",
+                            ),
                         ),
                         "payment" to mapOf("method" to "COD", "status" to "PENDING"),
                     ),
                 )
 
-                cartSnap.documents.forEach { tx.delete(it.reference) }
+                cartRefs.forEach { tx.delete(it) }
+                placedItems = items
+                placedSubtotal = subtotal
                 orderRef.id
             }.await()
 
-            notifySeller(orderId, items, subtotal)
+            notifySeller(orderId, placedItems, placedSubtotal)
             DataResult.Success(orderId)
         } catch (t: Throwable) {
             DataResult.Failure(t.toUserMessage(), t)
