@@ -76,6 +76,8 @@ SECRET_ALLOWLIST = {
     os.path.join("functions", ".env.example"),
 }
 BINARY_SECRETS = {".jks": "keystore", ".keystore": "keystore", ".p12": "keystore"}
+# Local config files that must never be committed.
+FORBIDDEN_FILES = {".env", "keystore.properties", "service-account.json"}
 
 
 def check_secrets() -> list[str]:
@@ -83,6 +85,9 @@ def check_secrets() -> list[str]:
     for path in walk_files(ROOT):
         relpath = rel(path)
         ext = os.path.splitext(path)[1].lower()
+        if os.path.basename(path) in FORBIDDEN_FILES:
+            problems.append(f"{relpath}: local config committed — it is git-ignored for a reason")
+            continue
         if ext in BINARY_SECRETS:
             problems.append(f"{relpath}: {BINARY_SECRETS[ext]} committed")
             continue
