@@ -209,6 +209,26 @@ class AdminCategoriesViewModel @Inject constructor(
 
     fun onSlug(value: String) = _uiState.update { it.copy(slug = value) }
 
+    /** One tap instead of a service-account key (orgs often block those). */
+    fun seedDefaults() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true, error = null) }
+            when (val res = adminRepository.seedDefaultCategories()) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isSaving = false, error = res.message)
+                }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        name = "",
+                        slug = "",
+                        message = "${res.value} categories added",
+                    )
+                }
+            }
+        }
+    }
+
     fun create() {
         val state = _uiState.value
         if (!state.canSave) return

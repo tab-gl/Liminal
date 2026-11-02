@@ -544,11 +544,48 @@ fun AdminCategoriesScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(16.dp))
+
+            // The standard taxonomy in one tap. This exists because many Google
+            // Cloud organisations block service-account key creation, which
+            // makes tools/seed impossible to run against such a project.
+            Surface(
+                shape = SproutlyRadii.card,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        "Start from the standard set",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Adds the eight app-store categories: Productivity, Games, " +
+                            "Photography, Finance, Education, Health & Fitness, Social, Tools.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    SproutlyButton(
+                        text = "Add 8 categories",
+                        onClick = viewModel::seedDefaults,
+                        loading = state.isSaving,
+                    )
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            Text(
+                "Or add one yourself",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
             SproutlyTextField(
                 value = state.name,
                 onValueChange = viewModel::onName,
                 label = "Category name",
-                placeholder = "Home & Garden",
+                placeholder = "Productivity",
             )
             SproutlyTextField(
                 value = state.slug,

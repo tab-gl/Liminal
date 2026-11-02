@@ -138,6 +138,15 @@ and clear `SPROUTLY_CLOUDINARY_UPLOAD_PRESET` so the client signs instead.
 
 ## 4. Seed the category taxonomy
 
+**Fastest path — no credentials.** Sign in as an admin, open **Admin console →
+Categories**, and tap **Add 8 categories**. That writes the standard taxonomy
+from inside the app. Do this if your Google Cloud organisation blocks
+service-account keys (`Key creation is not allowed on this service account`) —
+a common org policy, and one that makes the script below impossible.
+
+The script below does the same thing from a terminal, for projects that allow
+a key:
+
 ```bash
 cd tools/seed && npm ci
 # Firebase Console → Project settings → Service accounts → Generate new private key

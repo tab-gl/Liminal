@@ -164,6 +164,28 @@ class AdminRepositoryImpl @Inject constructor(
             ).await()
         }
 
+    override suspend fun seedDefaultCategories(): DataResult<Int> = try {
+        val batch = firestore.batch()
+        DEFAULT_CATEGORIES.forEachIndexed { index, (name, slug, iconKey) ->
+            batch.set(
+                firestore.collection(FirestorePaths.CATEGORIES).document(slug),
+                mapOf(
+                    "name" to name,
+                    "slug" to slug,
+                    "iconKey" to iconKey,
+                    "order" to (index + 1),
+                    "productCount" to 0,
+                    "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                ),
+                SetOptions.merge(),
+            )
+        }
+        batch.commit().await()
+        DataResult.Success(DEFAULT_CATEGORIES.size)
+    } catch (t: Throwable) {
+        DataResult.Failure(t.toUserMessage(), t)
+    }
+
     override suspend fun createCategory(name: String, slug: String, iconKey: String): DataResult<Unit> {
         return firestoreResult {
             val snap = firestore.collection(FirestorePaths.CATEGORIES).orderBy("order", Query.Direction.DESCENDING).limit(1).get().await()
@@ -178,5 +200,19 @@ class AdminRepositoryImpl @Inject constructor(
                 ),
             ).await()
         }
+    }
+
+    private companion object {
+        /** The standard app-store taxonomy, also used by tools/seed. */
+        val DEFAULT_CATEGORIES = listOf(
+            Triple("Productivity", "productivity", "check"),
+            Triple("Games", "games", "gamepad"),
+            Triple("Photography", "photography", "camera"),
+            Triple("Finance", "finance", "wallet"),
+            Triple("Education", "education", "book"),
+            Triple("Health & Fitness", "health-fitness", "heart"),
+            Triple("Social", "social", "users"),
+            Triple("Tools", "tools", "settings"),
+        )
     }
 }

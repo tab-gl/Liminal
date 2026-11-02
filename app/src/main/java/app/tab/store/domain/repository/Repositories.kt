@@ -127,6 +127,9 @@ interface AdminRepository {
     fun observeReportedProducts(): Flow<List<Product>>
     suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit>
     suspend fun createCategory(name: String, slug: String, iconKey: String): DataResult<Unit>
+
+    /** Writes the standard app-store taxonomy; safe to run on a non-empty list. */
+    suspend fun seedDefaultCategories(): DataResult<Int>
 }
 
 interface NotificationRepository {
