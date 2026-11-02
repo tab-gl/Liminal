@@ -98,8 +98,13 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       // Never authorize the admin console from the Firestore profile field.
       // Custom claims are issued only by trusted server-side role management.
       if (location == '/admin') {
-        final IdTokenResult token = await user.getIdTokenResult(true);
-        if (token.claims?['role'] != 'admin') return '/discover';
+        try {
+          final IdTokenResult token = await user.getIdTokenResult(true);
+          if (token.claims?['role'] != 'admin') return '/discover';
+        } catch (_) {
+          // Authorization must fail closed if the trusted token cannot be read.
+          return '/discover';
+        }
       }
       return null;
     },

@@ -103,6 +103,8 @@ final Provider<bool> isAdminProvider = Provider<bool>((Ref ref) {
 /// Force-refresh once per provider evaluation so newly granted/revoked roles
 /// are reflected without trusting a mutable profile field.
 final FutureProvider<bool> adminClaimProvider = FutureProvider<bool>((Ref ref) async {
+  // Re-check when the server updates the profile after a role change.
+  ref.watch(userProfileProvider);
   final User? user = ref.watch(currentUserProvider) ?? ref.watch(initialUserProvider);
   if (user == null) return false;
   final IdTokenResult token = await user.getIdTokenResult(true);
