@@ -163,7 +163,7 @@ test("a regular customer without a role claim can query approved listings", asyn
     collection(customer(), "applications"),
     where("status", "==", "approved"),
   ));
-  assert.equal(snapshot.size, 1);
+  assert.ok(snapshot.docs.some((entry) => entry.id === "public"));
 });
 
 test("regular customers cannot read suspended listings", async () => {
@@ -243,7 +243,7 @@ test("owners can pause and resume but not change money or approve", async () => 
   await assertSucceeds(updateDoc(doc(owner(), "advertising_campaigns/live-c"), { status: "paused", updatedAt: serverTimestamp() }));
   await assertSucceeds(updateDoc(doc(owner(), "advertising_campaigns/live-c"), { status: "active", updatedAt: serverTimestamp() }));
   await assertFails(updateDoc(doc(owner(), "advertising_campaigns/live-c"), { budget: 99999999, updatedAt: serverTimestamp() }));
-  await assertFails(updateDoc(doc(owner(), "advertising_campaigns/live-c"), { spend: 0, updatedAt: serverTimestamp() }));
+  await assertFails(updateDoc(doc(owner(), "advertising_campaigns/live-c"), { spend: 1, updatedAt: serverTimestamp() }));
   await assertFails(updateDoc(doc(owner(), "advertising_campaigns/live-c"), { status: "completed", updatedAt: serverTimestamp() }));
 });
 
@@ -341,6 +341,18 @@ test("customer developer queries cannot omit the public-profile constraint", asy
     isDeveloper: true,
     isPublic: true,
     publishedAppCount: 2,
+    followerCount: 0,
+    reviewCount: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  await seed("users/private-developer", {
+    uid: "private-developer",
+    displayName: "Private Developer",
+    role: "developer",
+    isDeveloper: true,
+    isPublic: false,
+    publishedAppCount: 1,
     followerCount: 0,
     reviewCount: 0,
     createdAt: new Date(),

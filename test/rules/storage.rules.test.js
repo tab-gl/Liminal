@@ -14,7 +14,7 @@ let env;
 
 before(async () => {
   env = await initializeTestEnvironment({
-    projectId: "sproutly-storage-test",
+    projectId: "sproutly-rules-test",
     firestore: {
       rules: fs.readFileSync(path.resolve(__dirname, "../../firestore.rules"), "utf8"),
       host: "127.0.0.1",
