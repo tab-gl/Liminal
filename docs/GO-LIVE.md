@@ -21,6 +21,43 @@ keytool -list -v -keystore ~/.android/debug.keystore \
   -alias androiddebugkey -storepass android -keypass android | grep SHA1
 ```
 
+## Deploying, and proving you deployed the latest
+
+Deploying is half the job; the other half is proving the project is running the
+rules and indexes that are actually in this repo. `tools/verify-live.mjs` asks
+the live project directly — no credentials, just the public API key from
+`google-services.json` — and exits non-zero when something is stale.
+
+```bash
+git pull                                  # 1. get the latest branch
+git log -1 --oneline                      #    confirm the commit you expect
+
+firebase use tab-gl                       # 2. point at the project
+firebase deploy --only firestore:rules,firestore:indexes
+
+cd tools/seed && npm ci                   # 3. categories (upsert, safe to re-run)
+GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node seed.mjs && cd ../..
+
+node tools/verify-live.mjs                # 4. prove it
+```
+
+Read the verifier's output as a checklist:
+
+| Line | Meaning if ✗ |
+| --- | --- |
+| `Rules: Sproutly ruleset live` | a different ruleset is deployed — run the deploy step |
+| `Rules: private data denied` | profiles are readable by guests; deploy the rules (the `isPublic` default) |
+| `Data: categories seeded` | run the seed script |
+| `Indexes: composite query` | indexes not deployed, or still building — re-run in a few minutes |
+| `Auth: …` | enable the provider in Authentication → Sign-in method |
+
+Indexes build in the background (5–20 minutes for the full set), so the index
+line can be ✗ on the first run and ✓ on the second. Everything else should be
+green immediately after deploying.
+
+Run it again after any rules change, and treat a red line as "the device is
+testing old configuration", not "the app is broken".
+
 ## 0. Get the code
 
 The app lives on the `sproutly-native` branch until PR #2 is merged, so either

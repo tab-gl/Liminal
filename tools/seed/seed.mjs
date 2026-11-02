@@ -11,14 +11,14 @@ import { initializeApp, applicationDefault } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const CATEGORIES = [
-  { name: "Plants", slug: "plants", iconKey: "leaf", order: 1 },
-  { name: "Home & Garden", slug: "home-garden", iconKey: "home", order: 2 },
-  { name: "Food & Pantry", slug: "food-pantry", iconKey: "basket", order: 3 },
-  { name: "Wellness", slug: "wellness", iconKey: "heart", order: 4 },
-  { name: "Handmade", slug: "handmade", iconKey: "sparkle", order: 5 },
-  { name: "Fashion", slug: "fashion", iconKey: "shirt", order: 6 },
-  { name: "Electronics", slug: "electronics", iconKey: "bolt", order: 7 },
-  { name: "Stationery", slug: "stationery", iconKey: "pen", order: 8 },
+  { name: "Productivity", slug: "productivity", iconKey: "check", order: 1 },
+  { name: "Games", slug: "games", iconKey: "gamepad", order: 2 },
+  { name: "Photography", slug: "photography", iconKey: "camera", order: 3 },
+  { name: "Finance", slug: "finance", iconKey: "wallet", order: 4 },
+  { name: "Education", slug: "education", iconKey: "book", order: 5 },
+  { name: "Health & Fitness", slug: "health-fitness", iconKey: "heart", order: 6 },
+  { name: "Social", slug: "social", iconKey: "users", order: 7 },
+  { name: "Tools", slug: "tools", iconKey: "settings", order: 8 },
 ];
 
 async function main() {
@@ -27,13 +27,12 @@ async function main() {
 
   for (const category of CATEGORIES) {
     const ref = db.collection("categories").doc(category.slug);
-    const snap = await ref.get();
-    if (snap.exists) {
-      console.log(`skip  ${category.name} (exists)`);
-      continue;
-    }
-    await ref.set({ ...category, productCount: 0 });
-    console.log(`added ${category.name}`);
+    // merge, not skip: re-running updates the taxonomy of an existing project
+    await ref.set(
+      { ...category, productCount: 0, updatedAt: FieldValue.serverTimestamp() },
+      { merge: true },
+    );
+    console.log(`  ${category.name}`);
   }
 
   await db
