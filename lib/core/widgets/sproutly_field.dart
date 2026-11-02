@@ -110,23 +110,23 @@ class SproutlyField extends StatelessWidget {
               vertical: maxLines > 1 ? 14 : 16,
             ),
             border: OutlineInputBorder(
-              borderRadius: SproutlyShapes.radiusMd,
+              borderRadius: SproutlyShapes.radiusLg,
               borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: SproutlyShapes.radiusMd,
+              borderRadius: SproutlyShapes.radiusLg,
               borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: SproutlyShapes.radiusMd,
+              borderRadius: SproutlyShapes.radiusLg,
               borderSide: BorderSide(color: theme.colorScheme.primary, width: 1.6),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: SproutlyShapes.radiusMd,
+              borderRadius: SproutlyShapes.radiusLg,
               borderSide: BorderSide(color: theme.colorScheme.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: SproutlyShapes.radiusMd,
+              borderRadius: SproutlyShapes.radiusLg,
               borderSide: BorderSide(color: theme.colorScheme.error, width: 1.6),
             ),
             errorStyle: theme.textTheme.labelSmall!.copyWith(color: theme.colorScheme.error),

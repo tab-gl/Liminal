@@ -24,12 +24,12 @@ import androidx.compose.ui.unit.dp
 /** Corner radii. Variation is the visual signature: cards use a large radius
  *  with one tightened corner, chips are pills, sheets round only at the top. */
 object SproutlyShapes {
-    val Xs = RoundedCornerShape(8.dp)
-    val Sm = RoundedCornerShape(12.dp)
-    val Md = RoundedCornerShape(16.dp)
-    val Lg = RoundedCornerShape(22.dp)
-    val Xl = RoundedCornerShape(28.dp)
-    val Xxl = RoundedCornerShape(36.dp)
+    val Xs = RoundedCornerShape(10.dp)
+    val Sm = RoundedCornerShape(16.dp)
+    val Md = RoundedCornerShape(20.dp)
+    val Lg = RoundedCornerShape(28.dp)
+    val Xl = RoundedCornerShape(34.dp)
+    val Xxl = RoundedCornerShape(44.dp)
     val Pill = RoundedCornerShape(999.dp)
 
     /** Card: large radius, top-right and bottom-left tightened. */
@@ -40,7 +40,7 @@ object SproutlyShapes {
         bottomStart = 22.dp,
     )
 
-    val SheetTop: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+    val SheetTop: Shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp)
 }
 
 /**

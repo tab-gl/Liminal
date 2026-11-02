@@ -103,7 +103,7 @@ class AppCardSkeleton extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Skeleton(height: 56, width: 56, radius: BorderRadius.circular(16)),
+          Skeleton(height: 56, width: 56, radius: BorderRadius.circular(20)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -167,7 +167,7 @@ class RailSkeleton extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Skeleton(height: 42, width: 42, radius: BorderRadius.circular(13)),
+                      Skeleton(height: 42, width: 42, radius: BorderRadius.circular(16)),
                       const Spacer(),
                       Skeleton(height: 12, width: 12, radius: SproutlyShapes.radiusPill),
                     ],

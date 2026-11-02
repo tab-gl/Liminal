@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/sproutly_button.dart';
 import '../../../core/widgets/sproutly_field.dart';
@@ -22,6 +23,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   bool _sent = false;
 
   @override
+  void initState() {
+    super.initState();
+    // An error from another auth screen must not greet a fresh visit.
+    Future<void>.microtask(() {
+      if (mounted) ref.read(authControllerProvider.notifier).clearError();
+    });
+  }
+
+  @override
   void dispose() {
     _email.dispose();
     super.dispose();
@@ -40,14 +50,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Object? error = ref.watch(authControllerProvider);
+    final AppException? error = ref.watch(authControllerProvider);
     return AuthScaffold(
       title: _sent ? 'Check your inbox' : 'Reset your password',
       subtitle: _sent
           ? 'If an account exists for ${_email.text.trim()}, a reset link is on its way. The link expires in one hour.'
           : 'We will email you a secure link to choose a new password.',
       children: <Widget>[
-        if (error != null) AuthErrorBanner(message: error.toString()),
+        if (error != null) AuthErrorBanner(message: error.message),
         if (!_sent) ...<Widget>[
           Form(
             key: _formKey,

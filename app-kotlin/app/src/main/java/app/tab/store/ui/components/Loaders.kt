@@ -89,7 +89,7 @@ fun SkeletonLines(lines: Int = 3, modifier: Modifier = Modifier) {
 fun AppCardSkeleton(modifier: Modifier = Modifier) {
     SproutlyCard(modifier = modifier) {
         Row(verticalAlignment = Alignment.Top) {
-            Skeleton(height = 56.dp, width = 56.dp, shape = RoundedCornerShape(16.dp))
+            Skeleton(height = 56.dp, width = 56.dp, shape = RoundedCornerShape(20.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.fillMaxWidth()) {
                 Skeleton(height = 13.dp, width = 130.dp)

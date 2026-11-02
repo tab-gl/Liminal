@@ -155,10 +155,10 @@ class _WelcomeStep extends StatelessWidget {
             decoration: BoxDecoration(
               color: context.tokens.heroSurface,
               borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(40),
-                topRight: const Radius.circular(20),
-                bottomLeft: const Radius.circular(20),
-                bottomRight: const Radius.circular(40),
+                topLeft: const Radius.circular(48),
+                topRight: const Radius.circular(24),
+                bottomLeft: const Radius.circular(24),
+                bottomRight: const Radius.circular(48),
               ),
             ),
             child: Icon(Icons.eco_rounded, size: 46, color: theme.colorScheme.onPrimaryContainer),

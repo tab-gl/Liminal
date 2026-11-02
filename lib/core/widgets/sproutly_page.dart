@@ -126,7 +126,7 @@ class MetricTile extends StatelessWidget {
         color: emphasis
             ? theme.colorScheme.primaryContainer
             : theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: emphasis ? Colors.transparent : theme.colorScheme.outlineVariant,
         ),

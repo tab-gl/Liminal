@@ -30,7 +30,7 @@ class ViewsChart extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: context.colors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
         ),
         child: Text(
           'No activity recorded yet.\nStats appear within an hour of the first view.',
@@ -105,7 +105,7 @@ class ViewsChart extends StatelessWidget {
                     toY: _value(days[i]).toDouble(),
                     width: days.length > 20 ? 5 : 9,
                     color: context.colors.primary,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                   ),
                 ],
               ),

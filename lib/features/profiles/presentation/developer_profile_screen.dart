@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/errors/error_mapper.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/haptics_service.dart';
 import '../../../core/theme/theme_context.dart';
@@ -143,7 +144,7 @@ class DeveloperProfileScreen extends ConsumerWidget {
                       } catch (error) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context)
-                              .showSnackBar(SnackBar(content: Text(error.toString())));
+                              .showSnackBar(SnackBar(content: Text(errorMessage(error))));
                         }
                       }
                     },

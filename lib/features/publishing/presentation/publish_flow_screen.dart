@@ -707,7 +707,7 @@ class _IconPicker extends StatelessWidget {
               width: 96,
               decoration: BoxDecoration(
                 color: context.colors.primaryContainer,
-                borderRadius: BorderRadius.circular(26),
+                borderRadius: BorderRadius.circular(30),
                 border: Border.all(color: context.colors.outlineVariant),
               ),
               clipBehavior: Clip.antiAlias,
@@ -724,7 +724,7 @@ class _IconPicker extends StatelessWidget {
                       ),
                     )
                   : hasIcon
-                      ? AppImage(url: url, fit: BoxFit.cover, radius: BorderRadius.circular(26))
+                      ? AppImage(url: url, fit: BoxFit.cover, radius: BorderRadius.circular(30))
                       : Icon(
                           Icons.add_photo_alternate_outlined,
                           size: 30,
@@ -939,7 +939,7 @@ class _PreviewCard extends StatelessWidget {
                 url: draft.iconUrl,
                 height: 56,
                 width: 56,
-                radius: BorderRadius.circular(16),
+                radius: BorderRadius.circular(20),
                 isIcon: true,
               ),
               const SizedBox(width: 12),

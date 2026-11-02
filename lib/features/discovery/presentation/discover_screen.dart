@@ -257,7 +257,7 @@ class _FeaturedCard extends StatelessWidget {
                   url: listing.iconUrl,
                   height: 48,
                   width: 48,
-                  radius: BorderRadius.circular(14),
+                  radius: BorderRadius.circular(18),
                   isIcon: true,
                 ),
                 const Spacer(),

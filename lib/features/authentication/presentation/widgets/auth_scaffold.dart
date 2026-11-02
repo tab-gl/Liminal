@@ -95,10 +95,10 @@ class AuthErrorBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: theme.colorScheme.errorContainer,
-        borderRadius: SproutlyShapes.radiusMd,
+        borderRadius: SproutlyShapes.radiusLg,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,6 +1,7 @@
 package app.tab.store.feature.auth
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import app.tab.store.ui.components.ButtonSize
 import app.tab.store.ui.components.ButtonVariant
 import app.tab.store.ui.components.SproutlyButton
+import app.tab.store.ui.components.SproutlyShapes
 import app.tab.store.ui.components.SproutlyTextButton
 
 @Composable
@@ -67,11 +70,19 @@ fun SignInScreen(
         Spacer(Modifier.height(28.dp))
 
         if (state.error != null) {
-            Text(
-                text = state.error!!,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-            )
+            Surface(
+                color = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                shape = SproutlyShapes.Lg,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Box(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                    Text(
+                        text = state.error!!,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
             Spacer(Modifier.height(12.dp))
         }
 

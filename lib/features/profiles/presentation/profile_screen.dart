@@ -153,7 +153,7 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 22),
               Center(
                 child: Text(
-                  '${AppConstants.appName} · ${AppConstants.promise}',
+                  '${AppConstants.appName} · ${AppConstants.tagline}',
                   textAlign: TextAlign.center,
                   style: context.text.labelSmall,
                 ),

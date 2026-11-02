@@ -145,3 +145,10 @@ bool isAuthCancellation(Object error) {
   final String code = source.code.toLowerCase();
   return code.contains('cancel') || code == 'popup-closed-by-user';
 }
+
+/// The text to show a person for any caught error: the friendly message, never
+/// `AppException(code): ...` or a raw exception dump.
+String errorMessage(Object error) {
+  if (error is AppException) return error.message;
+  return mapError(error, StackTrace.current).message;
+}

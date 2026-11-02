@@ -2,12 +2,14 @@ package app.tab.store.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import app.tab.store.ui.components.SproutlyShapes
 
 private val LightScheme = lightColorScheme(
     primary = SproutlyColors.Olive,
@@ -108,6 +110,16 @@ fun SproutlyTheme(
         MaterialTheme(
             colorScheme = if (darkTheme) DarkScheme else LightScheme,
             typography = SproutlyTypography,
+            // Without this every stock component (text fields, dialogs, menus,
+            // snackbars, chips, sheets) falls back to Material's near-square
+            // 4-12dp corners. Slots map onto the Sproutly radius scale.
+            shapes = Shapes(
+                extraSmall = SproutlyShapes.Md,
+                small = SproutlyShapes.Lg,
+                medium = SproutlyShapes.Lg,
+                large = SproutlyShapes.Xl,
+                extraLarge = SproutlyShapes.Xxl,
+            ),
             content = content,
         )
     }

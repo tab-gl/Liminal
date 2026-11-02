@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource, XFile;
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/errors/error_mapper.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/media_service.dart';
 import '../../../core/theme/theme_context.dart';
@@ -79,7 +80,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       setState(() => _photoUrl = url);
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage(error))));
       }
     } finally {
       if (mounted) setState(() => _busy = false);

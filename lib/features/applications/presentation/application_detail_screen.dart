@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/errors/error_mapper.dart';
 import '../../../core/constants/categories.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/install_service.dart';
@@ -422,7 +423,7 @@ class _DetailBody extends ConsumerWidget {
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage(error))));
       }
     }
   }
@@ -514,7 +515,7 @@ class _DetailBody extends ConsumerWidget {
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage(error))));
       }
     }
   }
@@ -565,13 +566,13 @@ class _Header extends StatelessWidget {
               padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
                 color: context.colors.surface,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(28),
               ),
               child: AppImage(
                 url: listing.iconUrl,
                 height: 72,
                 width: 72,
-                radius: BorderRadius.circular(18),
+                radius: BorderRadius.circular(22),
                 isIcon: true,
               ),
             ),

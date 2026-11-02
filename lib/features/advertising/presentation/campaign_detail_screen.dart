@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/errors/error_mapper.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/payment_service.dart';
@@ -264,7 +265,7 @@ class CampaignDetailScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage(error))));
       }
     }
   }

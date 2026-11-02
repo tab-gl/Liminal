@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/errors/app_exception.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/sproutly_button.dart';
 import '../../../core/widgets/sproutly_field.dart';
@@ -24,6 +25,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final TextEditingController _password = TextEditingController();
   bool _busy = false;
   bool _obscure = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // An error from another auth screen must not greet a fresh visit.
+    Future<void>.microtask(() {
+      if (mounted) ref.read(authControllerProvider.notifier).clearError();
+    });
+  }
 
   @override
   void dispose() {
@@ -54,12 +64,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Object? error = ref.watch(authControllerProvider);
+    final AppException? error = ref.watch(authControllerProvider);
     return AuthScaffold(
       title: 'Welcome back',
       subtitle: 'Sign in to keep growing the apps you love.',
       children: <Widget>[
-        if (error != null) AuthErrorBanner(message: error.toString()),
+        if (error != null) AuthErrorBanner(message: error.message),
         Form(
           key: _formKey,
           child: Column(

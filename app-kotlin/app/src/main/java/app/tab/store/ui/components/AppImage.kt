@@ -26,7 +26,7 @@ fun AppImage(
     url: String?,
     modifier: Modifier = Modifier,
     size: Dp = 56.dp,
-    shape: RoundedCornerShape = RoundedCornerShape(16.dp),
+    shape: RoundedCornerShape = RoundedCornerShape(20.dp),
     contentDescription: String? = null,
 ) {
     if (url.isNullOrBlank()) {

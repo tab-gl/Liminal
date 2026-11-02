@@ -166,7 +166,7 @@ class SettingsScreen extends ConsumerWidget {
                     style: context.text.labelSmall,
                   ),
                   const SizedBox(height: 4),
-                  Text(AppConstants.promise, style: context.text.labelSmall),
+                  Text(AppConstants.tagline, style: context.text.labelSmall),
                 ],
               );
             },
