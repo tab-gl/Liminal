@@ -78,7 +78,7 @@ class OrderRepositoryImpl @Inject constructor(
                 val addressSnap = tx.get(
                     firestore.collection(FirestorePaths.addressItems(uid)).document(addressId),
                 )
-                if (!addressSnap.exists()) error("That delivery address no longer exists.")
+                if (!addressSnap.exists()) error("Those billing details are no longer saved.")
 
                 val productRefs = lines.map {
                     firestore.collection(FirestorePaths.PRODUCTS).document(it.first)
@@ -100,7 +100,7 @@ class OrderRepositoryImpl @Inject constructor(
                     val price = (snap.get("price") as? Number)?.toLong() ?: 0L
                     val title = snap.getString("title").orEmpty()
                     if (status != "ACTIVE") error("$title is no longer for sale.")
-                    if (stock < qty) error("Only $stock left of $title. Please update your cart.")
+                    if (stock < qty) error("$title is no longer available. Please update your library.")
 
                     @Suppress("UNCHECKED_CAST")
                     val images = snap.get("images") as? List<Map<String, Any?>>

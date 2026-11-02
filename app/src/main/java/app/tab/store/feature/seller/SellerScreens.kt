@@ -202,9 +202,9 @@ fun SellerDashboardScreen(
                     )
                     Spacer(Modifier.height(14.dp))
                     Row {
-                        DashStat("Orders", state.stats.orderCount.toString(), Modifier.weight(1f))
+                        DashStat("Installs", state.stats.orderCount.toString(), Modifier.weight(1f))
                         DashStat("Units", state.stats.unitsSold.toString(), Modifier.weight(1f))
-                        DashStat("Avg order", formatPrice(state.stats.averageOrderValue), Modifier.weight(1f))
+                        DashStat("Avg sale", formatPrice(state.stats.averageOrderValue), Modifier.weight(1f))
                     }
                 }
             }
@@ -214,7 +214,7 @@ fun SellerDashboardScreen(
                 QuickAction(Icons.Filled.Add, "Publish app", Modifier.weight(1f)) {
                     onProducts()
                 }
-                QuickAction(Icons.Filled.Receipt, "Orders", Modifier.weight(1f)) {
+                QuickAction(Icons.Filled.Receipt, "Installs", Modifier.weight(1f)) {
                     onOrders()
                 }
                 QuickAction(Icons.Filled.Analytics, "Analytics", Modifier.weight(1f)) {
@@ -237,7 +237,7 @@ fun SellerDashboardScreen(
                     ) {
                         Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Edit store", style = MaterialTheme.typography.labelMedium)
+                        Text("Edit developer profile", style = MaterialTheme.typography.labelMedium)
                     }
                 }
             }
@@ -296,7 +296,7 @@ fun SellerDashboardScreen(
                         )
                         state.lowStock.forEach { product ->
                             Text(
-                                "${product.title} · ${product.stock} left",
+                                "${product.title}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onTertiaryContainer,
                             )
@@ -419,7 +419,7 @@ fun SellerAnalyticsScreen(
         Column(Modifier.padding(horizontal = 20.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 MetricTile("Revenue", formatCompact(stats.totalRevenue), Modifier.weight(1f))
-                MetricTile("Orders", stats.orderCount.toString(), Modifier.weight(1f))
+                MetricTile("Installs", stats.orderCount.toString(), Modifier.weight(1f))
             }
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -505,7 +505,7 @@ fun SellerAnalyticsScreen(
                                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 )
                                 Text(
-                                    "${product.unitsSold} sold",
+                                    "${product.unitsSold} downloads",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )

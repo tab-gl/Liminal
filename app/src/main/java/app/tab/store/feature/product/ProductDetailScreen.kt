@@ -189,14 +189,14 @@ fun ProductDetailScreen(
                         if (product.isOutOfStock) {
                             Spacer(Modifier.width(6.dp))
                             SproutlyTag(
-                                text = "OUT OF STOCK",
+                                text = "UNAVAILABLE",
                                 container = MaterialTheme.colorScheme.errorContainer,
                                 content = MaterialTheme.colorScheme.onErrorContainer,
                             )
                         } else if (product.stock <= 5) {
                             Spacer(Modifier.width(6.dp))
                             SproutlyTag(
-                                text = "ONLY ${product.stock} LEFT",
+                                text = "LIMITED AVAILABILITY",
                                 container = MaterialTheme.colorScheme.tertiaryContainer,
                                 content = MaterialTheme.colorScheme.onTertiaryContainer,
                             )
@@ -209,7 +209,7 @@ fun ProductDetailScreen(
                         RatingBadge(product.rating, product.ratingCount)
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            "${product.unitsSold} sold",
+                            "${product.unitsSold} downloads",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -249,7 +249,7 @@ fun ProductDetailScreen(
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    product.storeName.ifBlank { "Sproutly seller" },
+                                    product.storeName.ifBlank { "Sproutly developer" },
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                                 Text(
@@ -265,7 +265,7 @@ fun ProductDetailScreen(
                     Text("About this app", style = MaterialTheme.typography.headlineSmall)
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        product.description.ifBlank { "No description provided by the seller yet." },
+                        product.description.ifBlank { "No description provided by the developer yet." },
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

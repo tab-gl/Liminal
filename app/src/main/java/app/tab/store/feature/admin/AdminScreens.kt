@@ -85,7 +85,7 @@ fun AdminDashboardScreen(
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Text(
-                        "GROSS MERCHANDISE VALUE",
+                        "TOTAL APP REVENUE",
                         style = MaterialTheme.typography.labelSmall,
                         color = SproutlyPalette.LimeSoft,
                     )
@@ -97,9 +97,9 @@ fun AdminDashboardScreen(
                     )
                     Spacer(Modifier.height(14.dp))
                     Row {
-                        AdminStat("Orders", state.overview.orderCount.toString(), Modifier.weight(1f))
-                        AdminStat("Products", state.overview.productCount.toString(), Modifier.weight(1f))
-                        AdminStat("Stores", state.overview.storeCount.toString(), Modifier.weight(1f))
+                        AdminStat("Installs", state.overview.orderCount.toString(), Modifier.weight(1f))
+                        AdminStat("Apps", state.overview.productCount.toString(), Modifier.weight(1f))
+                        AdminStat("Developers", state.overview.storeCount.toString(), Modifier.weight(1f))
                     }
                 }
             }
@@ -107,7 +107,7 @@ fun AdminDashboardScreen(
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 MetricBox("Users", state.overview.userCount.toString(), Modifier.weight(1f))
-                MetricBox("Sellers", state.overview.sellerCount.toString(), Modifier.weight(1f))
+                MetricBox("Developers", state.overview.sellerCount.toString(), Modifier.weight(1f))
                 MetricBox(
                     "Pending",
                     state.overview.pendingStores.toString(),
@@ -119,10 +119,10 @@ fun AdminDashboardScreen(
             Spacer(Modifier.height(20.dp))
             Text("Moderation", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            AdminRow(Icons.Filled.Storefront, "Stores", "Approve, suspend, review", onStores)
+            AdminRow(Icons.Filled.Storefront, "Developers", "Approve, suspend, review", onStores)
             AdminRow(Icons.Filled.Groups, "Users", "Roles and access", onUsers)
-            AdminRow(Icons.Filled.Inventory2, "Reported products", "Block or restore listings", onProducts)
-            AdminRow(Icons.Filled.Category, "Categories", "Marketplace taxonomy", onCategories)
+            AdminRow(Icons.Filled.Inventory2, "Reported apps", "Block or restore apps", onProducts)
+            AdminRow(Icons.Filled.Category, "Categories", "App categories", onCategories)
 
             if (state.pendingStores.isNotEmpty()) {
                 Spacer(Modifier.height(20.dp))
@@ -262,12 +262,12 @@ fun AdminStoresScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Stores",
-                subtitle = "${state.pending.size} pending · ${state.stores.size} total",
+                title = "Developers",
+                subtitle = "${state.pending.size} pending · ${state.stores.size} developers",
                 onBack = onBack,
             )
             if (!state.isLoading && state.stores.isEmpty()) {
-                EmptyState(title = "No stores", message = "No seller has opened a store yet.")
+                EmptyState(title = "No developers", message = "No developer has published yet.")
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
@@ -293,7 +293,7 @@ fun AdminStoresScreen(
                                     Column(Modifier.weight(1f)) {
                                         Text(store.name, style = MaterialTheme.typography.titleSmall)
                                         Text(
-                                            "${store.city.ifBlank { "India" }} · ${store.productCount} products",
+                                            "${store.name.ifBlank { "India" }} · ${store.productCount} apps",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
@@ -406,7 +406,7 @@ fun AdminUsersScreen(
                                             enabled = state.busyUid != user.uid,
                                         ) {
                                             Text(
-                                                "Make ${role.name.lowercase()}",
+                                                "Make ${role.label.lowercase()}",
                                                 style = MaterialTheme.typography.labelMedium,
                                             )
                                         }
@@ -445,14 +445,14 @@ fun AdminProductsScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Reported products",
+                title = "Reported apps",
                 subtitle = "${state.reported.size} flagged",
                 onBack = onBack,
             )
             if (!state.isLoading && state.reported.isEmpty()) {
                 EmptyState(
                     title = "Nothing reported",
-                    message = "Flagged listings will appear here for review.",
+                    message = "Flagged apps will appear here for review.",
                     icon = Icons.Filled.Block,
                 )
             } else {

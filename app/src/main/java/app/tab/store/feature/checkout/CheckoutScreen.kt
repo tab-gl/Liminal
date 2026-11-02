@@ -94,7 +94,7 @@ fun CheckoutScreen(
                             Icon(Icons.Filled.Add, contentDescription = null)
                             Spacer(Modifier.width(10.dp))
                             Text(
-                                "Add a delivery address",
+                                "Add billing details",
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
@@ -156,7 +156,7 @@ fun CheckoutScreen(
                 SproutlyTextField(
                     value = state.note,
                     onValueChange = viewModel::onNoteChange,
-                    label = "Delivery note (optional)",
+                    label = "Note (optional)",
                     placeholder = "Landmark, gate code, preferred time",
                     singleLine = false,
                     minLines = 2,
@@ -181,9 +181,9 @@ fun CheckoutScreen(
                         Spacer(Modifier.width(10.dp))
                         Text(
                             if (state.shipping == 0L) {
-                                "Free delivery on this order"
+                                "No service fee on this order"
                             } else {
-                                "Delivery ${formatPrice(state.shipping)} · free above ₹999"
+                                "Service fee ${formatPrice(state.shipping)} · waived above ₹999"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -232,7 +232,7 @@ fun CheckoutScreen(
                 }
                 Row {
                     Text(
-                        "Delivery",
+                        "Service fee",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

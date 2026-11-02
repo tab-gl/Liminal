@@ -132,7 +132,7 @@ fun StoreScreen(
                     Spacer(Modifier.size(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text(
-                            store?.name ?: "Loading store…",
+                            store?.name ?: "Loading developer…",
                             style = MaterialTheme.typography.headlineMedium,
                         )
                         if (store != null) {
@@ -149,7 +149,7 @@ fun StoreScreen(
                     }
                     if (store != null) {
                         SproutlyTag(
-                            text = "${state.products.size} items",
+                            text = "${state.products.size} apps",
                             container = MaterialTheme.colorScheme.primaryContainer,
                             content = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
@@ -172,7 +172,7 @@ fun StoreScreen(
                     )
                 }
                 Spacer(Modifier.height(18.dp))
-                Text("From this store", style = MaterialTheme.typography.headlineSmall)
+                Text("More from this developer", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(6.dp))
             }
         }
@@ -190,7 +190,7 @@ fun StoreScreen(
         } else if (state.products.isEmpty()) {
             item {
                 EmptyState(
-                    title = "No live products",
+                    title = "No live apps",
                     message = "This store has not published anything yet. Check back soon.",
                 )
             }

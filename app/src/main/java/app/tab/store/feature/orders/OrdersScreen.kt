@@ -60,7 +60,7 @@ fun OrdersScreen(
             SproutlyTopBar(
                 title = "My apps",
                 subtitle = if (state.orders.isEmpty()) null
-                else "${state.orders.size} order${if (state.orders.size == 1) "" else "s"}",
+                else "${state.orders.size} install${if (state.orders.size == 1) "" else "s"}",
             )
             when {
                 state.isLoading -> LoadingColumn(Modifier.padding(horizontal = 20.dp))
@@ -142,7 +142,7 @@ private fun OrderCard(
                         if (order.items.size > 1) {
                             "+${order.items.size - 1} more item${if (order.items.size > 2) "s" else ""}"
                         } else {
-                            "${order.itemCount} item"
+                            "${order.itemCount} app"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

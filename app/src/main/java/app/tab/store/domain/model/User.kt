@@ -1,6 +1,15 @@
 package app.tab.store.domain.model
 
 enum class UserRole { CUSTOMER, SELLER, ADMIN;
+
+    /** How the role is described to a person. */
+    val label: String
+        get() = when (this) {
+            CUSTOMER -> "Shopper"
+            SELLER -> "Developer"
+            ADMIN -> "Admin"
+        }
+
     companion object {
         fun from(value: String?): UserRole =
             entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: CUSTOMER

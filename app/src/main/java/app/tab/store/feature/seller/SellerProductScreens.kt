@@ -81,7 +81,7 @@ fun SellerProductsScreen(
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
                 title = "Apps",
-                subtitle = "${state.products.size} total",
+                subtitle = "${state.products.size} apps",
                 onBack = onBack,
                 actions = {
                     TextButton(onClick = { onEdit(null) }) {
@@ -112,7 +112,7 @@ fun SellerProductsScreen(
 
             if (!state.isLoading && state.visible.isEmpty()) {
                 EmptyState(
-                    title = "No products here",
+                    title = "No apps here",
                     message = "Publish your first app and it will appear in the store.",
                     icon = Icons.Outlined.Inventory2,
                     actionLabel = "Publish app",
@@ -165,7 +165,7 @@ fun SellerProductsScreen(
                                             )
                                             Spacer(Modifier.width(6.dp))
                                             Text(
-                                                "${product.stock} in stock",
+                                                "${product.stock} available",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )

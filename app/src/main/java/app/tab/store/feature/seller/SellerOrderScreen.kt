@@ -41,10 +41,10 @@ import app.tab.store.domain.model.OrderStatus
 import app.tab.store.feature.orders.OrderStatusChip
 
 private fun nextStatus(order: Order): Pair<OrderStatus, String>? = when (order.status) {
-    OrderStatus.PENDING -> OrderStatus.CONFIRMED to "Confirm order"
-    OrderStatus.CONFIRMED -> OrderStatus.PACKED to "Mark packed"
-    OrderStatus.PACKED -> OrderStatus.SHIPPED to "Mark shipped"
-    OrderStatus.SHIPPED -> OrderStatus.DELIVERED to "Mark delivered"
+    OrderStatus.PENDING -> OrderStatus.CONFIRMED to "Confirm"
+    OrderStatus.CONFIRMED -> OrderStatus.PACKED to "Mark processing"
+    OrderStatus.PACKED -> OrderStatus.SHIPPED to "Mark ready"
+    OrderStatus.SHIPPED -> OrderStatus.DELIVERED to "Mark installed"
     OrderStatus.DELIVERED, OrderStatus.CANCELLED -> null
 }
 
@@ -66,14 +66,14 @@ fun SellerOrdersScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Orders",
-                subtitle = "${state.orders.size} total",
+                title = "Installs",
+                subtitle = "${state.orders.size} installs",
                 onBack = onBack,
             )
             if (!state.isLoading && state.orders.isEmpty()) {
                 EmptyState(
-                    title = "No orders yet",
-                    message = "Orders placed at your store will appear here for fulfilment.",
+                    title = "No installs yet",
+                    message = "Installs of your apps will appear here.",
                 )
             } else {
                 LazyColumn(
@@ -115,7 +115,7 @@ fun SellerOrdersScreen(
                                         )
                                         Spacer(Modifier.width(8.dp))
                                         Text(
-                                            "${item.title} × ${item.quantity}",
+                                            "${item.title}",
                                             style = MaterialTheme.typography.bodySmall,
                                             modifier = Modifier.weight(1f),
                                             maxLines = 1,

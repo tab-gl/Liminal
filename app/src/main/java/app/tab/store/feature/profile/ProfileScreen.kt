@@ -1,6 +1,7 @@
 package app.tab.store.feature.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +58,8 @@ fun ProfileScreen(
     onNotifications: () -> Unit,
     onSellerHub: () -> Unit,
     onBecomeDeveloper: () -> Unit,
+    onSwitchWorkspace: (Workspace) -> Unit,
+    onAddAccount: () -> Unit,
     onAdmin: () -> Unit,
     onSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
@@ -64,6 +67,7 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val user = state.user
     var showDeveloperPrompt by remember { mutableStateOf(false) }
+    var showSwitcher by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -77,7 +81,12 @@ fun ProfileScreen(
                 .background(SproutlyPalette.Lime)
                 .padding(horizontal = 20.dp, vertical = 26.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showSwitcher = true },
+            ) {
                 Avatar(url = user?.photoUrl, name = user?.displayName.orEmpty(), size = 66.dp)
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
@@ -124,7 +133,7 @@ fun ProfileScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            StatTile("Orders", state.orderCount.toString(), Modifier.weight(1f))
+            StatTile("Installs", state.orderCount.toString(), Modifier.weight(1f))
             StatTile("Wishlist", state.wishlistCount.toString(), Modifier.weight(1f))
         }
 
@@ -133,7 +142,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(8.dp))
             ProfileRow(Icons.Filled.Receipt, "My apps", "Installed and updates", onOrders)
             ProfileRow(Icons.Filled.FavoriteBorder, "Wishlist", "Saved for later", onWishlist)
-            ProfileRow(Icons.Filled.LocationOn, "Addresses", "Delivery details", onAddresses)
+            ProfileRow(Icons.Filled.LocationOn, "Addresses", "Billing details", onAddresses)
             ProfileRow(Icons.Filled.Notifications, "Notifications", "Updates and offers", onNotifications)
 
             Spacer(Modifier.height(18.dp))
@@ -152,7 +161,7 @@ fun ProfileScreen(
                 ProfileRow(
                     Icons.Filled.AdminPanelSettings,
                     "Admin console",
-                    "Moderate the marketplace",
+                    "Moderate the store",
                     onAdmin,
                 )
             }
@@ -195,6 +204,26 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    if (showSwitcher) {
+        AccountSwitcherSheet(
+            user = user,
+            current = Workspace.SHOPPER,
+            onDismiss = { showSwitcher = false },
+            onSwitch = { workspace ->
+                showSwitcher = false
+                onSwitchWorkspace(workspace)
+            },
+            onAddAccount = {
+                showSwitcher = false
+                onAddAccount()
+            },
+            onSignOut = {
+                showSwitcher = false
+                viewModel.signOut()
+            },
+        )
     }
 
     if (showDeveloperPrompt) {

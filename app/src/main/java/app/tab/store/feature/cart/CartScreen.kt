@@ -62,7 +62,7 @@ fun CartScreen(
             SproutlyTopBar(
                 title = "Your library",
                 subtitle = if (state.cart.isEmpty) null
-                else "${state.cart.itemCount} item${if (state.cart.itemCount == 1) "" else "s"}",
+                else "${state.cart.itemCount} app${if (state.cart.itemCount == 1) "" else "s"}",
                 actions = {
                     if (!state.cart.isEmpty) {
                         TextButton(onClick = viewModel::clear) {

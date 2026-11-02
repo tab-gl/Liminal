@@ -171,7 +171,7 @@ class AdminProductsViewModel @Inject constructor(
                 it.copy(
                     message = when (res) {
                         is DataResult.Failure -> res.message
-                        is DataResult.Success -> "Product ${status.name.lowercase()}"
+                        is DataResult.Success -> "App ${status.name.lowercase()}"
                     },
                 )
             }

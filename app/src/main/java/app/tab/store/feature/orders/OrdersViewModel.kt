@@ -46,7 +46,7 @@ class OrdersViewModel @Inject constructor(
                     cancellingId = null,
                     message = when (res) {
                         is DataResult.Failure -> res.message
-                        is DataResult.Success -> "Order cancelled"
+                        is DataResult.Success -> "Install cancelled"
                     },
                 )
             }
@@ -94,7 +94,7 @@ class OrderDetailViewModel @Inject constructor(
                     isCancelling = false,
                     message = when (res) {
                         is DataResult.Failure -> res.message
-                        is DataResult.Success -> "Order cancelled"
+                        is DataResult.Success -> "Install cancelled"
                     },
                 )
             }

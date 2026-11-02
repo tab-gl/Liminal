@@ -27,6 +27,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.model.UserRole
+import app.tab.store.feature.profile.ProfileViewModel
+import app.tab.store.feature.profile.Workspace
 import app.tab.store.feature.admin.AdminCategoriesScreen
 import app.tab.store.feature.admin.AdminDashboardScreen
 import app.tab.store.feature.admin.AdminProductsScreen
@@ -87,6 +89,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val cartViewModel: CartViewModel = hiltViewModel()
+    // Held at graph scope so "Add another account" can sign out from anywhere.
+    val profileViewModel: ProfileViewModel = hiltViewModel()
     val cartState by cartViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -130,8 +134,9 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             startDestination = remember {
                 when {
                     !isSignedIn -> Routes.LOGIN
-                    role == UserRole.ADMIN -> Routes.ADMIN_DASHBOARD
-                    role == UserRole.SELLER -> Routes.SELLER_DASHBOARD
+                    // Admins land in the store like everyone else — admin status
+                    // must never cost them the catalogue. The console is one tap
+                    // away from Profile or the account switcher.
                     else -> Routes.HOME
                 }
             },
@@ -167,6 +172,14 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onProfile = { goTab(Routes.PROFILE) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
+                    onSwitchWorkspace = { workspace ->
+                        when (workspace) {
+                            Workspace.SHOPPER -> goTab(Routes.HOME)
+                            Workspace.DEVELOPER -> go(Routes.SELLER_DASHBOARD)
+                            Workspace.ADMIN -> go(Routes.ADMIN_DASHBOARD)
+                        }
+                    },
+                    onAddAccount = { profileViewModel.signOut() },
                 )
             }
             composable(

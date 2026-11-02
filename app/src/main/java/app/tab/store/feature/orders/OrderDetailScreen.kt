@@ -116,7 +116,7 @@ fun OrderDetailScreen(
                                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 )
                                 Text(
-                                    "${item.storeName} · Qty ${item.quantity}",
+                                    "${item.storeName}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -132,7 +132,7 @@ fun OrderDetailScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(Modifier.height(12.dp))
                     PriceRow("Subtotal", formatPrice(order.subtotal))
-                    PriceRow("Delivery", if (order.shipping == 0L) "Free" else formatPrice(order.shipping))
+                    PriceRow("Service fee", if (order.shipping == 0L) "Free" else formatPrice(order.shipping))
                     Spacer(Modifier.height(6.dp))
                     Row {
                         Text("Total paid", style = MaterialTheme.typography.titleLarge)
@@ -142,7 +142,7 @@ fun OrderDetailScreen(
 
                     if (order.address != null) {
                         Spacer(Modifier.height(20.dp))
-                        Text("Delivery address", style = MaterialTheme.typography.headlineSmall)
+                        Text("Billing address", style = MaterialTheme.typography.headlineSmall)
                         Spacer(Modifier.height(6.dp))
                         Surface(
                             shape = SproutlyRadii.card,
@@ -168,7 +168,7 @@ fun OrderDetailScreen(
                     if (order.canCancel) {
                         Spacer(Modifier.height(22.dp))
                         SproutlyButton(
-                            text = if (state.isCancelling) "Cancelling…" else "Cancel order",
+                            text = if (state.isCancelling) "Cancelling…" else "Cancel",
                             onClick = viewModel::cancel,
                             loading = state.isCancelling,
                         )

@@ -55,7 +55,7 @@ class CartRepositoryImpl @Inject constructor(
 
     override suspend fun add(product: Product, quantity: Int): DataResult<Unit> {
         val uid = uid ?: return DataResult.Failure("Sign in to start a cart.")
-        if (!product.isPurchasable) return DataResult.Failure("This item is out of stock.")
+        if (!product.isPurchasable) return DataResult.Failure("This app is not available right now.")
         return firestoreResult {
             val ref = firestore.collection(FirestorePaths.cartLines(uid)).document(product.id)
             val existing = ref.get().await()

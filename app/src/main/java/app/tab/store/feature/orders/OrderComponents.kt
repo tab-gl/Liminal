@@ -47,10 +47,10 @@ fun OrderStatusChip(status: OrderStatus, modifier: Modifier = Modifier) {
 
 fun statusLabel(status: OrderStatus): String = when (status) {
     OrderStatus.PENDING -> "Awaiting confirmation"
-    OrderStatus.CONFIRMED -> "Confirmed by seller"
-    OrderStatus.PACKED -> "Packed and ready"
-    OrderStatus.SHIPPED -> "On the way"
-    OrderStatus.DELIVERED -> "Delivered"
+    OrderStatus.CONFIRMED -> "Confirmed by developer"
+    OrderStatus.PACKED -> "Processing"
+    OrderStatus.SHIPPED -> "Ready to install"
+    OrderStatus.DELIVERED -> "Installed"
     OrderStatus.CANCELLED -> "Cancelled"
 }
 

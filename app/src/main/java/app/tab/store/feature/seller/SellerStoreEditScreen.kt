@@ -119,7 +119,7 @@ fun SellerStoreEditScreen(
             SproutlyTextField(
                 value = state.store.description,
                 onValueChange = { v -> viewModel.update { it.copy(description = v) } },
-                label = "About the store",
+                label = "About the developer",
                 singleLine = false,
                 minLines = 3,
             )
