@@ -58,6 +58,15 @@ test("only the listing owner can write to the listing's folders", async () => {
   );
 });
 
+test("missing application documents deny uploads without rule evaluation errors", async () => {
+  await assertFails(
+    uploadBytes(ref(storageFor("owner-1"), "app_icons/missing-app/x.png"), png(), { contentType: "image/png" }),
+  );
+  await assertFails(
+    uploadBytes(ref(storageFor("owner-1"), "campaign_creatives/missing-campaign/x.png"), png(), { contentType: "image/png" }),
+  );
+});
+
 test("users can stage uploads only under their own uid", async () => {
   await assertSucceeds(
     uploadBytes(ref(storageFor("owner-1"), "app_icons/owner-1/draft.png"), png(), { contentType: "image/png" }),
