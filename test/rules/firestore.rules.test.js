@@ -293,8 +293,19 @@ test("notifications are readable only by their recipient", async () => {
   await assertFails(getDoc(doc(stranger(), "notifications/n1")));
 });
 
-test("anonymous users cannot read anything but public categories", async () => {
-  await assertFails(getDoc(doc(anon(), "users/owner-1")));
+test("guests can read public profiles but not private profiles", async () => {
+  await seed("users/private-profile", {
+    uid: "private-profile",
+    displayName: "Private Profile",
+    isPublic: false,
+  });
+  await seed("users/public-profile", {
+    uid: "public-profile",
+    displayName: "Public Profile",
+    isPublic: true,
+  });
+  await assertFails(getDoc(doc(anon(), "users/private-profile")));
+  await assertSucceeds(getDoc(doc(anon(), "users/public-profile")));
   await assertSucceeds(getDoc(doc(anon(), "categories/productivity")));
 });
 
@@ -311,12 +322,15 @@ test("customers can query public developer profiles when visibility is constrain
     createdAt: new Date(),
     updatedAt: new Date(),
   });
-  const snapshot = await getDocs(query(
-    collection(customer(), "users"),
+  const publicQuery = (db) => query(
+    collection(db, "users"),
     where("isPublic", "==", true),
     where("publishedAppCount", ">", 0),
-  ));
-  assert.equal(snapshot.size, 1);
+  );
+  const guestSnapshot = await getDocs(publicQuery(anon()));
+  const customerSnapshot = await getDocs(publicQuery(customer()));
+  assert.equal(guestSnapshot.size, 1);
+  assert.equal(customerSnapshot.size, 1);
 });
 
 test("customer developer queries cannot omit the public-profile constraint", async () => {
@@ -334,6 +348,10 @@ test("customer developer queries cannot omit the public-profile constraint", asy
   });
   await assertFails(getDocs(query(
     collection(customer(), "users"),
+    where("publishedAppCount", ">", 0),
+  )));
+  await assertFails(getDocs(query(
+    collection(anon(), "users"),
     where("publishedAppCount", ">", 0),
   )));
 });
