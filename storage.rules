@@ -13,8 +13,12 @@ service firebase.storage {
       return signedIn() && request.auth.token.role == 'admin';
     }
     function ownsApp(appId) {
-      return signedIn() && firestore.get(
-        /databases/(default)/documents/applications/$(appId)).data.ownerId == request.auth.uid;
+      // firestore.get() returns null when the document is missing, and reading
+      // .data off null is an evaluation error (storage.rules:16). Guard first.
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/applications/$(appId))
+        && firestore.get(
+          /databases/(default)/documents/applications/$(appId)).data.ownerId == request.auth.uid;
     }
     // Before a draft is saved there is no application document to check
     // ownership against, so the client stages uploads under its own uid. This
@@ -52,11 +56,15 @@ service firebase.storage {
     // Campaign creatives live under the campaign, resolved via Firestore.
     match /campaign_creatives/{campaignId}/{fileName} {
       allow read: if true;
-      allow write: if signedIn() && firestore.get(
-        /databases/(default)/documents/advertising_campaigns/$(campaignId)).data.ownerId == request.auth.uid
+      allow write: if signedIn()
+        && firestore.exists(/databases/(default)/documents/advertising_campaigns/$(campaignId))
+        && firestore.get(
+          /databases/(default)/documents/advertising_campaigns/$(campaignId)).data.ownerId == request.auth.uid
         && isImage(4);
-      allow delete: if signedIn() && firestore.get(
-        /databases/(default)/documents/advertising_campaigns/$(campaignId)).data.ownerId == request.auth.uid;
+      allow delete: if signedIn()
+        && firestore.exists(/databases/(default)/documents/advertising_campaigns/$(campaignId))
+        && firestore.get(
+          /databases/(default)/documents/advertising_campaigns/$(campaignId)).data.ownerId == request.auth.uid;
     }
 
     // Avatars: 2 MB.
