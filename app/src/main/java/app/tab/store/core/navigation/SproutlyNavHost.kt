@@ -172,14 +172,6 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onProfile = { goTab(Routes.PROFILE) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
-                    onSwitchWorkspace = { workspace ->
-                        when (workspace) {
-                            Workspace.SHOPPER -> goTab(Routes.HOME)
-                            Workspace.DEVELOPER -> go(Routes.SELLER_DASHBOARD)
-                            Workspace.ADMIN -> go(Routes.ADMIN_DASHBOARD)
-                        }
-                    },
-                    onAddAccount = { profileViewModel.signOut() },
                 )
             }
             composable(
@@ -282,6 +274,14 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onSellerHub = { go(Routes.SELLER_DASHBOARD) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
+                    onSwitchWorkspace = { workspace ->
+                        when (workspace) {
+                            Workspace.SHOPPER -> goTab(Routes.HOME)
+                            Workspace.DEVELOPER -> go(Routes.SELLER_DASHBOARD)
+                            Workspace.ADMIN -> go(Routes.ADMIN_DASHBOARD)
+                        }
+                    },
+                    onAddAccount = { profileViewModel.signOut() },
                     onAdmin = { go(Routes.ADMIN_DASHBOARD) },
                     onSettings = { go(Routes.SETTINGS) },
                 )
