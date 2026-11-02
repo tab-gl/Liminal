@@ -1,131 +1,149 @@
 # Architecture
 
-## Layering
-
-Feature-first clean architecture. Each feature owns its slice end to end:
+## Layers
 
 ```
-features/<feature>/
-├── domain/        Pure Dart: entities, repository interfaces, invariants
-├── data/          Firebase implementations of those interfaces
-└── presentation/  Riverpod controllers, screens, feature widgets
+app/
+  core/            cross-cutting: design system, navigation, Firebase wiring,
+                   Cloudinary uploader, Room, DataStore, WorkManager, utils
+  domain/          models, repository interfaces, DataResult
+  data/            Firestore implementations, DTO mappers, DI bindings
+  feature/         one package per surface: auth, home, search, product, store,
+                   cart, wishlist, checkout, orders, profile, seller, admin,
+                   notifications
+functions/src/     trusted backend: auth, orders, media, products, admin,
+                   notifications, platform
 ```
 
-Rules that keep the layers honest:
+Dependency direction is inward: `feature → domain ← data`. ViewModels depend on
+repository **interfaces** only, so a Firestore query can be swapped for a fake
+in tests without touching UI code.
 
-- `domain/` imports nothing from `data/`, Firebase or Flutter widgets.
-- `presentation/` never touches `FirebaseFirestore`, `FirebaseAuth` or
-  `FirebaseFunctions` directly. It goes through a repository provider.
-- Only `data/` knows about `Timestamp`, `FieldValue` and collection paths.
-- Every error crossing a repository boundary is normalised to `AppException`
-  (`core/errors`), so no screen has to pattern-match `FirebaseException`.
+## State
 
-Shared things live in `core/` (theme, services, generic widgets, providers) and
-`shared/` (domain models used by more than one feature, shared widgets).
+Every screen owns a ViewModel exposing `StateFlow<UiState>`; Compose collects
+with `collectAsStateWithLifecycle()`. UiState classes are immutable data classes
+with derived properties (`canSubmit`, `hasMore`, `isEmpty`) so the UI stays
+declarative and the branching logic is unit-testable without Android.
 
-## State management
+One-shot events (snackbars, "navigate to cart") are modelled as nullable fields
+consumed by a `consume*()` call, which keeps them out of recomposition.
 
-Riverpod 3, no code generation.
+## Money
 
-| Provider kind | Used for |
-| --- | --- |
-| `Provider` | Service locator: repositories, services, `CallableClient` |
-| `StreamProvider` | Live documents: profile, listing detail, reviews, inbox, campaign |
-| `FutureProvider` | One-shot reads: rails, dashboards, admin queues |
-| `AsyncNotifier` | Screens with commands: auth, publishing draft, settings |
-| `FeedController<T>` | Infinite lists: pagination contract implemented once |
+All prices are `Long` **paise**. No floats anywhere in pricing. The client
+formats with `NumberFormat` for `en-IN`; the server computes totals in integers.
 
-Two deliberate choices:
-
-1. **Services that need async init are injected, not lazily built.**
-   `bootstrap.dart` creates analytics, remote config, push and deep links, then
-   overrides their providers in `ProviderScope`. No provider performs hidden I/O
-   the first time it is read.
-2. **Screen-scoped pagination where the argument varies.** `CategoryScreen` and
-   the search screen own a `PaginatedList` instance rather than a global family
-   provider, so two categories can never share state.
-
-## Navigation
-
-`go_router` 18 with a `StatefulShellRoute.indexedStack` for the five tabs. Each
-branch keeps its own stack and scroll position.
+## The order flow (the important one)
 
 ```
-/discover /categories /publish /activity /profile     ← shell branches
-/app/:id  /developer/:uid  /category/:id  /search     ← public, full screen
-/dashboard  /dashboard/:id  /advertising  /campaign/:id
-/publish/new  /publish/edit/:id
-/settings  /settings/edit-profile  /bookmarks  /admin
+Checkout screen
+  └── OrderRepository.placeOrder(addressId, note)
+        └── FunctionsClient.call("createOrder")
+              └── [server] transaction:
+                    read carts/{uid}/lines
+                    read every product document
+                    reject if not ACTIVE or stock < quantity
+                    recompute subtotal from product prices
+                    apply shipping policy (free ≥ ₹999, else ₹49)
+                    write orders/{id} with address snapshot + timeline
+                    decrement stock, increment unitsSold
+                    delete the cart lines
+                    increment platform/stats.orderCount
+                    return orderId
 ```
 
-`redirect` enforces the session rules in one place:
+Why a function and not a client write:
 
-| State | Behaviour |
-| --- | --- |
-| Auth resolving | `/splash` |
-| No user, private route | `/sign-in?from=<attempted>` |
-| No user, public route | allowed (`/discover`, `/app/:id`, ...) |
-| Profile document missing | `/onboarding` |
-| Signed in but not onboarded | `/onboarding` |
-| Signed in, on an auth route | `/discover` |
+- the client cannot choose a price, a discount or a total;
+- two shoppers cannot buy the last unit — stock is decremented inside the
+  transaction that reads it;
+- a forged `status: "DELIVERED"` never exists, because `orders` is
+  write-denied to clients in `firestore.rules`.
 
-A `ValueNotifier` refresh listener re-runs the redirect when the auth state or
-the profile document changes, without rebuilding the router - rebuilding would
-reset the navigation stack.
+A Firestore trigger (`onOrderCreated`) then notifies the buyer and each
+affected seller, and `onOrderStatusChanged` pushes fulfilment updates.
 
-## Error handling
+## Media flow (Cloudinary)
 
 ```
-FirebaseException / FirebaseAuthException / FirebaseFunctionsException
-        ↓ mapError()  (core/errors/error_mapper.dart)
-AppException(code, message, retryable)
-        ↓
-ErrorStateView (retry button only when retryable)
+pick image → downscale to ≤1600px JPEG (CloudinaryUploader.prepare)
+  → getCloudinaryUploadSignature(folder)        [server signs]
+  → POST multipart straight to api.cloudinary.com with progress
+  → store {url, publicId} in Firestore
 ```
 
-Codes are semantic, not provider-specific: `network`, `unauthenticated`,
-`permissionDenied`, `notFound`, `invalidInput`, `quotaExceeded`, `moderation`.
-The mapper produces copy a person can read ("You appear to be offline"), never a
-stack trace or a Firebase error code.
+The device posts bytes directly to Cloudinary's ingest endpoint — Firebase
+never proxies the binary, so uploads do not count against function egress and
+progress is real. Deletion (`deleteCloudinaryAsset`, `deleteProduct`) checks
+ownership before calling Cloudinary's destroy endpoint.
 
-Loading, empty and error states are mandatory. `EmptyView`, `ErrorStateView` and
-`CardListSkeleton` exist so no screen can skip them, and every empty state
-carries a way forward.
+## Roles and authorisation
 
-## Startup sequence
+`users/{uid}.role` is the single source of truth. It is:
 
-`lib/app/bootstrap.dart`, deliberately split in two.
+- written by `setUserRole` (admin only) and `registerSeller` (server-side),
+- blocked from client writes in `firestore.rules`,
+- re-read from Firestore on **every** privileged callable — never trusted from
+  a client payload or a stale custom claim.
 
-**Phase 1 — awaited (~200 ms), the only work allowed to delay the first frame:**
+## Search
 
-1. `WidgetsFlutterBinding.ensureInitialized()`
-2. `Firebase.initializeApp` — a hard prerequisite for the first Auth and
-   Firestore read
-3. Optional emulator wiring
-4. Crash handlers
-5. Firestore offline-cache settings
+Search is a Firestore range scan on `titleLower`:
 
-**Phase 2 — started after `runApp`, never awaited:** App Check (awaited in prod
-only), Remote Config, analytics, push, deep links, AdMob, orientation lock.
+```
+whereGreaterThanOrEqualTo("titleLower", q)
+whereLessThan("titleLower", q + "\uF8FF")
+```
 
-The design follows from one fact: `FirebaseAuth.currentUser` is populated the
-moment `initializeApp` returns, so routing can decide where to send someone
-synchronously. That is why **there is no splash screen and no loading route** -
-the gap between the native launch surface and the first Flutter frame is a single
-frame, and the native launch theme is a flat brand colour with no logo.
+This gives real prefix matching with zero extra infrastructure and correct
+pagination via `startAfter`. Its limits are honest ones: no typo tolerance, no
+fuzzy ranking, no multi-field relevance. `CatalogRepository.search` is the seam
+where Algolia/Typesense slots in — the signature already takes filters, sort and
+a page token, so only the implementation changes.
 
-Every phase-2 consumer tolerates being cold: Remote Config serves its compiled
-defaults until the fetch lands, `SproutlyBannerAd` retries until the AdMob SDK is
-ready, and a deep link that arrives a beat late still navigates.
+## Offline behaviour
 
-## Performance
+- Firestore persistent cache is on (unlimited size) — reads work offline.
+- Room caches the catalogue and the recently-viewed rail so the home screen
+  paints on a cold, offline start.
+- DataStore mirrors the session so the app opens straight into the right place
+  before Firestore answers. It is a cache for UI, never for authorisation.
+- `CatalogSyncWorker` (WorkManager, 6h, network-constrained) warms the cache.
 
-- Cursor pagination everywhere; no offset queries and no client-side counts.
-- `CachedNetworkImage` for every remote image, with a shimmer placeholder and a
-  branded fallback.
-- Denormalised developer name/photo on the listing document, so a feed row is
-  one read.
-- Indexed composite queries only - `firestore.indexes.json` is the complete list.
-- `const` widgets throughout, `AnimatedContainer`/`AnimatedScale` instead of
-  controllers where a controller is not needed.
-- Text scaling clamped to 1.6x so expressive layouts hold together.
+## Design system
+
+`core/designsystem` holds colour tokens, a type scale, shapes, spacing
+(`LocalSpacing`) and ~25 composable primitives (cards, chips, steppers,
+skeletons, empty/error states). Screens compose from these, so light/dark and
+future rebrands are a token change rather than a screen rewrite.
+
+## Emulator
+
+<a id="emulator"></a>
+
+To run against the local emulators, add to the debug source set:
+
+```kotlin
+FirebaseFirestore.getInstance().useEmulator("10.0.2.2", 8080)
+FirebaseAuth.getInstance().useEmulator("10.0.2.2", 9099)
+FirebaseFunctions.getInstance("asia-south1").useEmulator("10.0.2.2", 5001)
+```
+
+and set `CLOUDINARY_URL` in `functions/.env` (see `.env.example`). App Check is
+skipped automatically in the emulator.
+
+## Known trade-offs
+
+1. **No reviews yet.** `rating`/`ratingCount` exist on products and stores but
+   nothing writes them. Adding a `reviews` subcollection plus an aggregate
+   function is the natural next step — I did not want to ship a rating UI backed
+   by numbers that never change.
+2. **Seller analytics are computed client-side** from up to 300 recent orders
+   for that store. Fine at this scale, honest at any scale — but a scheduled
+   aggregation into `stores/{id}/stats/daily` is the production move.
+3. **Payment is cash-on-delivery only.** The order document carries a
+   `payment` block so a gateway (Razorpay/Stripe) can be added without
+   reshaping orders.
+4. **Single Android module.** Deliberately: one module with clean packages
+   builds faster and reads more easily than seven Gradle modules at this size.

@@ -1,0 +1,3 @@
+# Copy to local.properties (never commit real values).
+# Android SDK location (Codespaces / local machine)
+sdk.dir=/usr/local/lib/android/sdk

@@ -6,12 +6,13 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "noUnusedLocals": true,
     "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "declaration": false
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src"]
 }

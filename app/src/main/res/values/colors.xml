@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sproutly brand palette -->
+    <color name="sproutly_lime">#DBE6A1</color>
+    <color name="sproutly_olive">#3F4C06</color>
+    <color name="sproutly_espresso">#3C3130</color>
+    <color name="sproutly_cream">#FAFBF4</color>
+    <color name="sproutly_ink">#23201A</color>
+    <color name="sproutly_white">#FFFFFFFF</color>
+    <color name="sproutly_black">#FF000000</color>
+</resources>

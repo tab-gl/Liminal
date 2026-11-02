@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.Sproutly" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+        <item name="android:windowBackground">@color/sproutly_ink</item>
+    </style>
+
+    <style name="Theme.Sproutly.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/sproutly_olive</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/sproutly_olive</item>
+        <item name="postSplashScreenTheme">@style/Theme.Sproutly</item>
+    </style>
+</resources>

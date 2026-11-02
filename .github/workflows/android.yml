@@ -1,0 +1,153 @@
+name: Android CI
+
+on:
+  push:
+    # Feature branches build too, so a long-lived branch can produce APKs
+    # without waiting for its PR to become mergeable.
+    branches: [main, sproutly-native]
+    paths-ignore: ["docs/**", "**/*.md"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
+
+jobs:
+  # Seconds, not minutes: catches committed secrets, malformed or over-permissive
+  # rules, icon drift, broken imports and build-config traps before the expensive
+  # Gradle run starts.
+  checks:
+    name: Repo checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Secrets, rules, icons, Kotlin, build config
+        run: python3 tools/checks/check_repo.py
+
+  build:
+    name: Build & verify
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Materialise the Gradle wrapper
+        run: gradle wrapper --gradle-version 8.14.3 --distribution-type bin
+
+      - name: Use google-services.json from secrets (optional)
+        env:
+          GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -n "${GOOGLE_SERVICES_B64}" ]; then
+            printf '%s' "${GOOGLE_SERVICES_B64}" | base64 -d > app/google-services.json
+            echo "google-services.json replaced from secret."
+          else
+            echo "Using the committed app/google-services.json."
+          fi
+
+      - name: Write local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+      - name: Kotlin compile + unit tests
+        run: ./gradlew :app:testUniversalDebugUnitTest --stacktrace
+
+      - name: Android lint
+        run: ./gradlew :app:lintUniversalDebug --stacktrace
+        continue-on-error: true
+
+      - name: Assemble debug APKs (universal + arm32)
+        run: |
+          ./gradlew :app:assembleUniversalDebug :app:assembleArm32Debug --stacktrace
+
+      # Both secret naming schemes are accepted, so either the SPROUTLY_* names
+      # or the ANDROID_* names from the setup guide will sign the build.
+      - name: Configure release signing
+        id: signing
+        env:
+          KEYSTORE_B64: ${{ secrets.SPROUTLY_KEYSTORE_BASE64 || secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "${KEYSTORE_B64}" ]; then
+            printf '%s' "${KEYSTORE_B64}" | base64 -d > ci-release.jks
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "Release keystore configured."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "No release keystore configured — release APKs will be debug-signed."
+          fi
+
+      - name: Assemble release APKs (universal + arm32)
+        env:
+          SPROUTLY_KEYSTORE_PATH: ${{ steps.signing.outputs.configured == 'true' && format('{0}/ci-release.jks', github.workspace) || '' }}
+          SPROUTLY_KEYSTORE_PASSWORD: ${{ secrets.SPROUTLY_KEYSTORE_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD }}
+          SPROUTLY_KEY_ALIAS: ${{ secrets.SPROUTLY_KEY_ALIAS || secrets.ANDROID_KEY_ALIAS || 'sproutly' }}
+          SPROUTLY_KEY_PASSWORD: ${{ secrets.SPROUTLY_KEY_PASSWORD || secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew :app:assembleUniversalRelease :app:assembleArm32Release --stacktrace
+
+      - name: Verify ARM32 APK really ships 32-bit native libraries
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/arm32 -name "*.apk" | head -1)
+          echo "Inspecting $APK"
+          unzip -l "$APK" | grep -E "lib/armeabi-v7a/.*\.so" | head -20
+          COUNT=$(unzip -l "$APK" | grep -cE "lib/armeabi-v7a/.*\.so" || true)
+          if [ "$COUNT" -lt 1 ]; then
+            echo "::error::ARM32 APK contains no armeabi-v7a native libraries"
+            exit 1
+          fi
+          if unzip -l "$APK" | grep -qE "lib/arm64-v8a/"; then
+            echo "::error::ARM32 APK unexpectedly contains arm64 libraries"
+            exit 1
+          fi
+          echo "OK: $COUNT armeabi-v7a libraries present, no arm64 payload"
+
+      - name: Verify universal APK ships both ABIs
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/universal -name "*.apk" | head -1)
+          unzip -l "$APK" | grep -E "lib/(armeabi-v7a|arm64-v8a)/.*\.so" | head -20
+          unzip -l "$APK" | grep -qE "lib/armeabi-v7a/" || { echo "::error::missing armeabi-v7a"; exit 1; }
+          unzip -l "$APK" | grep -qE "lib/arm64-v8a/" || { echo "::error::missing arm64-v8a"; exit 1; }
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sproutly-apks
+          path: |
+            app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            app/build/reports/tests/**
+            app/build/reports/lint-results-*.html
+          if-no-files-found: ignore
+          retention-days: 7

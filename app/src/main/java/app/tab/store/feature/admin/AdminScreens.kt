@@ -1,0 +1,589 @@
+package app.tab.store.feature.admin
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.Avatar
+import app.tab.store.core.designsystem.EmptyState
+import app.tab.store.core.designsystem.SproutlyButton
+import app.tab.store.core.designsystem.SproutlyImage
+import app.tab.store.core.designsystem.SproutlyPalette
+import app.tab.store.core.designsystem.SproutlyRadii
+import app.tab.store.core.designsystem.SproutlyTag
+import app.tab.store.core.designsystem.SproutlyTextField
+import app.tab.store.core.designsystem.SproutlyTopBar
+import app.tab.store.core.designsystem.formatCompact
+import app.tab.store.core.designsystem.formatPrice
+import app.tab.store.domain.model.ProductStatus
+import app.tab.store.domain.model.StoreStatus
+import app.tab.store.domain.model.UserRole
+
+@Composable
+fun AdminDashboardScreen(
+    onBack: () -> Unit,
+    onStores: () -> Unit,
+    onUsers: () -> Unit,
+    onProducts: () -> Unit,
+    onCategories: () -> Unit,
+    viewModel: AdminDashboardViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        SproutlyTopBar(title = "Admin console", subtitle = "Platform overview", onBack = onBack)
+        Column(Modifier.padding(horizontal = 20.dp)) {
+            Surface(
+                shape = SproutlyRadii.hero,
+                color = SproutlyPalette.Espresso,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(20.dp)) {
+                    Text(
+                        "TOTAL APP REVENUE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SproutlyPalette.LimeSoft,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        formatCompact(state.overview.grossMerchandiseValue / 100),
+                        style = MaterialTheme.typography.displaySmall,
+                        color = SproutlyPalette.Lime,
+                    )
+                    Spacer(Modifier.height(14.dp))
+                    Row {
+                        AdminStat("Installs", state.overview.orderCount.toString(), Modifier.weight(1f))
+                        AdminStat("Apps", state.overview.productCount.toString(), Modifier.weight(1f))
+                        AdminStat("Developers", state.overview.storeCount.toString(), Modifier.weight(1f))
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                MetricBox("Users", state.overview.userCount.toString(), Modifier.weight(1f))
+                MetricBox("Developers", state.overview.sellerCount.toString(), Modifier.weight(1f))
+                MetricBox(
+                    "Pending",
+                    state.overview.pendingStores.toString(),
+                    Modifier.weight(1f),
+                    highlight = state.overview.pendingStores > 0,
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
+            Text("Moderation", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(8.dp))
+            AdminRow(Icons.Filled.Storefront, "Developers", "Approve, suspend, review", onStores)
+            AdminRow(Icons.Filled.Groups, "Users", "Roles and access", onUsers)
+            AdminRow(Icons.Filled.Inventory2, "Reported apps", "Block or restore apps", onProducts)
+            AdminRow(Icons.Filled.Category, "Categories", "App categories", onCategories)
+
+            if (state.pendingStores.isNotEmpty()) {
+                Spacer(Modifier.height(20.dp))
+                Text("Awaiting approval", style = MaterialTheme.typography.headlineSmall)
+                Spacer(Modifier.height(8.dp))
+                state.pendingStores.take(3).forEach { store ->
+                    Surface(
+                        shape = SproutlyRadii.card,
+                        color = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            SproutlyImage(
+                                url = store.logoUrl,
+                                contentDescription = store.name,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape),
+                                corner = 20.dp,
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(store.name, style = MaterialTheme.typography.titleSmall)
+                                Text(
+                                    store.city.ifBlank { "India" },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            TextButton(onClick = { viewModel.approve(store) }) { Text("Approve") }
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(28.dp))
+        }
+    }
+}
+
+@Composable
+private fun AdminStat(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text(value, style = MaterialTheme.typography.titleLarge, color = SproutlyPalette.Lime)
+        Text(label, style = MaterialTheme.typography.bodySmall, color = SproutlyPalette.LimeSoft)
+    }
+}
+
+@Composable
+private fun MetricBox(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    highlight: Boolean = false,
+) {
+    Surface(
+        shape = SproutlyRadii.card,
+        color = if (highlight) MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.surface,
+        modifier = modifier,
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Text(value, style = MaterialTheme.typography.headlineSmall)
+            Text(
+                label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdminRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.card,
+        color = MaterialTheme.colorScheme.surface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(19.dp),
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+fun AdminStoresScreen(
+    onBack: () -> Unit,
+    viewModel: AdminStoresViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(state.message) {
+        state.message?.let {
+            snackbar.showSnackbar(it)
+            viewModel.consumeMessage()
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            SproutlyTopBar(
+                title = "Developers",
+                subtitle = "${state.pending.size} pending · ${state.stores.size} developers",
+                onBack = onBack,
+            )
+            if (!state.isLoading && state.stores.isEmpty()) {
+                EmptyState(title = "No developers", message = "No developer has published yet.")
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(state.stores, key = { it.id }) { store ->
+                        Surface(
+                            shape = SproutlyRadii.card,
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    SproutlyImage(
+                                        url = store.logoUrl,
+                                        contentDescription = store.name,
+                                        modifier = Modifier
+                                            .size(44.dp)
+                                            .clip(CircleShape),
+                                        corner = 22.dp,
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Column(Modifier.weight(1f)) {
+                                        Text(store.name, style = MaterialTheme.typography.titleSmall)
+                                        Text(
+                                            "${store.name.ifBlank { "India" }} · ${store.productCount} apps",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    SproutlyTag(
+                                        text = store.status.name,
+                                        container = when (store.status) {
+                                            StoreStatus.ACTIVE -> MaterialTheme.colorScheme.primaryContainer
+                                            StoreStatus.PENDING -> MaterialTheme.colorScheme.tertiaryContainer
+                                            StoreStatus.SUSPENDED -> MaterialTheme.colorScheme.errorContainer
+                                        },
+                                        content = when (store.status) {
+                                            StoreStatus.ACTIVE -> MaterialTheme.colorScheme.onPrimaryContainer
+                                            StoreStatus.PENDING -> MaterialTheme.colorScheme.onTertiaryContainer
+                                            StoreStatus.SUSPENDED -> MaterialTheme.colorScheme.onErrorContainer
+                                        },
+                                    )
+                                }
+                                Spacer(Modifier.height(6.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                Row {
+                                    if (store.status != StoreStatus.ACTIVE) {
+                                        TextButton(
+                                            onClick = { viewModel.setStatus(store, StoreStatus.ACTIVE) },
+                                        ) {
+                                            Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                                            Spacer(Modifier.width(4.dp))
+                                            Text("Approve")
+                                        }
+                                    }
+                                    if (store.status != StoreStatus.SUSPENDED) {
+                                        TextButton(
+                                            onClick = { viewModel.setStatus(store, StoreStatus.SUSPENDED) },
+                                        ) {
+                                            Text("Suspend", color = MaterialTheme.colorScheme.error)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    item { Spacer(Modifier.height(20.dp)) }
+                }
+            }
+        }
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+        )
+    }
+}
+
+@Composable
+fun AdminUsersScreen(
+    onBack: () -> Unit,
+    viewModel: AdminUsersViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(state.message) {
+        state.message?.let {
+            snackbar.showSnackbar(it)
+            viewModel.consumeMessage()
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            SproutlyTopBar(
+                title = "Users",
+                subtitle = "${state.users.size} accounts",
+                onBack = onBack,
+            )
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(state.users, key = { it.uid }) { user ->
+                    Surface(
+                        shape = SproutlyRadii.card,
+                        color = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Avatar(url = user.photoUrl, name = user.displayName, size = 40.dp)
+                                Spacer(Modifier.width(10.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        user.displayName.ifBlank { "Unnamed" },
+                                        style = MaterialTheme.typography.titleSmall,
+                                    )
+                                    Text(
+                                        user.email,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                SproutlyTag(text = user.role.name)
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            Row {
+                                UserRole.entries.forEach { role ->
+                                    val canAssign = role != UserRole.SELLER || !user.storeId.isNullOrBlank()
+                                    if (role != user.role && canAssign) {
+                                        TextButton(
+                                            onClick = { viewModel.setRole(user, role) },
+                                            enabled = state.busyUid != user.uid,
+                                        ) {
+                                            Text(
+                                                "Make ${role.label.lowercase()}",
+                                                style = MaterialTheme.typography.labelMedium,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                item { Spacer(Modifier.height(20.dp)) }
+            }
+        }
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+        )
+    }
+}
+
+@Composable
+fun AdminProductsScreen(
+    onBack: () -> Unit,
+    viewModel: AdminProductsViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(state.message) {
+        state.message?.let {
+            snackbar.showSnackbar(it)
+            viewModel.consumeMessage()
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            SproutlyTopBar(
+                title = "Reported apps",
+                subtitle = "${state.reported.size} flagged",
+                onBack = onBack,
+            )
+            if (!state.isLoading && state.reported.isEmpty()) {
+                EmptyState(
+                    title = "Nothing reported",
+                    message = "Flagged apps will appear here for review.",
+                    icon = Icons.Filled.Block,
+                )
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(state.reported, key = { it.id }) { product ->
+                        Surface(
+                            shape = SproutlyRadii.card,
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                SproutlyImage(
+                                    url = product.primaryImage,
+                                    contentDescription = product.title,
+                                    modifier = Modifier.size(56.dp),
+                                    corner = 12.dp,
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        product.title,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        maxLines = 2,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        "${product.storeName} · ${formatPrice(product.price)}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                TextButton(
+                                    onClick = { viewModel.setStatus(product, ProductStatus.BLOCKED) },
+                                ) {
+                                    Text("Block", color = MaterialTheme.colorScheme.error)
+                                }
+                                TextButton(
+                                    onClick = { viewModel.setStatus(product, ProductStatus.ACTIVE) },
+                                ) {
+                                    Text("Restore")
+                                }
+                            }
+                        }
+                    }
+                    item { Spacer(Modifier.height(20.dp)) }
+                }
+            }
+        }
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+        )
+    }
+}
+
+@Composable
+fun AdminCategoriesScreen(
+    onBack: () -> Unit,
+    viewModel: AdminCategoriesViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(state.message) {
+        state.message?.let {
+            snackbar.showSnackbar(it)
+            viewModel.consumeMessage()
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+        ) {
+            SproutlyTopBar(title = "Categories", onBack = onBack)
+            Text(
+                "Categories power the home rails and search filters. Keep names short and shopper-friendly.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(16.dp))
+            SproutlyTextField(
+                value = state.name,
+                onValueChange = viewModel::onName,
+                label = "Category name",
+                placeholder = "Home & Garden",
+            )
+            SproutlyTextField(
+                value = state.slug,
+                onValueChange = viewModel::onSlug,
+                label = "Slug",
+                helperText = "Used in links and search.",
+            )
+            if (state.error != null) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        state.error.orEmpty(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+            SproutlyButton(
+                text = "Create category",
+                onClick = viewModel::create,
+                enabled = state.canSave,
+                loading = state.isSaving,
+            )
+            Spacer(Modifier.height(28.dp))
+        }
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+        )
+    }
+}
