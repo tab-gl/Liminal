@@ -1,5 +1,20 @@
 # CI/CD
 
+## Repo checks (runs first, ~10s)
+
+`python3 tools/checks/check_repo.py` gates the build. Each check exists because
+this repository hit that failure once:
+
+| Check | Catches |
+| --- | --- |
+| `secrets` | a live Cloudinary URL, private key or keystore committed. `app/google-services.json` is allow-listed — it is public by design |
+| `rules` | unbalanced or malformed `firestore.rules`, unconditional writes, a catch-all that does not deny, and any collection in `FirestorePaths.kt` with no `match` block |
+| `icons` | a `HugeIcons` constant with no drawable, or an `ic_hg_*.xml` that nothing exposes |
+| `kotlin` | an import into a package that no longer exists, or a symbol that package does not declare; unbalanced braces |
+| `build` | an `applicationId` that `google-services.json` has no client for, `abiFilters` leaking into `defaultConfig`, missing version fields, release not minified |
+
+Run one in isolation: `python3 tools/checks/check_repo.py rules`.
+
 ## `android.yml`
 
 Runs on push/PR to `main`.

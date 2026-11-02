@@ -18,8 +18,24 @@ env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
 
 jobs:
+  # Seconds, not minutes: catches committed secrets, malformed or over-permissive
+  # rules, icon drift, broken imports and build-config traps before the expensive
+  # Gradle run starts.
+  checks:
+    name: Repo checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Secrets, rules, icons, Kotlin, build config
+        run: python3 tools/checks/check_repo.py
+
   build:
     name: Build & verify
+    needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
