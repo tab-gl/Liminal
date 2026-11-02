@@ -48,6 +48,7 @@ firebase use tab-gl                       # 2. point at the project
 firebase deploy --only firestore:rules,firestore:indexes
 
 cd tools/seed && npm ci                   # 3. categories (upsert, safe to re-run)
+# no lockfile in an older clone? use: npm install
 GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node seed.mjs && cd ../..
 
 node tools/verify-live.mjs                # 4. prove it

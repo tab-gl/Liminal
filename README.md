@@ -20,7 +20,7 @@ admins moderate the platform.
 | `firestore.rules` | Security rules for every collection |
 | `firestore.indexes.json` | 18 composite indexes used by the queries in the app |
 | `.github/workflows/` | Android CI (build + ARM32 verification) and Functions deploy |
-| `tools/seed/` | One-time setup script for the category taxonomy (upsert, safe to re-run) |
+| `tools/seed/` | Category taxonomy seed — `npm ci`, then run with a service account key (upsert, safe to re-run) |
 | `tools/verify-live.mjs` | Proves the live Firebase project matches this repo |
 | `tools/checks/` | Fast CI checks: secrets, rules, icons, Kotlin, build config |
 | `docs/` | Setup, architecture, data model, brand, CI/CD |
