@@ -293,6 +293,17 @@ test("notifications are readable only by their recipient", async () => {
   await assertFails(getDoc(doc(stranger(), "notifications/n1")));
 });
 
+test("profiles without an explicit isPublic flag are private by default", async () => {
+  await seed("users/legacy-profile", {
+    uid: "legacy-profile",
+    displayName: "Legacy Profile",
+    role: "developer",
+    isDeveloper: true,
+  });
+  await assertFails(getDoc(doc(anon(), "users/legacy-profile")));
+  await assertSucceeds(getDoc(doc(env.authenticatedContext("legacy-profile").firestore(), "users/legacy-profile")));
+});
+
 test("guests can read public profiles but not private profiles", async () => {
   await seed("users/private-profile", {
     uid: "private-profile",
