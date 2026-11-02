@@ -19,6 +19,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<UserProfile?> async = ref.watch(userProfileProvider);
+    final AsyncValue<bool> adminAccess = ref.watch(adminClaimProvider);
 
     return SproutlyPage(
       title: 'Profile',
@@ -136,7 +137,7 @@ class ProfileScreen extends ConsumerWidget {
                 subtitle: 'Create and manage campaigns',
                 onTap: () => context.push('/advertising'),
               ),
-              if (profile.isAdmin)
+              if (adminAccess.value == true)
                 _ActionTile(
                   icon: Icons.admin_panel_settings_outlined,
                   title: 'Admin console',

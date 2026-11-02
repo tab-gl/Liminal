@@ -44,11 +44,11 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------ users
-    // Public profile fields are readable by any signed-in user. Email and
-    // moderation fields stay with the owner and admins.
+    // Public profiles are part of the guest-facing marketplace. Private
+    // profiles remain visible only to their owner and administrators.
     match /users/{userId} {
-      allow read: if signedIn() &&
-        (uid() == userId || isAdmin() || resource.data.get('isPublic', true) == true);
+      allow read: if resource.data.get('isPublic', true) == true
+        || (signedIn() && (uid() == userId || isAdmin()));
 
       allow create: if uid() == userId
         && request.resource.data.uid == userId

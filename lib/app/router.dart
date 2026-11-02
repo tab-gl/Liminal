@@ -67,7 +67,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
     // material_ui package does not accept navigatorObservers.
     observers: <NavigatorObserver>[ref.read(analyticsProvider).observer],
     debugLogDiagnostics: kDebugMode,
-    redirect: (BuildContext context, GoRouterState state) {
+    redirect: (BuildContext context, GoRouterState state) async {
       final String location = state.matchedLocation;
       final bool isAuthRoute = _authRoutes.contains(location);
       final AsyncValue<User?> auth = ref.read(authStateProvider);
@@ -93,6 +93,13 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
 
       if (isAuthRoute || location == '/onboarding') {
         return '/discover';
+      }
+
+      // Never authorize the admin console from the Firestore profile field.
+      // Custom claims are issued only by trusted server-side role management.
+      if (location == '/admin') {
+        final IdTokenResult token = await user.getIdTokenResult(true);
+        if (token.claims?['role'] != 'admin') return '/discover';
       }
       return null;
     },

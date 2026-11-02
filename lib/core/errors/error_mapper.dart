@@ -136,3 +136,12 @@ Future<T> guard<T>(Future<T> Function() body) async {
     throw mapError(error, stack);
   }
 }
+
+
+/// OAuth cancellation is an expected user action, not a sign-in failure.
+bool isAuthCancellation(Object error) {
+  final Object source = error is AppException ? (error.cause ?? error) : error;
+  if (source is! FirebaseAuthException) return false;
+  final String code = source.code.toLowerCase();
+  return code.contains('cancel') || code == 'popup-closed-by-user';
+}

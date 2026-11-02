@@ -90,6 +90,10 @@ class AuthController extends Notifier<AppException?> {
       await ref.read(analyticsProvider).setUser(_repo.currentUid);
       return true;
     } catch (error, stack) {
+      if (isAuthCancellation(error)) {
+        state = null;
+        return false;
+      }
       state = mapError(error, stack);
       return false;
     }

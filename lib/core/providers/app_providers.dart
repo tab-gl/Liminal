@@ -99,6 +99,16 @@ final Provider<bool> isAdminProvider = Provider<bool>((Ref ref) {
   return ref.watch(profileOrNullProvider)?.isAdmin ?? false;
 });
 
+/// Resolves the trusted Firebase Auth role claim for privileged UI surfaces.
+/// Force-refresh once per provider evaluation so newly granted/revoked roles
+/// are reflected without trusting a mutable profile field.
+final FutureProvider<bool> adminClaimProvider = FutureProvider<bool>((Ref ref) async {
+  final User? user = ref.watch(currentUserProvider) ?? ref.watch(initialUserProvider);
+  if (user == null) return false;
+  final IdTokenResult token = await user.getIdTokenResult(true);
+  return token.claims?['role'] == 'admin';
+});
+
 final Provider<bool> canPublishProvider = Provider<bool>((Ref ref) {
   return ref.watch(profileOrNullProvider)?.canPublish ?? false;
 });
