@@ -21,6 +21,18 @@ keytool -list -v -keystore ~/.android/debug.keystore \
   -alias androiddebugkey -storepass android -keypass android | grep SHA1
 ```
 
+## Configuration: one file
+
+Every variable the project reads is listed in `.env.example`. Copy it to `.env`
+(git-ignored), fill the blanks, then:
+
+```bash
+./tools/env-to-secrets.sh .env        # pushes the CI secrets with gh
+```
+
+The workflow accepts either naming scheme — `SPROUTLY_*` or the `ANDROID_*`
+names from the setup guide — so either set works.
+
 ## Deploying, and proving you deployed the latest
 
 Deploying is half the job; the other half is proving the project is running the

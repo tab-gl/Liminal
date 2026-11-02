@@ -19,3 +19,7 @@ node_modules/
 *.apk
 *.aab
 docs/*.zip
+
+# Local env
+.env
+keystore.properties
