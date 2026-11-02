@@ -14,6 +14,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import https from "node:https";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -31,22 +32,68 @@ const results = [];
 const record = (name, status, detail) => results.push({ name, status, detail });
 
 /**
- * curl instead of fetch: it is present on Windows 10+, macOS and Linux, it
- * honours HTTPS_PROXY, and it needs no WebAssembly (which fails to allocate in
- * small containers).
+ * Plain node:https — no curl, no WebAssembly, nothing to install.
+ *
+ * (fetch is out because its undici dependency allocates WebAssembly, which
+ * fails in small containers; curl is out because a phone terminal often has no
+ * curl binary. node:https is core and always present.)
+ *
+ * If HTTPS_PROXY is set, the request goes through curl instead, because
+ * node:https does not read proxy environment variables.
  */
-async function json(url, init = {}) {
-  const args = ["-s", "-o", "-", "-w", "\n%{http_code}", "-X", init.method ?? "GET"];
-  for (const [key, value] of Object.entries(init.headers ?? {})) {
-    args.push("-H", `${key}: ${value}`);
-  }
-  if (init.body) args.push("--data-binary", init.body);
-  args.push(url);
+function request(url, init = {}) {
+  const method = init.method ?? "GET";
+  const headers = init.headers ?? {};
+  const body = init.body;
 
-  const output = execFileSync("curl", args, { encoding: "utf8", maxBuffer: 4 << 20 });
-  const split = output.lastIndexOf("\n");
-  const text = output.slice(0, split);
-  const status = Number(output.slice(split + 1).trim());
+  if (process.env.HTTPS_PROXY || process.env.https_proxy) {
+    const args = ["-s", "-o", "-", "-w", "\n%{http_code}", "-X", method];
+    for (const [key, value] of Object.entries(headers)) args.push("-H", `${key}: ${value}`);
+    if (body) args.push("--data-binary", body);
+    args.push(url);
+    try {
+      const output = execFileSync("curl", args, { encoding: "utf8", maxBuffer: 4 << 20 });
+      const split = output.lastIndexOf("\n");
+      return Promise.resolve({
+        status: Number(output.slice(split + 1).trim()),
+        text: output.slice(0, split),
+      });
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        return Promise.reject(
+          new Error("HTTPS_PROXY is set but curl is not installed — run: apk add curl"),
+        );
+      }
+      return Promise.reject(error);
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    const target = new URL(url);
+    const req = https.request(
+      {
+        hostname: target.hostname,
+        path: target.pathname + target.search,
+        method,
+        headers,
+        timeout: 15000,
+      },
+      (res) => {
+        let text = "";
+        res.setEncoding("utf8");
+        res.on("data", (chunk) => (text += chunk));
+        res.on("end", () => resolve({ status: res.statusCode ?? 0, text }));
+      },
+    );
+    req.on("timeout", () => req.destroy(new Error(`timed out: ${url}`)));
+    req.on("error", reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+async function json(url, init = {}) {
+  const { status, text } = await request(url, init);
   try {
     return { status, body: JSON.parse(text) };
   } catch {
