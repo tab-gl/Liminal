@@ -73,7 +73,10 @@ fun SproutlyNavHost(
 ) {
     // The whole graph is rebuilt when the session changes, so signing in or out
     // always lands on the correct root with a clean back stack.
-    key(isSignedIn, role) {
+    // Keyed on the session only. Keying on role as well rebuilt the whole graph
+    // the moment a shopper became a developer, which raced the navigation that
+    // the onboarding screen performs and dropped them on the wrong screen.
+    key(isSignedIn) {
         SproutlyGraph(isSignedIn = isSignedIn, role = role)
     }
 }
@@ -122,11 +125,15 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = when {
-                !isSignedIn -> Routes.LOGIN
-                role == UserRole.ADMIN -> Routes.ADMIN_DASHBOARD
-                role == UserRole.SELLER -> Routes.SELLER_DASHBOARD
-                else -> Routes.HOME
+            // Resolved once per session, so a later role change does not move
+            // the start destination underneath the user.
+            startDestination = remember {
+                when {
+                    !isSignedIn -> Routes.LOGIN
+                    role == UserRole.ADMIN -> Routes.ADMIN_DASHBOARD
+                    role == UserRole.SELLER -> Routes.SELLER_DASHBOARD
+                    else -> Routes.HOME
+                }
             },
             modifier = Modifier.padding(innerPadding),
             enterTransition = { enter },

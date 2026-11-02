@@ -60,7 +60,9 @@ class CartRepositoryImpl @Inject constructor(
             val ref = firestore.collection(FirestorePaths.cartLines(uid)).document(product.id)
             val existing = ref.get().await()
             val current = (existing.get("quantity") as? Number)?.toInt() ?: 0
-            val next = (current + quantity).coerceAtMost(product.stock)
+            // An app is installed once, not bought N times: adding something
+            // already in the library is a no-op rather than a second licence.
+            val next = if (current > 0) current else 1.coerceAtMost(product.stock)
             ref.set(
                 mapOf(
                     "productId" to product.id,

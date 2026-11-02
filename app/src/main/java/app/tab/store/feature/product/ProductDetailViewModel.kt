@@ -92,7 +92,7 @@ class ProductDetailViewModel @Inject constructor(
                 is DataResult.Success -> _uiState.update {
                     it.copy(
                         isAddingToCart = false,
-                        message = if (goToCart) null else "Added to cart",
+                        message = if (goToCart) null else "Added to your library",
                         navigateToCart = goToCart,
                     )
                 }

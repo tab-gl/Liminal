@@ -100,7 +100,7 @@ class HomeViewModel @Inject constructor(
             when (val res = cartRepository.add(product)) {
                 is DataResult.Failure -> _uiState.value = _uiState.value.copy(message = res.message)
                 is DataResult.Success ->
-                    _uiState.value = _uiState.value.copy(message = "${product.title} added to cart")
+                    _uiState.value = _uiState.value.copy(message = "${product.title} added to your library")
             }
         }
     }

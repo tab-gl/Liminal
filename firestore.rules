@@ -80,10 +80,17 @@ service cloud.firestore {
           ||
           // Becoming a seller: only from CUSTOMER, only towards a store the
           // caller actually owns.
+          // The store is created in the same batch as this promotion, so it is
+          // not visible to get() yet — only getAfter()/existsAfter() see the
+          // pending write. Using get() here denied every developer conversion.
           (resource.data.role == 'CUSTOMER'
             && request.resource.data.role == 'SELLER'
             && request.resource.data.storeId is string
-            && storeDoc(request.resource.data.storeId).ownerId == uid())
+            && existsAfter(
+                 /databases/$(database)/documents/stores/$(request.resource.data.storeId))
+            && getAfter(
+                 /databases/$(database)/documents/stores/$(request.resource.data.storeId)
+               ).data.ownerId == uid())
         );
 
       // Admins may change only role and store linkage. SELLER is valid only
