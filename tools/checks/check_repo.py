@@ -266,7 +266,34 @@ def check_build() -> list[str]:
     return problems
 
 
+def check_indexes() -> list[str]:
+    """Firestore rejects a declared index with a single field.
+
+    Single fields are indexed automatically, so declaring one fails the whole
+    deploy with "this index is not necessary, configure using single field
+    index controls" — which is exactly what happened once.
+    """
+    import json
+
+    problems: list[str] = []
+    path = os.path.join(ROOT, "firestore.indexes.json")
+    if not os.path.exists(path):
+        return ["firestore.indexes.json missing"]
+    data = json.loads(read(path))
+    for index in data.get("indexes", []):
+        fields = index.get("fields", [])
+        if len(fields) < 2:
+            names = ", ".join(f.get("fieldPath", "?") for f in fields) or "none"
+            problems.append(
+                f"firestore.indexes.json: single-field index on "
+                f"'{index.get('collectionGroup')}' ({names}) — Firestore "
+                f"indexes single fields automatically; remove it"
+            )
+    return problems
+
+
 CHECKS = {
+    "indexes": check_indexes,
     "secrets": check_secrets,
     "rules": check_rules,
     "icons": check_icons,

@@ -83,7 +83,7 @@ Counters maintained by `refreshPlatformStats` (every 15 min) and incremented by
 
 ## Indexes
 
-23 composite indexes ship in `firestore.indexes.json`. The non-obvious ones:
+18 composite indexes ship in `firestore.indexes.json`. The non-obvious ones:
 
 - `products(status, titleLower, price)` ×2 (asc/desc) — search with sort
 - `products(status, categoryId, unitsSold)` — category rails
