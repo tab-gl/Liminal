@@ -416,11 +416,24 @@ fun SellerProductEditScreen(
                         SproutlyTextField(
                             value = state.compareAtRupees,
                             onValueChange = viewModel::onCompareAt,
-                            label = "MRP (optional)",
+                            label = "Original price",
                             prefix = "₹ ",
                             keyboardType = KeyboardType.Decimal,
                         )
                     }
+                }
+                // Declaring an offer is just: an original price above the price,
+                // and optionally a date it ends. It shows on the Offers tab and
+                // expires by itself.
+                if (state.compareAtRupees.isNotBlank()) {
+                    Spacer(Modifier.height(10.dp))
+                    SproutlyTextField(
+                        value = state.offerDays,
+                        onValueChange = viewModel::onOfferDays,
+                        label = "Offer ends in (days, optional)",
+                        keyboardType = KeyboardType.Number,
+                        helperText = "Leave blank to keep the offer running.",
+                    )
                 }
             }
             Spacer(Modifier.height(18.dp))

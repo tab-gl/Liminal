@@ -188,6 +188,8 @@ service cloud.firestore {
           && request.resource.data.categoryId.size() > 0
           && request.resource.data.images is list
           && request.resource.data.images.size() <= 6
+          && (!request.resource.data.keys().hasAny(['offerEndsAt'])
+              || request.resource.data.offerEndsAt is int)
           && request.resource.data.screenshots is list
           && request.resource.data.screenshots.size() <= 8
           && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED']

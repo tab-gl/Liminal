@@ -57,6 +57,14 @@ object TablerIcons {
     @DrawableRes val Image = R.drawable.ic_tb_image
     @DrawableRes val SearchOff = R.drawable.ic_tb_searchoff
     @DrawableRes val Gamepad = R.drawable.ic_tb_gamepad
+    @DrawableRes val Eye = R.drawable.ic_tb_eye
+    @DrawableRes val EyeOff = R.drawable.ic_tb_eyeoff
+    @DrawableRes val Camera = R.drawable.ic_tb_camera
+    @DrawableRes val Wallet = R.drawable.ic_tb_wallet
+    @DrawableRes val Users = R.drawable.ic_tb_users
+    @DrawableRes val Category = R.drawable.ic_tb_category
+    @DrawableRes val Tag = R.drawable.ic_tb_tag
+    @DrawableRes val Clock = R.drawable.ic_tb_clock
 }
 
 /** Renders a Tabler icon, tinted like any Material icon. */
@@ -73,4 +81,18 @@ fun TablerIcon(
         modifier = modifier,
         colorFilter = ColorFilter.tint(tint),
     )
+}
+
+/** Category chips use the iconKey stored on the category document. */
+@DrawableRes
+fun categoryIcon(iconKey: String?): Int = when (iconKey?.lowercase()) {
+    "check", "productivity" -> TablerIcons.Tick
+    "gamepad", "games" -> TablerIcons.Gamepad
+    "camera", "photography" -> TablerIcons.Camera
+    "wallet", "finance" -> TablerIcons.Wallet
+    "book", "education" -> TablerIcons.Book
+    "heart", "health", "health-fitness" -> TablerIcons.Favourite
+    "users", "social" -> TablerIcons.Users
+    "settings", "tools" -> TablerIcons.Settings
+    else -> TablerIcons.Category
 }

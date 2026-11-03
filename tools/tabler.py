@@ -57,6 +57,14 @@ ICONS = {
     "Image": "photo",
     "SearchOff": "search-off",
     "Gamepad": "device-gamepad-2",
+    "Eye": "eye",
+    "EyeOff": "eye-off",
+    "Camera": "camera",
+    "Wallet": "wallet",
+    "Users": "users",
+    "Category": "category",
+    "Tag": "tag",
+    "Clock": "clock",
 }
 
 HEADER = """<?xml version="1.0" encoding="utf-8"?>

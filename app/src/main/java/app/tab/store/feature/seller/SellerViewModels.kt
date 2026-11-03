@@ -222,6 +222,8 @@ data class ProductEditorUiState(
     val isFree: Boolean = false,
     val priceRupees: String = "",
     val compareAtRupees: String = "",
+    /** Days until a declared offer ends; blank means no end date. */
+    val offerDays: String = "",
     /** Where the build comes from: uploaded APK or an existing link. */
     val apkUrl: String? = null,
     val apkLink: String = "",
@@ -322,6 +324,11 @@ class SellerProductEditViewModel @Inject constructor(
                                     apkSizeBytes = product.apkSizeBytes,
                                     compareAtRupees = product.compareAtPrice
                                         ?.let { c -> Money.toRupeeString(c) }.orEmpty(),
+                                    offerDays = product.offerEndsAt
+                                        ?.let { ends ->
+                                            val days = ((ends - System.currentTimeMillis()) / 86_400_000L)
+                                            if (days > 0) days.toString() else ""
+                                        }.orEmpty(),
                                     stock = product.stock.toString(),
                                     images = product.images,
                                     screenshots = product.screenshots,
@@ -341,6 +348,10 @@ class SellerProductEditViewModel @Inject constructor(
     fun onDescription(v: String) = _uiState.update { it.copy(description = v) }
     fun onPrice(v: String) = _uiState.update { it.copy(priceRupees = sanitiseMoney(v), error = null) }
     fun onCompareAt(v: String) = _uiState.update { it.copy(compareAtRupees = sanitiseMoney(v)) }
+
+    fun onOfferDays(v: String) = _uiState.update {
+        it.copy(offerDays = v.filter { c -> c.isDigit() }.take(3))
+    }
     fun onStock(v: String) = _uiState.update {
         it.copy(stock = v.filter { c -> c.isDigit() }.take(6))
     }
@@ -515,6 +526,9 @@ class SellerProductEditViewModel @Inject constructor(
                 screenshots = state.screenshots,
                 price = state.effectivePrice,
                 compareAtPrice = if (state.isFree) null else Money.toPaise(state.compareAtRupees),
+                offerEndsAt = state.offerDays.toIntOrNull()?.let { days ->
+                    System.currentTimeMillis() + days * 86_400_000L
+                },
                 stock = state.stock.toIntOrNull() ?: 0,
                 apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
                 apkSizeBytes = state.apkSizeBytes,

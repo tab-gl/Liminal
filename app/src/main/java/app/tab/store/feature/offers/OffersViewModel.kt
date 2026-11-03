@@ -39,7 +39,7 @@ class OffersViewModel @Inject constructor(
     ) { fresh, popular ->
         (fresh + popular)
             .distinctBy { it.id }
-            .filter { it.discountPercent > 0 }
+            .filter { it.hasActiveOffer }
             .sortedByDescending { it.discountPercent }
             .let { ranked ->
                 loading.value = false

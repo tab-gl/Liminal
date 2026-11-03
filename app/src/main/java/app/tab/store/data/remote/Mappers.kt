@@ -88,6 +88,7 @@ fun DocumentSnapshot.toProduct(): Product {
         screenshots = screenshots,
         price = long("price"),
         compareAtPrice = (get("compareAtPrice") as? Number)?.toLong(),
+        offerEndsAt = (get("offerEndsAt") as? Number)?.toLong(),
         currency = getString("currency") ?: "INR",
         stock = int("stock"),
         status = ProductStatus.from(str("status")),

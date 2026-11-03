@@ -19,6 +19,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -88,6 +97,28 @@ private fun PillGroup(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val density = LocalDensity.current
+    // Measured positions, so one indicator can slide between tabs instead of
+    // each tab fading its own background in and out.
+    val bounds = remember { mutableStateMapOf<String, Pair<Int, Int>>() }
+    val selected = tabs.firstOrNull { it.route == currentRoute }
+    val target = selected?.let { bounds[it.route] }
+
+    // Low damping on purpose: the pill overshoots slightly and settles, which
+    // is what makes the movement read as fluid rather than mechanical.
+    val gooey = spring<Dp>(dampingRatio = 0.52f, stiffness = 520f)
+
+    val indicatorX by animateDpAsState(
+        targetValue = with(density) { (target?.first ?: 0).toDp() },
+        animationSpec = gooey,
+        label = "indicatorX",
+    )
+    val indicatorWidth by animateDpAsState(
+        targetValue = with(density) { (target?.second ?: 0).toDp() },
+        animationSpec = gooey,
+        label = "indicatorWidth",
+    )
+
     Surface(
         shape = RoundedCornerShape(30.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -99,23 +130,35 @@ private fun PillGroup(
         ),
         modifier = modifier,
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp),
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            tabs.forEach { tab ->
-                val selected = currentRoute == tab.route
-                FloatingTab(
-                    tab = tab,
-                    selected = selected,
-                    onClick = { if (!selected) onNavigate(tab.route) },
-                    modifier = if (tabs.size > 1) {
-                        Modifier.weight(if (selected) 1.6f else 1f)
-                    } else {
-                        Modifier
-                    },
+        Box(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
+            if (target != null && indicatorWidth > 0.dp) {
+                Box(
+                    Modifier
+                        .offset(x = indicatorX)
+                        .size(width = indicatorWidth, height = 46.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            RoundedCornerShape(24.dp),
+                        ),
                 )
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                tabs.forEach { tab ->
+                    FloatingTab(
+                        tab = tab,
+                        selected = tab.route == currentRoute,
+                        onClick = { if (tab.route != currentRoute) onNavigate(tab.route) },
+                        modifier = if (tabs.size > 1) {
+                            Modifier.weight(if (tab.route == currentRoute) 1.6f else 1f)
+                        } else {
+                            Modifier
+                        },
+                        onMeasured = { x, width -> bounds[tab.route] = x to width },
+                    )
+                }
             }
         }
     }
@@ -126,30 +169,29 @@ private fun FloatingTab(
     tab: TabDestination,
     selected: Boolean,
     onClick: () -> Unit,
+    onMeasured: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val container by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-        label = "tabContainer",
-    )
     val content by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
         else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = spring(dampingRatio = 0.9f, stiffness = 1400f),
         label = "tabContent",
     )
-    // Fast and light: the pill should feel like it snaps, not settles.
     val iconSize by animateDpAsState(
         targetValue = if (selected) 21.dp else 23.dp,
-        animationSpec = spring(dampingRatio = 0.9f, stiffness = 1600f),
+        animationSpec = spring(dampingRatio = 0.75f, stiffness = 1500f),
         label = "iconSize",
     )
 
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(24.dp),
-        color = container,
+        color = Color.Transparent,
         contentColor = content,
-        modifier = modifier,
+        modifier = modifier.onGloballyPositioned { coords ->
+            onMeasured(coords.positionInParent().x.toInt(), coords.size.width)
+        },
     ) {
         Row(
             modifier = Modifier.padding(

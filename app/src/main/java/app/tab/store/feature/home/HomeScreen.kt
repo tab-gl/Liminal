@@ -70,6 +70,7 @@ import app.tab.store.core.designsystem.SproutlyChip
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.categoryIcon
 import app.tab.store.core.designsystem.TablerIcons
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.domain.model.Category
@@ -321,6 +322,7 @@ fun HomeScreen(
             } else if (!state.hasAnyContent) {
                 item {
                     EmptyState(
+                        modifier = Modifier.padding(bottom = 96.dp),
                         title = "No apps yet",
                         message = "Once developers publish their first apps they will appear right here.",
                         actionLabel = "Browse the store",
@@ -505,7 +507,7 @@ fun HomeScreen(
             shadowElevation = 8.dp,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 96.dp)
+                .padding(end = 20.dp, bottom = 92.dp)
                 .height(56.dp)
                 .width(fabWidth),
         ) {
@@ -560,11 +562,11 @@ private fun CategoryChip(category: Category, onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                Modifier
-                    .size(7.dp)
-                    .clip(CircleShape)
-                    .background(SproutlyPalette.OliveMid),
+            TablerIcon(
+                icon = categoryIcon(category.iconKey),
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.width(7.dp))
             Text(category.name, style = MaterialTheme.typography.labelLarge)

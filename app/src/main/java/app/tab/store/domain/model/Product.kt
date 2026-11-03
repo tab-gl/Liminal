@@ -22,6 +22,8 @@ data class Product(
     val screenshots: List<ProductImage> = emptyList(),
     val price: Long = 0L,
     val compareAtPrice: Long? = null,
+    /** When a declared offer ends; null means the price is simply the price. */
+    val offerEndsAt: Long? = null,
     val currency: String = "INR",
     val stock: Int = 0,
     val status: ProductStatus = ProductStatus.DRAFT,
@@ -37,6 +39,15 @@ data class Product(
 ) {
     val primaryImage: String? get() = images.firstOrNull()?.url
     val isFree: Boolean get() = price <= 0L
+
+    /** A real, running discount — not just a crossed-out number. */
+    val hasActiveOffer: Boolean
+        get() {
+            val was = compareAtPrice ?: return false
+            if (was <= price) return false
+            val ends = offerEndsAt ?: return true
+            return ends > System.currentTimeMillis()
+        }
     val isOutOfStock: Boolean get() = stock <= 0
     val isPurchasable: Boolean get() = status == ProductStatus.ACTIVE
     val discountPercent: Int
