@@ -1,5 +1,6 @@
 package app.tab.store.feature.seller
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -72,6 +73,8 @@ import app.tab.store.core.designsystem.SproutlyTopBar
 import app.tab.store.core.designsystem.UploadProgressBar
 import app.tab.store.core.designsystem.formatPrice
 import app.tab.store.core.utils.pickImageRequest
+import app.tab.store.core.utils.APK_MIME_TYPES
+import app.tab.store.core.utils.rememberApkPicker
 import app.tab.store.core.utils.rememberImagePicker
 import app.tab.store.domain.model.ProductStatus
 

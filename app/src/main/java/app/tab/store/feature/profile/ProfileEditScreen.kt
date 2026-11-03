@@ -32,6 +32,8 @@ import app.tab.store.core.designsystem.SproutlyTextField
 import app.tab.store.core.designsystem.SproutlyTopBar
 import app.tab.store.core.designsystem.UploadProgressBar
 import app.tab.store.core.utils.pickImageRequest
+import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.HugeIcons
 import app.tab.store.core.utils.rememberImagePicker
 
 @Composable

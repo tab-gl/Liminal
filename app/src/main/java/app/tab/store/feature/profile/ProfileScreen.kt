@@ -1,5 +1,7 @@
 package app.tab.store.feature.profile
 
+import androidx.annotation.DrawableRes
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -254,7 +256,7 @@ private fun StatTile(label: String, value: String, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun ProfileRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+private fun ProfileRow(@DrawableRes icon: Int, title: String, subtitle: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
