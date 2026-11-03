@@ -182,7 +182,13 @@ service cloud.firestore {
       allow get: if isPublic()
         || (isSeller() && resource.data.storeId == myStoreId())
         || isAdmin();
-      allow list: if isPublic();
+      // A list rule is evaluated per returned document, so each of these
+      // branches only ever matches rows the caller is entitled to see. Without
+      // the last two, an admin could not list reported apps and a seller could
+      // not list their own drafts.
+      allow list: if isPublic()
+        || (isSeller() && resource.data.storeId == myStoreId())
+        || isAdmin();
 
       allow create: if isSeller()
         && request.resource.data.storeId == myStoreId()
@@ -232,7 +238,7 @@ service cloud.firestore {
       function isParticipant() {
         return isSignedIn() && (
           resource.data.buyerId == uid()
-          || (resource.data.storeIds is list && myStoreId() in resource.data.storeIds)
+          || (resource.data.storeIds is list && (myStoreId() != null && myStoreId() in resource.data.storeIds))
         );
       }
 
@@ -281,12 +287,15 @@ service cloud.firestore {
       function sellerOfRecord() {
         return isSignedIn()
           && resource.data.storeIds is list
-          && myStoreId() in resource.data.storeIds;
+          && (myStoreId() != null && myStoreId() in resource.data.storeIds);
       }
 
       allow get: if isParticipant() || isAdmin();
-      // Buyer's own list stays get()-free so "My apps" always loads.
-      allow list: if isSignedIn() && resource.data.buyerId == uid();
+      // Buyer's own list stays get()-free so "My apps" always loads. Sellers
+      // list the installs of their apps, admins list everything.
+      allow list: if (isSignedIn() && resource.data.buyerId == uid())
+        || (isSeller() && (myStoreId() != null && myStoreId() in resource.data.storeIds))
+        || isAdmin();
 
       // Prices and stock are verified against the product documents, so a
       // tampered cart cannot change what is charged.
