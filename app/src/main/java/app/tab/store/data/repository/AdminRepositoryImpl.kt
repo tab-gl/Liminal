@@ -155,6 +155,8 @@ class AdminRepositoryImpl @Inject constructor(
 
     override suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit> =
         firestoreResult {
+            val product = products.document(productId).get().await()
+            val title = product.getString("title").orEmpty()
             products.document(productId).update(
                 mapOf(
                     "status" to status.name,
@@ -162,6 +164,35 @@ class AdminRepositoryImpl @Inject constructor(
                     "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
                 ),
             ).await()
+
+            // Tell the developer, in the app, that a decision was made. The
+            // rules allow an admin (and a buyer, for installs) to post a bounded
+            // notice into someone's inbox.
+            val storeId = product.getString("storeId").orEmpty()
+            if (storeId.isNotBlank()) {
+                runCatching {
+                    val ownerId = firestore.collection(FirestorePaths.STORES)
+                        .document(storeId).get().await().getString("ownerId").orEmpty()
+                    if (ownerId.isNotBlank()) {
+                        firestore.collection(FirestorePaths.notificationItems(ownerId))
+                            .add(
+                                mapOf(
+                                    "type" to "APPROVAL",
+                                    "title" to when (status) {
+                                        ProductStatus.ACTIVE -> "Your app is live"
+                                        ProductStatus.BLOCKED -> "Your app was blocked"
+                                        ProductStatus.ARCHIVED -> "Your app was archived"
+                                        else -> "Your app was updated"
+                                    },
+                                    "body" to "$title was reviewed by our team.",
+                                    "deepLink" to "seller/product/$productId",
+                                    "read" to false,
+                                    "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                                ),
+                            ).await()
+                    }
+                }
+            }
         }
 
     override suspend fun seedDefaultCategories(): DataResult<Int> = try {

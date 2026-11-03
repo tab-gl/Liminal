@@ -56,6 +56,7 @@ ICONS = {
     "Trash": "trash",
     "Image": "photo",
     "SearchOff": "search-off",
+    "Gamepad": "device-gamepad-2",
 }
 
 HEADER = """<?xml version="1.0" encoding="utf-8"?>

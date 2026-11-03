@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -22,11 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.tab.store.core.account.AccountRegistry
 import app.tab.store.core.designsystem.Avatar
+import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.SproutlyRadii
-import app.tab.store.domain.model.User
 
 /** The three places a signed-in person can be. */
 enum class Workspace(val label: String, val blurb: String) {
@@ -38,18 +40,23 @@ enum class Workspace(val label: String, val blurb: String) {
 /**
  * Account switcher.
  *
- * One account can hold several workspaces — the same person shops, publishes
- * and (if they are an admin) moderates. Switching moves between them without
- * signing out; "Add another account" is for a genuinely different account, and
- * hands over to the sign-in screen.
+ * Every account that has signed in on this device is listed with its name and
+ * photo, so switching is a tap rather than a fresh sign-in form. Firebase keeps
+ * one live session, so choosing another account ends this one and hands over to
+ * the provider's picker — but you never have to remember which address it was.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSwitcherSheet(
-    user: User?,
-    current: Workspace,
+    accounts: List<AccountRegistry.KnownAccount>,
+    currentUid: String?,
+    currentWorkspace: Workspace,
+    isSeller: Boolean,
+    isAdmin: Boolean,
     onDismiss: () -> Unit,
-    onSwitch: (Workspace) -> Unit,
+    onSelectAccount: (String) -> Unit,
+    onForgetAccount: (String) -> Unit,
+    onSwitchWorkspace: (Workspace) -> Unit,
     onAddAccount: () -> Unit,
     onSignOut: () -> Unit,
 ) {
@@ -61,50 +68,112 @@ fun AccountSwitcherSheet(
         containerColor = MaterialTheme.colorScheme.surface,
         shape = SproutlyRadii.sheet,
     ) {
-        Column(Modifier.padding(horizontal = 20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Avatar(
-                    name = user?.displayName ?: "Sproutly",
-                    url = user?.photoUrl,
-                    size = 46.dp,
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+        ) {
+            Text(
+                "Accounts",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(Modifier.height(10.dp))
+
+            if (accounts.isEmpty()) {
+                Text(
+                    "No other accounts on this device yet.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.width(14.dp))
-                Column {
-                    Text(
-                        user?.displayName?.ifBlank { "Sproutly account" } ?: "Sproutly account",
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                    )
-                    Text(
-                        user?.email.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
+            }
+
+            accounts.forEach { account ->
+                val isCurrent = account.uid == currentUid
+                Surface(
+                    onClick = { if (!isCurrent) onSelectAccount(account.uid) },
+                    shape = SproutlyRadii.card,
+                    color = if (isCurrent) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Avatar(
+                            url = account.photoUrl,
+                            name = account.displayName.ifBlank { account.email },
+                            size = 38.dp,
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                account.displayName.ifBlank { account.email },
+                                style = MaterialTheme.typography.titleSmall,
+                                maxLines = 1,
+                                color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                account.email,
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 1,
+                                color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (isCurrent) {
+                            TablerIcon(
+                                icon = TablerIcons.Tick,
+                                contentDescription = "Signed in",
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        } else {
+                            Surface(
+                                onClick = { onForgetAccount(account.uid) },
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.surface,
+                                modifier = Modifier.size(28.dp),
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    TablerIcon(
+                                        icon = TablerIcons.Close,
+                                        contentDescription = "Remove ${account.email}",
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            Spacer(Modifier.height(18.dp))
-            Text(
-                "Switch workspace",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            SheetAction(TablerIcons.Plus, "Add another account", onAddAccount)
+
+            Spacer(Modifier.height(8.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Spacer(Modifier.height(12.dp))
+
+            Text("Workspace", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
 
             Workspace.entries.forEach { workspace ->
                 val available = when (workspace) {
                     Workspace.SHOPPER -> true
-                    Workspace.DEVELOPER -> user?.isSeller == true
-                    Workspace.ADMIN -> user?.isAdmin == true
+                    Workspace.DEVELOPER -> isSeller
+                    Workspace.ADMIN -> isAdmin
                 }
                 if (!available) return@forEach
 
-                val selected = workspace == current
+                val selected = workspace == currentWorkspace
                 Surface(
                     onClick = {
                         onDismiss()
-                        if (!selected) onSwitch(workspace)
+                        if (!selected) onSwitchWorkspace(workspace)
                     },
                     shape = SproutlyRadii.card,
                     color = if (selected) MaterialTheme.colorScheme.primaryContainer
@@ -155,11 +224,9 @@ fun AccountSwitcherSheet(
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(6.dp))
-
-            SheetAction(TablerIcons.Plus, "Add another account", onAddAccount)
             SheetAction(TablerIcons.ArrowRight, "Sign out", onSignOut)
 
             Spacer(Modifier.height(24.dp))

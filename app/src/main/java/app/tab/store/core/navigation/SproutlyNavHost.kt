@@ -30,6 +30,7 @@ import androidx.navigation.navArgument
 import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.model.UserRole
 import app.tab.store.feature.profile.AccountSwitcherSheet
+import app.tab.store.feature.profile.AccountSwitcherViewModel
 import app.tab.store.feature.profile.ProfileViewModel
 import app.tab.store.feature.profile.Workspace
 import app.tab.store.feature.admin.AdminCategoriesScreen
@@ -90,6 +91,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     val profileViewModel: ProfileViewModel = hiltViewModel()
     val profileState by profileViewModel.uiState.collectAsStateWithLifecycle()
     var showSwitcher by remember { mutableStateOf(false) }
+    val switcherViewModel: AccountSwitcherViewModel = hiltViewModel()
+    val switcherState by switcherViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Background stream failures surface here with the actionable message.
@@ -119,7 +122,16 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             if (showBottomBar) {
                 SproutlyBottomBar(
                     currentRoute = currentRoute,
-                    onNavigate = ::goTab,
+                    onNavigate = { route ->
+                        // Studio is the developer's home; someone who has not
+                        // opened a developer profile goes to the setup instead
+                        // of an empty dashboard.
+                        if (route == Routes.SELLER_DASHBOARD && profileState.user?.isSeller != true) {
+                            go(Routes.SELLER_SETUP)
+                        } else {
+                            goTab(route)
+                        }
+                    },
                 )
             }
         },
@@ -209,6 +221,12 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 )
             }
 
+            composable(Routes.GAMES) {
+                SearchScreen(
+                    initialCategoryId = "games",
+                    onProduct = { go(Routes.product(it)) },
+                )
+            }
             composable(Routes.WISHLIST) {
                 WishlistScreen(
                     onBack = { navController.popBackStack() },
@@ -255,14 +273,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onSellerHub = { go(Routes.SELLER_DASHBOARD) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
-                    onSwitchWorkspace = { workspace ->
-                        when (workspace) {
-                            Workspace.SHOPPER -> goTab(Routes.HOME)
-                            Workspace.DEVELOPER -> go(Routes.SELLER_DASHBOARD)
-                            Workspace.ADMIN -> go(Routes.ADMIN_DASHBOARD)
-                        }
-                    },
-                    onAddAccount = { profileViewModel.signOut() },
+                    onOpenSwitcher = { showSwitcher = true },
                     onAdmin = { go(Routes.ADMIN_DASHBOARD) },
                     onSettings = { go(Routes.SETTINGS) },
                 )
@@ -367,10 +378,17 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
         // profile header both open this one.
         if (showSwitcher) {
             AccountSwitcherSheet(
-                user = profileState.user,
-                current = Workspace.SHOPPER,
-                onDismiss = { showSwitcher = false },
-                onSwitch = { workspace ->
+                accounts = switcherState.accounts,
+                currentUid = switcherState.currentUid,
+                currentWorkspace = Workspace.SHOPPER,
+                isSeller = profileState.user?.isSeller == true,
+                isAdmin = profileState.user?.isAdmin == true,
+                onSelectAccount = { uid ->
+                    showSwitcher = false
+                    switcherViewModel.selectAccount(uid)
+                },
+                onForgetAccount = switcherViewModel::forgetAccount,
+                onSwitchWorkspace = { workspace ->
                     showSwitcher = false
                     when (workspace) {
                         Workspace.SHOPPER -> goTab(Routes.HOME)
@@ -380,7 +398,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 },
                 onAddAccount = {
                     showSwitcher = false
-                    profileViewModel.signOut()
+                    switcherViewModel.addAccount()
                 },
                 onSignOut = {
                     showSwitcher = false

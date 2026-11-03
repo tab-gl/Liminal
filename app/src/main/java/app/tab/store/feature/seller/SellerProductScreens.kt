@@ -221,6 +221,9 @@ fun SellerProductEditScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val picker = rememberImagePicker { uri -> if (uri != null) viewModel.onImagePicked(uri) }
+    val screenshotPicker = rememberImagePicker { uri ->
+        if (uri != null) viewModel.onScreenshotPicked(uri)
+    }
 
     LaunchedEffect(state.saved) {
         if (state.saved) onBack()
@@ -314,6 +317,75 @@ fun SellerProductEditScreen(
                 }
             }
             Spacer(Modifier.height(18.dp))
+
+            // -------------------------------------------------------- screenshots
+            Spacer(Modifier.height(18.dp))
+            Text("Screenshots", style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Up to 8. These are what people see before installing.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(state.screenshots) { shot ->
+                    Box {
+                        SproutlyImage(
+                            url = shot.url,
+                            contentDescription = null,
+                            modifier = Modifier.size(width = 108.dp, height = 190.dp),
+                            corner = 14.dp,
+                        )
+                        Surface(
+                            onClick = { viewModel.removeScreenshot(shot.publicId) },
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(3.dp)
+                                .size(22.dp),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                TablerIcon(
+                                    TablerIcons.Close,
+                                    contentDescription = "Remove screenshot",
+                                    modifier = Modifier.size(13.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+                item {
+                    Surface(
+                        onClick = { screenshotPicker.launch(null) },
+                        shape = SproutlyRadii.card,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier.size(width = 108.dp, height = 190.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            if (state.isUploadingScreenshot) {
+                                LoadingIndicator(modifier = Modifier.size(24.dp))
+                            } else {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    TablerIcon(
+                                        TablerIcons.Plus,
+                                        contentDescription = "Add screenshot",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Spacer(Modifier.height(6.dp))
+                                    Text(
+                                        "${state.screenshots.size}/8",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             // ---------------------------------------------------------- pricing
             Text("Pricing", style = MaterialTheme.typography.titleSmall)

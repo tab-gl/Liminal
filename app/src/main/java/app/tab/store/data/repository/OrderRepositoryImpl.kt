@@ -4,6 +4,7 @@ import app.tab.store.core.firebase.orFallback
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.firebase.toUserMessage
 import app.tab.store.data.remote.FirestorePaths
+import app.tab.store.data.remote.uidFlow
 import app.tab.store.data.remote.toOrder
 import app.tab.store.domain.model.Order
 import app.tab.store.domain.model.OrderStatus
@@ -17,6 +18,7 @@ import com.google.firebase.firestore.SetOptions
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
@@ -41,13 +43,14 @@ class OrderRepositoryImpl @Inject constructor(
     private val orders get() = firestore.collection(FirestorePaths.ORDERS)
     private val uid: String? get() = auth.currentUser?.uid
 
-    override fun observeBuyerOrders(): Flow<List<Order>> {
-        val uid = uid ?: return flowOf(emptyList())
-        return orders.whereEqualTo("buyerId", uid)
-            .orderBy("placedAt", Query.Direction.DESCENDING)
-            .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toOrder() } }.orFallback(emptyList())
-    }
+    override fun observeBuyerOrders(): Flow<List<Order>> =
+        auth.uidFlow().flatMapLatest { uid ->
+            if (uid == null) return@flatMapLatest flowOf(emptyList())
+            orders.whereEqualTo("buyerId", uid)
+                .orderBy("placedAt", Query.Direction.DESCENDING)
+                .snapshotFlow()
+                .map { snap -> snap.documents.map { it.toOrder() } }.orFallback(emptyList())
+        }
 
     override fun observeOrder(orderId: String): Flow<Order?> =
         orders.document(orderId).snapshotFlow()

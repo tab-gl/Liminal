@@ -2,10 +2,12 @@ package app.tab.store.core.designsystem
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.sp
+import app.tab.store.R
 
 /**
  * Type scale.
@@ -14,7 +16,20 @@ import androidx.compose.ui.unit.sp
  * confident, editorial voice; body copy stays generous and quiet so product
  * information reads cleanly.
  */
-private val Sans = FontFamily.SansSerif
+/**
+ * DM Sans (OFL) ships as one variable font; the weights below select instances
+ * of its wght axis, so the scale keeps its editorial contrast without three
+ * separate files.
+ */
+private val DmSans = FontFamily(
+    Font(R.font.dm_sans, FontWeight.Normal),
+    Font(R.font.dm_sans, FontWeight.Medium),
+    Font(R.font.dm_sans, FontWeight.SemiBold),
+    Font(R.font.dm_sans, FontWeight.Bold),
+    Font(R.font.dm_sans, FontWeight.Black),
+)
+
+private val Sans = DmSans
 private val Serif = FontFamily.Serif
 
 private val Trim = LineHeightStyle(

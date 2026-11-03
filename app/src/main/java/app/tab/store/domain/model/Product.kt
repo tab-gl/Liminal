@@ -18,6 +18,8 @@ data class Product(
     val categoryId: String = "",
     val categoryLabel: String = "",
     val images: List<ProductImage> = emptyList(),
+    /** Store screenshots, shown in a carousel on the detail page. */
+    val screenshots: List<ProductImage> = emptyList(),
     val price: Long = 0L,
     val compareAtPrice: Long? = null,
     val currency: String = "INR",

@@ -7,6 +7,7 @@ import app.tab.store.domain.model.Product
 import app.tab.store.domain.model.User
 import app.tab.store.domain.repository.AuthRepository
 import app.tab.store.domain.repository.CatalogRepository
+import app.tab.store.domain.repository.NotificationRepository
 import app.tab.store.domain.repository.DataResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -48,8 +49,13 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val catalogRepository: CatalogRepository,
+    private val notificationRepository: NotificationRepository,
     authRepository: AuthRepository,
 ) : ViewModel() {
+
+    /** Drives the badge on the bell. */
+    val unreadCount: StateFlow<Int> = notificationRepository.observeUnreadCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()

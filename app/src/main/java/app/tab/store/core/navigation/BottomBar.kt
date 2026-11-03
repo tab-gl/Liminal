@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -40,12 +41,21 @@ data class TabDestination(
     @DrawableRes val icon: Int,
 )
 
-/** Store · Wishlist · Profile — search lives in a FAB, downloads in the top bar. */
+/**
+ * Two groups, as sketched: browsing on the left, you on the right.
+ *
+ *   [ Apps  Games  Studio ]  |  [ Search  Profile ]
+ */
 val mainTabs = listOf(
-    TabDestination(Routes.HOME, "Store", TablerIcons.Store),
-    TabDestination(Routes.WISHLIST, "Wishlist", TablerIcons.Favourite),
+    TabDestination(Routes.HOME, "Apps", TablerIcons.Grid),
+    TabDestination(Routes.GAMES, "Games", TablerIcons.Gamepad),
+    TabDestination(Routes.SELLER_DASHBOARD, "Studio", TablerIcons.Edit),
+    TabDestination(Routes.SEARCH, "Search", TablerIcons.Search),
     TabDestination(Routes.PROFILE, "Profile", TablerIcons.User),
 )
+
+/** Tabs after this index sit in the second group, behind a divider. */
+const val SECOND_GROUP_FROM = 3
 
 /**
  * Floating navigation bar: a rounded, elevated pill that hovers over the
@@ -76,7 +86,15 @@ fun SproutlyBottomBar(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                mainTabs.forEach { tab ->
+                mainTabs.forEachIndexed { index, tab ->
+                    if (index == SECOND_GROUP_FROM) {
+                        Box(
+                            Modifier
+                                .padding(horizontal = 2.dp)
+                                .size(width = 1.dp, height = 24.dp)
+                                .background(MaterialTheme.colorScheme.outlineVariant),
+                        )
+                    }
                     FloatingTab(
                         tab = tab,
                         selected = currentRoute == tab.route,

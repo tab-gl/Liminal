@@ -70,6 +70,11 @@ fun DocumentSnapshot.toProduct(): Product {
         val url = map["url"] as? String
         if (url.isNullOrBlank()) null else ProductImage(url, map["publicId"] as? String)
     }
+    val screenshots = ((get("screenshots") as? List<*>).orEmpty()).mapNotNull { raw ->
+        val map = raw as? Map<*, *> ?: return@mapNotNull null
+        val url = map["url"] as? String ?: return@mapNotNull null
+        ProductImage(url = url, publicId = map["publicId"] as? String)
+    }
     val tags = (get("tags") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
     return Product(
         id = id,
@@ -80,6 +85,7 @@ fun DocumentSnapshot.toProduct(): Product {
         categoryId = str("categoryId"),
         categoryLabel = str("categoryLabel"),
         images = images,
+        screenshots = screenshots,
         price = long("price"),
         compareAtPrice = (get("compareAtPrice") as? Number)?.toLong(),
         currency = getString("currency") ?: "INR",

@@ -182,6 +182,8 @@ service cloud.firestore {
           && request.resource.data.categoryId.size() > 0
           && request.resource.data.images is list
           && request.resource.data.images.size() <= 6
+          && request.resource.data.screenshots is list
+          && request.resource.data.screenshots.size() <= 8
           && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED']
           // Every app points at a build: an uploaded APK or a link.
           && request.resource.data.apkUrl is string
@@ -368,7 +370,7 @@ service cloud.firestore {
         // A seller's "new order" notice is written by the buyer who placed it.
         // Scoped to order notices with a bounded body.
         allow create: if isSignedIn()
-          && request.resource.data.type == 'ORDER'
+          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM']
           && request.resource.data.title is string
           && request.resource.data.body is string
           && request.resource.data.body.size() <= 200

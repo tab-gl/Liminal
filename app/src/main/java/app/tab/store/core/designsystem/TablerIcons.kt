@@ -56,6 +56,7 @@ object TablerIcons {
     @DrawableRes val Trash = R.drawable.ic_tb_trash
     @DrawableRes val Image = R.drawable.ic_tb_image
     @DrawableRes val SearchOff = R.drawable.ic_tb_searchoff
+    @DrawableRes val Gamepad = R.drawable.ic_tb_gamepad
 }
 
 /** Renders a Tabler icon, tinted like any Material icon. */

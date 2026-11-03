@@ -10,6 +10,7 @@ object Routes {
     // Customer tabs
     const val HOME = "home"
     const val SEARCH = "search"
+    const val GAMES = "games"
     const val ORDERS = "orders"
     const val PROFILE = "profile"
 

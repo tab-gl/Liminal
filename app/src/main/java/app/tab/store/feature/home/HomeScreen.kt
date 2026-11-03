@@ -20,15 +20,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.lazy.rememberLazyListState
-import kotlin.math.abs
 
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -106,6 +103,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val unread by viewModel.unreadCount.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(state.message) {
@@ -143,7 +141,16 @@ fun HomeScreen(
                     BrandWordmark()
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = onNotifications) {
-                        BadgedBox(badge = {}) {
+                        BadgedBox(
+                            badge = {
+                                if (unread > 0) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                                    ) { Text(if (unread > 99) "99+" else unread.toString()) }
+                                }
+                            },
+                        ) {
                             TablerIcon(TablerIcons.Notification, contentDescription = "Notifications")
                         }
                     }
@@ -158,28 +165,15 @@ fun HomeScreen(
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
-                    // Swipe the avatar up or down to switch accounts, the way
-                    // Google's apps do; a plain tap still opens the profile.
-                    var dragged by remember { mutableStateOf(0f) }
+                    // One tap on the avatar opens the account switcher; the
+                    // profile itself is a bottom-bar destination.
                     Avatar(
                         url = state.user?.photoUrl,
                         name = state.user?.displayName.orEmpty(),
                         size = 36.dp,
                         modifier = Modifier
                             .padding(start = 4.dp)
-                            .pointerInput(Unit) {
-                                detectVerticalDragGestures(
-                                    onDragStart = { dragged = 0f },
-                                    onDragEnd = {
-                                        if (abs(dragged) > 40f) onOpenSwitcher()
-                                        dragged = 0f
-                                    },
-                                    onDragCancel = { dragged = 0f },
-                                ) { _, amount ->
-                                    dragged += amount
-                                }
-                            }
-                            .clickable(onClick = onProfile),
+                            .clickable(onClick = onOpenSwitcher),
                     )
                 }
             }
@@ -337,7 +331,7 @@ fun HomeScreen(
                 if (state.featured.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Editor's picks",
+                            title = "New",
                             modifier = Modifier.padding(horizontal = 20.dp),
                             actionLabel = "See all",
                             onAction = onSeeAll,
@@ -363,7 +357,7 @@ fun HomeScreen(
                 if (state.trending.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Top charts",
+                            title = "Hot",
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                             actionLabel = "See all",
                             onAction = onSeeAll,
@@ -391,7 +385,7 @@ fun HomeScreen(
                 if (state.newArrivals.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "New & updated",
+                            title = "Fresh releases",
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                         )
                     }

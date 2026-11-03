@@ -61,8 +61,7 @@ fun ProfileScreen(
     onNotifications: () -> Unit,
     onSellerHub: () -> Unit,
     onBecomeDeveloper: () -> Unit,
-    onSwitchWorkspace: (Workspace) -> Unit,
-    onAddAccount: () -> Unit,
+    onOpenSwitcher: () -> Unit,
     onAdmin: () -> Unit,
     onSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
@@ -70,7 +69,6 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val user = state.user
     var showDeveloperPrompt by remember { mutableStateOf(false) }
-    var showSwitcher by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -88,7 +86,7 @@ fun ProfileScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showSwitcher = true },
+                    .clickable(onClick = onOpenSwitcher),
             ) {
                 Avatar(url = user?.photoUrl, name = user?.displayName.orEmpty(), size = 66.dp)
                 Spacer(Modifier.width(14.dp))
@@ -204,26 +202,6 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(24.dp))
         }
-    }
-
-    if (showSwitcher) {
-        AccountSwitcherSheet(
-            user = user,
-            current = Workspace.SHOPPER,
-            onDismiss = { showSwitcher = false },
-            onSwitch = { workspace ->
-                showSwitcher = false
-                onSwitchWorkspace(workspace)
-            },
-            onAddAccount = {
-                showSwitcher = false
-                onAddAccount()
-            },
-            onSignOut = {
-                showSwitcher = false
-                viewModel.signOut()
-            },
-        )
     }
 
     if (showDeveloperPrompt) {

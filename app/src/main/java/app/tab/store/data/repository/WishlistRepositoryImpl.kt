@@ -4,6 +4,7 @@ import app.tab.store.core.firebase.firestoreResult
 import app.tab.store.core.firebase.orFallback
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.data.remote.FirestorePaths
+import app.tab.store.data.remote.uidFlow
 import app.tab.store.data.remote.toProduct
 import app.tab.store.domain.model.Product
 import app.tab.store.domain.repository.DataResult
@@ -26,15 +27,15 @@ class WishlistRepositoryImpl @Inject constructor(
 
     private val uid: String? get() = auth.currentUser?.uid
 
-    private fun items() = uid?.let { firestore.collection(FirestorePaths.wishlistItems(it)) }
+    private fun items(uid: String) = firestore.collection(FirestorePaths.wishlistItems(uid))
 
     /**
      * Wishlist rows keep a lightweight product snapshot so the wishlist screen
      * renders from a single query instead of N document reads.
      */
-    override fun observeWishlist(): Flow<List<Product>> {
-        val ref = items() ?: return flowOf(emptyList())
-        return ref.snapshotFlow().map { snap ->
+    override fun observeWishlist(): Flow<List<Product>> = auth.uidFlow().flatMapLatest { uid ->
+        if (uid == null) return@flatMapLatest flowOf(emptyList())
+        items(uid).snapshotFlow().map { snap ->
             snap.documents.mapNotNull { doc ->
                 val productId = doc.getString("productId") ?: return@mapNotNull null
                 Product(
@@ -56,8 +57,9 @@ class WishlistRepositoryImpl @Inject constructor(
         }.orFallback(emptyList())
     }
 
-    override fun observeWishlistIds(): Flow<Set<String>> {
-        val ref = items() ?: return flowOf(emptySet())
+    override fun observeWishlistIds(): Flow<Set<String>> = auth.uidFlow().flatMapLatest { uid ->
+        if (uid == null) return@flatMapLatest flowOf(emptySet())
+        val ref = items(uid)
         return ref.snapshotFlow().map { snap -> snap.documents.mapNotNull { it.id }.toSet() }.orFallback(emptySet())
     }
 

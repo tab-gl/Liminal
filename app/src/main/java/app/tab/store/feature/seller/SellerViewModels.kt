@@ -234,6 +234,9 @@ data class ProductEditorUiState(
     val isRequestingVerification: Boolean = false,
     val stock: String = "0",
     val images: List<ProductImage> = emptyList(),
+    /** Store screenshots — separate from the icon/gallery images. */
+    val screenshots: List<ProductImage> = emptyList(),
+    val isUploadingScreenshot: Boolean = false,
     val tags: String = "",
     val status: ProductStatus = ProductStatus.DRAFT,
     val categories: List<Category> = emptyList(),
@@ -321,6 +324,7 @@ class SellerProductEditViewModel @Inject constructor(
                                         ?.let { c -> Money.toRupeeString(c) }.orEmpty(),
                                     stock = product.stock.toString(),
                                     images = product.images,
+                                    screenshots = product.screenshots,
                                     tags = product.tags.joinToString(", "),
                                     status = product.status,
                                     loaded = true,
@@ -438,6 +442,50 @@ class SellerProductEditViewModel @Inject constructor(
         }
     }
 
+    fun onScreenshotPicked(uri: Uri) {
+        val state = _uiState.value
+        if (state.screenshots.size >= 8) {
+            _uiState.update { it.copy(error = "You can add up to 8 screenshots.") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUploadingScreenshot = true, error = null) }
+            val bytes = uploader.prepare(uri)
+            if (bytes == null) {
+                _uiState.update {
+                    it.copy(isUploadingScreenshot = false, error = "Could not read that image.")
+                }
+                return@launch
+            }
+            when (
+                val res = mediaRepository.upload(
+                    bytes = bytes,
+                    fileName = "shot-${System.currentTimeMillis()}.jpg",
+                    folder = "sproutly/screenshots",
+                )
+            ) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isUploadingScreenshot = false, error = res.message)
+                }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        isUploadingScreenshot = false,
+                        screenshots = it.screenshots + ProductImage(res.value.url, res.value.publicId),
+                    )
+                }
+            }
+        }
+    }
+
+    fun removeScreenshot(publicId: String?) {
+        _uiState.update { state ->
+            state.copy(screenshots = state.screenshots.filterNot { it.publicId == publicId })
+        }
+        if (publicId != null) {
+            viewModelScope.launch { mediaRepository.delete(publicId) }
+        }
+    }
+
     fun removeImage(publicId: String?) {
         _uiState.update { state ->
             state.copy(images = state.images.filterNot { it.publicId == publicId })
@@ -464,6 +512,7 @@ class SellerProductEditViewModel @Inject constructor(
                 categoryId = state.categoryId,
                 categoryLabel = state.categoryLabel,
                 images = state.images,
+                screenshots = state.screenshots,
                 price = state.effectivePrice,
                 compareAtPrice = if (state.isFree) null else Money.toPaise(state.compareAtRupees),
                 stock = state.stock.toIntOrNull() ?: 0,
