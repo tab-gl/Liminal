@@ -36,16 +36,21 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(uid())).data;
     }
 
+    // Normalised to lower case: a role typed by hand in the console is very
+    // often "admin" or "Admin", and comparing case-sensitively meant the app
+    // showed the admin console while every write was denied.
     function role() {
-      return isSignedIn() ? userDoc().role : 'GUEST';
+      return isSignedIn() && userDoc().role is string
+        ? userDoc().role.lower()
+        : 'guest';
     }
 
     function isAdmin() {
-      return isSignedIn() && role() == 'ADMIN';
+      return isSignedIn() && role() == 'admin';
     }
 
     function isSeller() {
-      return isSignedIn() && (role() == 'SELLER' || role() == 'ADMIN');
+      return isSignedIn() && (role() == 'seller' || role() == 'admin');
     }
 
     function myStoreId() {
@@ -83,7 +88,8 @@ service cloud.firestore {
           // The store is created in the same batch as this promotion, so it is
           // not visible to get() yet — only getAfter()/existsAfter() see the
           // pending write. Using get() here denied every developer conversion.
-          (resource.data.role == 'CUSTOMER'
+          (resource.data.role is string
+            && resource.data.role.lower() == 'customer'
             && request.resource.data.role == 'SELLER'
             && request.resource.data.storeId is string
             && existsAfter(
