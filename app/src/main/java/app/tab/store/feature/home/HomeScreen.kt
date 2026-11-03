@@ -317,7 +317,14 @@ fun HomeScreen(
                             onClick = onSeeAll,
                         )
                     }
-                    items(state.categories, key = { it.id }) { category ->
+                    // Games have their own tab, so they are not a chip here.
+                    items(
+                        state.categories.filterNot {
+                            it.slug.equals("games", ignoreCase = true) ||
+                                it.name.equals("Games", ignoreCase = true)
+                        },
+                        key = { it.id },
+                    ) { category ->
                         CategoryChip(category = category, onClick = { onCategory(category.id) })
                     }
                 }
@@ -516,7 +523,7 @@ fun HomeScreen(
             exit = fadeOut(tween(120)) + scaleOut(tween(120), targetScale = 0.85f),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 16.dp),
+                .padding(end = 20.dp, bottom = 84.dp),
         ) {
             Column(horizontalAlignment = Alignment.End) {
                 SmallFab(

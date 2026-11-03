@@ -46,7 +46,12 @@ class AccountRegistry @Inject constructor(
     }
 
     private fun record(user: FirebaseUser) {
-        val provider = user.providerData.firstOrNull()?.providerId ?: "password"
+        // Every provider, joined: a linked account can have several, and the
+        // first one is not always Google even when Google sign-in was used.
+        val provider = user.providerData
+            .mapNotNull { it.providerId }
+            .joinToString(",")
+            .ifBlank { "password" }
         val account = KnownAccount(
             uid = user.uid,
             email = user.email.orEmpty(),

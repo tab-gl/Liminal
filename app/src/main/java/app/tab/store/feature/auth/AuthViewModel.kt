@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class AuthUiState(
@@ -40,7 +42,12 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AuthUiState())
+    // A cached session means "hold the UI until the profile arrives"; no cached
+    // session means "show sign-in now". Guessing wrong is what flashed the login
+    // screen at people who were already signed in.
+    private val _uiState = MutableStateFlow(
+        AuthUiState(isRestoringSession = authRepository.hasCachedSession()),
+    )
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     val session: StateFlow<User?> = authRepository.currentUser
@@ -55,6 +62,10 @@ class AuthViewModel @Inject constructor(
     }
 
     suspend fun awaitSession() {
+        // Give the profile a moment to arrive, but never hold the UI forever.
+        withTimeoutOrNull(2_000) {
+            authRepository.currentUser.first { it != null }
+        }
         _uiState.update { it.copy(isRestoringSession = false) }
     }
 

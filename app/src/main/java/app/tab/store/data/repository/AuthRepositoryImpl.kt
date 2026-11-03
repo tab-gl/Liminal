@@ -43,6 +43,8 @@ class AuthRepositoryImpl @Inject constructor(
         auth.addAuthStateListener { uidFlow.value = it.currentUser?.uid }
     }
 
+    override fun hasCachedSession(): Boolean = auth.currentUser != null
+
     override val currentUser: Flow<User?> = uidFlow.flatMapLatest { uid ->
         if (uid == null) {
             flowOf(null)

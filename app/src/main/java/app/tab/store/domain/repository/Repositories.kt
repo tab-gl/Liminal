@@ -26,6 +26,9 @@ inline fun <T, R> DataResult<T>.map(transform: (T) -> R): DataResult<R> = when (
 }
 
 interface AuthRepository {
+    /** True when a session is cached on disk, i.e. someone is already signed in. */
+    fun hasCachedSession(): Boolean
+
     val currentUser: Flow<User?>
     fun isSignedIn(): Boolean
     suspend fun signInWithEmail(email: String, password: String): DataResult<User>

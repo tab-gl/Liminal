@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.Alignment
@@ -52,6 +53,7 @@ import app.tab.store.feature.home.HomeScreen
 import app.tab.store.feature.notifications.NotificationsScreen
 import app.tab.store.feature.orders.OrderDetailScreen
 import app.tab.store.feature.orders.OrderPlacedScreen
+import app.tab.store.feature.games.GamesScreen
 import app.tab.store.feature.offers.OffersScreen
 import app.tab.store.feature.orders.OrdersScreen
 import app.tab.store.feature.rankings.RankingsScreen
@@ -134,15 +136,13 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        // The bar floats over the content instead of reserving a strip at the
-        // bottom, so it is drawn in the Box below rather than in bottomBar.
+        // Insets are handled explicitly below (content clears the status bar, the
+        // floating bar clears the gesture area). Letting Scaffold add its own
+        // padding on top doubled it and still let content slide under the clock.
+        contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { innerPadding ->
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
+    ) {
+        Box(Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
             // Resolved once per session, so a later role change does not move
@@ -233,10 +233,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             }
 
             composable(Routes.GAMES) {
-                SearchScreen(
-                    initialCategoryId = "games",
-                    onProduct = { go(Routes.product(it)) },
-                )
+                GamesScreen(onProduct = { go(Routes.product(it)) })
             }
             composable(Routes.RANKINGS) {
                 RankingsScreen(onProduct = { go(Routes.product(it)) })
