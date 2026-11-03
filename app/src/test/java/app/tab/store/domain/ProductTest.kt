@@ -24,10 +24,18 @@ class ProductTest {
     }
 
     @Test
-    fun `out of stock products are not purchasable`() {
+    fun `an app is installable regardless of stock`() {
+        // A digital listing has no inventory: installs are not limited by stock,
+        // only by whether the app is published.
         val product = Product(price = 1_000, stock = 0, status = ProductStatus.ACTIVE)
         assertTrue(product.isOutOfStock)
-        assertFalse(product.isPurchasable)
+        assertTrue(product.isPurchasable)
+    }
+
+    @Test
+    fun `a free app is free`() {
+        assertTrue(Product(price = 0).isFree)
+        assertFalse(Product(price = 1).isFree)
     }
 
     @Test
