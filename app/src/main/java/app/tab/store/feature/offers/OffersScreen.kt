@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -69,18 +70,22 @@ fun OffersScreen(
         }
 
         items(state.offers, key = { it.id }) { product ->
-            OfferRow(product = product, onClick = { onProduct(product.id) })
+            OfferRow(product = product, onClick = { onProduct(product.id) }, modifier = Modifier.animateItem())
         }
     }
 }
 
 @Composable
-private fun OfferRow(product: Product, onClick: () -> Unit) {
+private fun OfferRow(
+    product: Product,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
         color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier.padding(12.dp),

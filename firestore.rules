@@ -32,8 +32,18 @@ service cloud.firestore {
       return request.auth.uid;
     }
 
+    // Every helper below is written so that a *missing* document can never
+    // become an evaluation error: an error denies the whole rule, which turns a
+    // recoverable gap (no profile yet, store deleted) into "permission denied"
+    // everywhere. Missing means "not there", and the rule falls through.
+    function hasUserDoc() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(uid()));
+    }
+
     function userDoc() {
-      return get(/databases/$(database)/documents/users/$(uid())).data;
+      return hasUserDoc()
+        ? get(/databases/$(database)/documents/users/$(uid())).data
+        : {};
     }
 
     // Normalised to lower case: a role typed by hand in the console is very
@@ -44,9 +54,7 @@ service cloud.firestore {
     // document is an evaluation error, and an error denies the whole rule — so
     // the document is checked first and a missing profile means 'guest'.
     function role() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/users/$(uid()))
-        && userDoc().role is string
+      return hasUserDoc() && userDoc().role is string
         ? userDoc().role.lower()
         : 'guest';
     }
@@ -60,11 +68,18 @@ service cloud.firestore {
     }
 
     function myStoreId() {
-      return isSignedIn() ? userDoc().storeId : null;
+      return hasUserDoc() && userDoc().storeId is string ? userDoc().storeId : null;
+    }
+
+    function hasStore(storeId) {
+      return storeId is string
+        && exists(/databases/$(database)/documents/stores/$(storeId));
     }
 
     function storeDoc(storeId) {
-      return get(/databases/$(database)/documents/stores/$(storeId)).data;
+      return hasStore(storeId)
+        ? get(/databases/$(database)/documents/stores/$(storeId)).data
+        : {};
     }
 
     function unchanged(field) {
@@ -223,8 +238,8 @@ service cloud.firestore {
 
       function paidNeedsVerification() {
         return request.resource.data.price == 0
-          || get(/databases/$(database)/documents/stores/$(request.resource.data.storeId))
-               .data.get('verified', false) == true;
+          || (hasStore(request.resource.data.storeId)
+            && storeDoc(request.resource.data.storeId).get('verified', false) == true);
       }
 
       allow create: if isSeller()
@@ -284,23 +299,25 @@ service cloud.firestore {
       function itemValid(index) {
         let item = request.resource.data.items[index];
         let product = get(/databases/$(database)/documents/products/$(item.productId)).data;
+        // A digital install has no inventory to run out of, and a free app costs
+        // zero — requiring unitPrice > 0 or stock >= quantity made installing a
+        // free app impossible.
         return item.quantity is int
           && item.quantity > 0
           && item.quantity <= 99
           && item.unitPrice is int
-          && item.unitPrice > 0
+          && item.unitPrice >= 0
           && item.unitPrice == product.price
           && item.storeId == product.storeId
-          && product.status == 'ACTIVE'
-          && product.stock >= item.quantity;
+          && product.status == 'ACTIVE';
       }
 
       function totalsConsistent() {
         let shipping = request.resource.data.shipping;
         return request.resource.data.total == request.resource.data.subtotal + shipping
-          && (shipping == 0 || shipping == 4900)
+          && shipping == 0
           && request.resource.data.subtotal >= 0
-          && request.resource.data.total > 0;
+          && request.resource.data.total >= 0;
       }
 
       function editableKeys() {

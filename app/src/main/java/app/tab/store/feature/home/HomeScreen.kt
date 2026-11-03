@@ -21,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.animateItem
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -383,7 +384,9 @@ fun HomeScreen(
                                 ProductCard(
                                     product = product,
                                     onClick = { onProduct(product.id) },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .animateItem(),
                                     rank = rowIndex * 2 + row.indexOf(product) + 1,
                                 )
                             }
@@ -514,7 +517,7 @@ fun HomeScreen(
             exit = fadeOut(tween(120)) + scaleOut(tween(120), targetScale = 0.85f),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 76.dp),
+                .padding(end = 20.dp, bottom = 16.dp),
         ) {
             Column(horizontalAlignment = Alignment.End) {
                 SmallFab(

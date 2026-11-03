@@ -151,3 +151,29 @@ jobs:
             app/build/reports/lint-results-*.html
           if-no-files-found: ignore
           retention-days: 7
+
+  # Security rules, exercised against the Firestore emulator. These catch the
+  # class of bug that reached production three times: a rule that evaluates to an
+  # error on a missing document, a role compared case-sensitively, and an admin
+  # query a list rule could not satisfy.
+  rules-tests:
+    name: Rules tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install the Firebase CLI
+        run: npm install -g firebase-tools@13
+
+      - name: Install test dependencies
+        working-directory: firestore-tests
+        run: npm ci
+
+      - name: Run the rules suite
+        run: |
+          firebase emulators:exec --only firestore --project demo-sproutly \
+            "cd firestore-tests && npm test"
