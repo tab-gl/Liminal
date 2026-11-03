@@ -357,7 +357,9 @@ service cloud.firestore {
       // tampered cart cannot change what is charged.
       allow create: if isSignedIn()
         && request.resource.data.buyerId == uid()
-        && request.resource.data.status == 'PENDING'
+        // An install is complete the moment it is written, so DELIVERED is as
+        // valid as PENDING. Only accepting PENDING made installing impossible.
+        && request.resource.data.status in ['PENDING', 'DELIVERED']
         && request.resource.data.items is list
         && request.resource.data.items.size() > 0
         && request.resource.data.items.size() <= 8
