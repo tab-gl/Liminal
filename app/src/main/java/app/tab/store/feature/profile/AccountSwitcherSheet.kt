@@ -15,6 +15,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -61,6 +69,8 @@ fun AccountSwitcherSheet(
     onSignOut: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var menuFor by remember { mutableStateOf<String?>(null) }
+    var confirm by remember { mutableStateOf<AccountRegistry.KnownAccount?>(null) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -90,7 +100,14 @@ fun AccountSwitcherSheet(
             accounts.forEach { account ->
                 val isCurrent = account.uid == currentUid
                 Surface(
-                    onClick = { if (!isCurrent) onSelectAccount(account.uid) },
+                    onClick = {
+                        if (isCurrent) return@Surface
+                        // Google accounts swap through the provider's picker with
+                        // no password; anything else has to sign out first, so ask
+                        // before doing that to someone.
+                        val isGoogle = account.provider.contains("google", ignoreCase = true)
+                        if (isGoogle) onSelectAccount(account.uid) else confirm = account
+                    },
                     shape = SproutlyRadii.card,
                     color = if (isCurrent) MaterialTheme.colorScheme.primaryContainer
                     else MaterialTheme.colorScheme.surfaceContainerLow,
@@ -123,6 +140,13 @@ fun AccountSwitcherSheet(
                                 color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
                                 else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            if (!isCurrent) {
+                                Text(
+                                    "Tap to switch",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
                         }
                         if (isCurrent) {
                             TablerIcon(
@@ -132,18 +156,32 @@ fun AccountSwitcherSheet(
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         } else {
-                            Surface(
-                                onClick = { onForgetAccount(account.uid) },
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surface,
-                                modifier = Modifier.size(28.dp),
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    TablerIcon(
-                                        icon = TablerIcons.Close,
-                                        contentDescription = "Remove ${account.email}",
-                                        modifier = Modifier.size(14.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            Box {
+                                Surface(
+                                    onClick = { menuFor = account.uid },
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.surface,
+                                    modifier = Modifier.size(28.dp),
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        TablerIcon(
+                                            icon = TablerIcons.More,
+                                            contentDescription = "Options for ${account.email}",
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                                DropdownMenu(
+                                    expanded = menuFor == account.uid,
+                                    onDismissRequest = { menuFor = null },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Remove from this device") },
+                                        onClick = {
+                                            menuFor = null
+                                            onForgetAccount(account.uid)
+                                        },
                                     )
                                 }
                             }
@@ -231,6 +269,29 @@ fun AccountSwitcherSheet(
 
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    confirm?.let { account ->
+        AlertDialog(
+            onDismissRequest = { confirm = null },
+            title = { Text("Switch to ${account.email}?") },
+            text = {
+                Text(
+                    "This account signs in with a password, so switching means " +
+                        "signing out first. We will keep the address filled in for you.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val target = account.uid
+                    confirm = null
+                    onSelectAccount(target)
+                }) { Text("Sign out and continue") }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirm = null }) { Text("Cancel") }
+            },
+        )
     }
 }
 

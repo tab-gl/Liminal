@@ -3,6 +3,7 @@ package app.tab.store.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.tab.store.core.account.AccountRegistry
+import app.tab.store.core.account.PendingAccountSwitch
 import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.repository.AuthRepository
 import app.tab.store.domain.repository.DataResult
@@ -23,6 +24,7 @@ data class AccountSwitcherState(
 class AccountSwitcherViewModel @Inject constructor(
     private val registry: AccountRegistry,
     private val authRepository: AuthRepository,
+    private val pendingSwitch: PendingAccountSwitch,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AccountSwitcherState())
@@ -47,6 +49,11 @@ class AccountSwitcherViewModel @Inject constructor(
      */
     fun selectAccount(uid: String) {
         if (uid == _uiState.value.currentUid) return
+        // Password accounts need their password; leave the address on the
+        // sign-in form instead of presenting an empty one.
+        _uiState.value.accounts.firstOrNull { it.uid == uid }?.email?.let {
+            pendingSwitch.remember(it)
+        }
         viewModelScope.launch { authRepository.signOut() }
     }
 

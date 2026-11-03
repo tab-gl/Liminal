@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.tab.store.core.utils.Validators
 import app.tab.store.domain.model.User
+import app.tab.store.core.account.PendingAccountSwitch
 import app.tab.store.domain.repository.AuthRepository
 import app.tab.store.domain.repository.DataResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,13 +41,19 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    pendingSwitch: PendingAccountSwitch,
 ) : ViewModel() {
 
     // A cached session means "hold the UI until the profile arrives"; no cached
     // session means "show sign-in now". Guessing wrong is what flashed the login
     // screen at people who were already signed in.
     private val _uiState = MutableStateFlow(
-        AuthUiState(isRestoringSession = authRepository.hasCachedSession()),
+        AuthUiState(
+            isRestoringSession = authRepository.hasCachedSession(),
+            // Arriving here from the account switcher: the address is already
+            // known, so only the password is left to type.
+            email = pendingSwitch.take().orEmpty(),
+        ),
     )
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
