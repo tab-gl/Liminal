@@ -61,10 +61,12 @@ fun ProductDetailScreen(
     onBack: () -> Unit,
     onStore: (String) -> Unit,
     onDownloads: () -> Unit,
+    onProduct: (String) -> Unit = {},
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+    var showDeveloperSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -227,7 +229,7 @@ fun ProductDetailScreen(
                     Spacer(Modifier.height(18.dp))
 
                     Surface(
-                        onClick = { onStore(product.storeId) },
+                        onClick = { showDeveloperSheet = true },
                         shape = SproutlyRadii.card,
                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
                         modifier = Modifier.fillMaxWidth(),
@@ -256,11 +258,17 @@ fun ProductDetailScreen(
                                     style = MaterialTheme.typography.titleSmall,
                                 )
                                 Text(
-                                    "View developer",
+                                    "About the developer",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
+                            TablerIcon(
+                                TablerIcons.ArrowRight,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
 
@@ -315,11 +323,108 @@ fun ProductDetailScreen(
             }
         }
 
+        if (showDeveloperSheet) {
+            DeveloperSheet(
+                store = state.store,
+                storeName = state.product?.storeName.orEmpty(),
+                apps = state.developerApps,
+                onDismiss = { showDeveloperSheet = false },
+                onApp = { id ->
+                    showDeveloperSheet = false
+                    onProduct(id)
+                },
+            )
+        }
+
         SnackbarHost(
             hostState = snackbar,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(16.dp),
         )
+    }
+}
+
+/**
+ * Developer sheet: who made this, and what else they have published. A sheet
+ * rather than a screen — it is context, not a destination.
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun DeveloperSheet(
+    store: app.tab.store.domain.model.Store?,
+    storeName: String,
+    apps: List<app.tab.store.domain.model.Product>,
+    onDismiss: () -> Unit,
+    onApp: (String) -> Unit,
+) {
+    androidx.compose.material3.ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = SproutlyRadii.sheet,
+    ) {
+        Column(Modifier.padding(horizontal = 20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SproutlyImage(
+                    url = store?.logoUrl,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                    corner = 18.dp,
+                )
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            store?.name?.ifBlank { storeName } ?: storeName,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                        )
+                        if (store?.verified == true) {
+                            Spacer(Modifier.width(6.dp))
+                            TablerIcon(
+                                TablerIcons.Verified,
+                                contentDescription = "Verified developer",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                    Text(
+                        store?.tagline?.ifBlank { "Independent developer" }
+                            ?: "Independent developer",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                    )
+                }
+            }
+
+            if (!store?.description.isNullOrBlank()) {
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    store?.description.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            if (apps.isNotEmpty()) {
+                Spacer(Modifier.height(20.dp))
+                Text("More from this developer", style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.height(10.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(apps) { app ->
+                        ProductCard(
+                            product = app,
+                            onClick = { onApp(app.id) },
+                            modifier = Modifier.width(140.dp),
+                            compact = true,
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(28.dp))
+        }
     }
 }

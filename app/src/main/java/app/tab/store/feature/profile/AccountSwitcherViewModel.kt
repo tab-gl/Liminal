@@ -3,7 +3,9 @@ package app.tab.store.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.tab.store.core.account.AccountRegistry
+import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.repository.AuthRepository
+import app.tab.store.domain.repository.DataResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +48,20 @@ class AccountSwitcherViewModel @Inject constructor(
     fun selectAccount(uid: String) {
         if (uid == _uiState.value.currentUid) return
         viewModelScope.launch { authRepository.signOut() }
+    }
+
+    /**
+     * Swaps the session to another Google account. Firebase replaces the
+     * current user outright, so nothing is signed out first and no password is
+     * involved — the provider's picker is the only step.
+     */
+    fun switchWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            when (val result = authRepository.signInWithGoogle(idToken)) {
+                is DataResult.Failure -> AppErrors.report(result.message)
+                is DataResult.Success -> refresh()
+            }
+        }
     }
 
     fun forgetAccount(uid: String) {

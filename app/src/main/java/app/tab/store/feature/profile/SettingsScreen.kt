@@ -37,6 +37,43 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         SproutlyTopBar(title = "Settings", onBack = onBack)
+        SettingsContent(state)
+    }
+}
+
+/**
+ * Settings as a sheet: it is reference information, not a destination, so it
+ * rises over the profile instead of replacing it.
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsSheet(
+    onDismiss: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    androidx.compose.material3.ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = SproutlyRadii.sheet,
+    ) {
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 12.dp),
+        ) {
+            Text(
+                "Settings",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+            )
+            SettingsContent(state)
+        }
+    }
+}
+
+@Composable
+private fun SettingsContent(state: ProfileUiState) {
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
                 shape = SproutlyRadii.card,
@@ -70,9 +107,9 @@ fun SettingsScreen(
                         Spacer(Modifier.height(10.dp))
                     }
                     Spacer(Modifier.height(10.dp))
-                    Text("Sproutly 1.0.0", style = MaterialTheme.typography.titleSmall)
+                    Text("Sproutly ${app.tab.store.BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "A multi-vendor marketplace built with Kotlin, Jetpack Compose and Firebase. Product imagery is delivered from Cloudinary.",
+                        "The app store for independent developers. Built with Kotlin, Jetpack Compose and Firebase; app imagery is delivered from Cloudinary.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -86,7 +123,6 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(28.dp))
         }
-    }
 }
 
 @Composable

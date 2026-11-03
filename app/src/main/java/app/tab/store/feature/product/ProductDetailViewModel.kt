@@ -25,6 +25,9 @@ data class ProductDetailUiState(
     val isInstalling: Boolean = false,
     val message: String? = null,
     val navigateToLibrary: Boolean = false,
+    /** The developer behind this listing, and what else they have published. */
+    val store: app.tab.store.domain.model.Store? = null,
+    val developerApps: List<Product> = emptyList(),
 ) {
     val canInstall: Boolean get() = product?.status == app.tab.store.domain.model.ProductStatus.ACTIVE && !isInstalling
     val maxQuantity: Int get() = product?.stock ?: 1
@@ -52,6 +55,22 @@ class ProductDetailViewModel @Inject constructor(
                         isLoading = false,
                         error = if (product == null) "This product is no longer available." else null,
                     )
+                }
+                // Follow the listing to its developer, then to their shelf.
+                val storeId = product?.storeId.orEmpty()
+                if (storeId.isNotBlank()) {
+                    launch {
+                        catalogRepository.observeStore(storeId).collect { store ->
+                            _uiState.update { it.copy(store = store) }
+                        }
+                    }
+                    launch {
+                        catalogRepository.observeStoreProducts(storeId).collect { apps ->
+                            _uiState.update { current ->
+                                current.copy(developerApps = apps.filter { it.id != productId })
+                            }
+                        }
+                    }
                 }
             }
         }

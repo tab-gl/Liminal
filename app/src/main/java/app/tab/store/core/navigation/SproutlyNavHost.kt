@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.model.UserRole
+import app.tab.store.feature.auth.rememberGoogleSignIn
 import app.tab.store.feature.profile.AccountSwitcherSheet
 import app.tab.store.feature.profile.AccountSwitcherViewModel
 import app.tab.store.feature.profile.ProfileViewModel
@@ -94,6 +95,11 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     var showSwitcher by remember { mutableStateOf(false) }
     val switcherViewModel: AccountSwitcherViewModel = hiltViewModel()
     val switcherState by switcherViewModel.uiState.collectAsStateWithLifecycle()
+    val launchGoogle = rememberGoogleSignIn(
+        onToken = { token -> switcherViewModel.switchWithGoogle(token) },
+        onError = { message -> snackbarHostState.showSnackbar(message) },
+    )
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Background stream failures surface here with the actionable message.
@@ -209,6 +215,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onBack = { navController.popBackStack() },
                     onStore = { go(Routes.store(it)) },
                     onDownloads = { goTab(Routes.ORDERS) },
+                    onProduct = { go(Routes.product(it)) },
                 )
             }
             composable(
@@ -390,7 +397,15 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 onDismiss = { showSwitcher = false },
                 onSelectAccount = { uid ->
                     showSwitcher = false
-                    switcherViewModel.selectAccount(uid)
+                    val account = switcherState.accounts.firstOrNull { it.uid == uid }
+                    // A Google account can be switched with the provider's own
+                    // picker — no password, and Firebase swaps the session
+                    // outright. Anything else has to go through sign-in.
+                    if (account?.provider?.contains("google", ignoreCase = true) == true) {
+                        launchGoogle()
+                    } else {
+                        switcherViewModel.selectAccount(uid)
+                    }
                 },
                 onForgetAccount = switcherViewModel::forgetAccount,
                 onSwitchWorkspace = { workspace ->

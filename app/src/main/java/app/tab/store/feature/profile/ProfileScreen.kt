@@ -69,6 +69,7 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val user = state.user
     var showDeveloperPrompt by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -168,7 +169,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(18.dp))
             Text("Preferences", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            ProfileRow(TablerIcons.Settings, "Settings", "App preferences", onSettings)
+            ProfileRow(TablerIcons.Settings, "Settings", "App preferences") { showSettings = true }
 
             Spacer(Modifier.height(18.dp))
             Surface(
@@ -202,6 +203,10 @@ fun ProfileScreen(
             )
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    if (showSettings) {
+        SettingsSheet(onDismiss = { showSettings = false })
     }
 
     if (showDeveloperPrompt) {

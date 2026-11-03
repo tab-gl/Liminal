@@ -14,6 +14,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -117,15 +123,13 @@ fun HomeScreen(
     val listState = rememberLazyListState()
     // The search FAB starts as a labelled pill and shrinks to a bare circle once
     // the list is scrolled, so it stops covering content but stays reachable.
-    val collapsed by remember {
-        derivedStateOf { listState.firstVisibleItemScrollOffset > 40 || listState.firstVisibleItemIndex > 0 }
+    val showControls by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 140
+        }
     }
-    val fabWidth by animateDpAsState(
-        targetValue = if (collapsed) 56.dp else 124.dp,
-        // Snappy: the pill should keep up with the thumb, not trail it.
-        animationSpec = spring(dampingRatio = 0.9f, stiffness = 1700f),
-        label = "searchFabWidth",
-    )
+    val scope = rememberCoroutineScope()
+
 
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
@@ -498,44 +502,36 @@ fun HomeScreen(
             }
         }
 
-        // Search FAB: a labelled pill at rest, a circle once you scroll.
-        Surface(
-            onClick = onSearch,
-            shape = RoundedCornerShape(50),
-            color = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shadowElevation = 8.dp,
+        // Controls appear only once the list has actually moved: a circular
+        // search FAB sitting just above the profile pill, with scroll-to-top
+        // stacked above it. At rest they would cover the first rail for nothing.
+        AnimatedVisibility(
+            visible = showControls,
+            enter = fadeIn(tween(140)) + scaleIn(tween(160), initialScale = 0.85f),
+            exit = fadeOut(tween(120)) + scaleOut(tween(120), targetScale = 0.85f),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 92.dp)
-                .height(56.dp)
-                .width(fabWidth),
+                .padding(end = 20.dp, bottom = 92.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TablerIcon(
+            Column(horizontalAlignment = Alignment.End) {
+                SmallFab(
+                    icon = TablerIcons.ArrowRight,
+                    contentDescription = "Back to top",
+                    container = MaterialTheme.colorScheme.surface,
+                    content = MaterialTheme.colorScheme.onSurface,
+                    rotate = 270f,
+                    onClick = {
+                        scope.launch { listState.animateScrollToItem(0) }
+                    },
+                )
+                Spacer(Modifier.height(10.dp))
+                SmallFab(
                     icon = TablerIcons.Search,
                     contentDescription = "Search apps",
-                    modifier = Modifier.size(22.dp),
+                    container = MaterialTheme.colorScheme.primary,
+                    content = MaterialTheme.colorScheme.onPrimary,
+                    onClick = onSearch,
                 )
-                AnimatedVisibility(
-                    visible = !collapsed,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "Search",
-                            style = MaterialTheme.typography.labelLarge,
-                            maxLines = 1,
-                            softWrap = false,
-                        )
-                    }
-                }
             }
         }
 
@@ -570,6 +566,37 @@ private fun CategoryChip(category: Category, onClick: () -> Unit) {
             )
             Spacer(Modifier.width(7.dp))
             Text(category.name, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+/** A 52dp circular action used for the floating controls. */
+@Composable
+private fun SmallFab(
+    icon: Int,
+    contentDescription: String,
+    container: androidx.compose.ui.graphics.Color,
+    content: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit,
+    rotate: Float = 0f,
+) {
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = container,
+        contentColor = content,
+        shadowElevation = 8.dp,
+        modifier = Modifier.size(52.dp),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            TablerIcon(
+                icon = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier
+                    .size(22.dp)
+                    .graphicsLayer { rotationZ = rotate },
+                tint = content,
+            )
         }
     }
 }

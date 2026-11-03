@@ -67,13 +67,14 @@ class HomeViewModel @Inject constructor(
             catalogRepository.observeTrending(8),
             catalogRepository.observeNewArrivals(6),
         ) { featured, trending, newArrivals ->
-            Triple(featured, trending, newArrivals)
+            // Games have their own tab, so they are not repeated in Apps.
+            Triple(featured.withoutGames(), trending.withoutGames(), newArrivals.withoutGames())
         }
         val extras = combine(
             catalogRepository.observeRecommended(6),
             catalogRepository.observeRecentlyViewed(8),
         ) { recommended, recentlyViewed ->
-            recommended to recentlyViewed
+            recommended.withoutGames() to recentlyViewed.withoutGames()
         }
 
         viewModelScope.launch {
@@ -105,4 +106,10 @@ class HomeViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
         viewModelScope.launch { catalogRepository.refreshCategories() }
     }
+}
+
+/** Games live in their own destination, so the Apps rails skip them. */
+private fun List<Product>.withoutGames(): List<Product> = filterNot {
+    it.categoryId.equals("games", ignoreCase = true) ||
+        it.categoryLabel.equals("Games", ignoreCase = true)
 }

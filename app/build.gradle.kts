@@ -25,8 +25,8 @@ android {
         applicationId = "app.tab.store"
         minSdk = 24
         targetSdk = 36
-        versionCode = 18
-        versionName = "1.0.17"
+        versionCode = 19
+        versionName = "1.0.18"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -96,7 +96,6 @@ android {
         }
         create("arm32") {
             dimension = "abi"
-            versionNameSuffix = "-arm32"
             ndk { abiFilters += listOf("armeabi-v7a") }
         }
     }
