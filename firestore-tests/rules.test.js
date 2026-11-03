@@ -333,10 +333,20 @@ describe("user permissions", () => {
     await assertFails(updateDoc(doc(dev(), "stores", STORE), { verified: true }));
   });
 
-  it("cannot approve their own listing", async () => {
+  it("cannot publish while their store is still in review", async () => {
+    // Store approval is what gates publishing; an approved store may publish,
+    // a pending one may not.
     await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "stores", STORE), { status: "PENDING" });
       await updateDoc(doc(context.firestore(), "products", "app1"), { status: "DRAFT" });
     });
     await assertFails(updateDoc(doc(dev(), "products", "app1"), { status: "ACTIVE" }));
+  });
+
+  it("can publish once the store is approved", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "products", "app1"), { status: "DRAFT" });
+    });
+    await assertSucceeds(updateDoc(doc(dev(), "products", "app1"), { status: "ACTIVE" }));
   });
 });

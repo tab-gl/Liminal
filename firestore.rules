@@ -97,6 +97,10 @@ service cloud.firestore {
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() <= 80;
 
+      // Admins moderate roles (Admin console → Roles and access). Without this
+      // branch the screen could open and never save anything.
+      allow update: if isAdmin();
+
       allow update: if isSignedIn() && userId == uid() && (
           // Ordinary profile edits: identity fields are frozen.
           (unchanged('role') && unchanged('storeId') && unchanged('createdAt')
@@ -174,6 +178,10 @@ service cloud.firestore {
       allow update: if (isSeller() && resource.data.ownerId == uid()
           && unchanged('ownerId')
           && unchanged('status')
+          // Verification is the admin's decision, never the owner's. The request
+          // branch above is the only way an owner may touch these two fields.
+          && unchanged('verified')
+          && unchanged('verificationStatus')
           && unchanged('rating')
           && unchanged('ratingCount')
           && unchanged('createdAt')
@@ -244,8 +252,13 @@ service cloud.firestore {
 
       allow create: if isSeller()
         && request.resource.data.storeId == myStoreId()
+        && (request.resource.data.status != 'ACTIVE' || storeIsApproved())
         && validProduct()
         && paidNeedsVerification();
+
+      function storeIsApproved() {
+        return hasStore(myStoreId()) && storeDoc(myStoreId()).status == 'ACTIVE';
+      }
 
       allow update: if isSeller()
         && resource.data.storeId == myStoreId()
@@ -253,6 +266,9 @@ service cloud.firestore {
         && unchanged('unitsSold')
         && unchanged('rating')
         && unchanged('ratingCount')
+        // Publishing is gated on the store being approved, so a developer cannot
+        // wave their own app through moderation.
+        && (request.resource.data.status != 'ACTIVE' || storeIsApproved())
         && validProduct()
         && paidNeedsVerification();
 
