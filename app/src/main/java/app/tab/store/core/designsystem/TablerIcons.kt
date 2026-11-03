@@ -49,6 +49,7 @@ object TablerIcons {
     @DrawableRes val Upload = R.drawable.ic_tb_upload
     @DrawableRes val Analytics = R.drawable.ic_tb_analytics
     @DrawableRes val ChevronDown = R.drawable.ic_tb_chevrondown
+    @DrawableRes val ChevronLeft = R.drawable.ic_tb_chevronleft
     @DrawableRes val Link = R.drawable.ic_tb_link
     @DrawableRes val Verified = R.drawable.ic_tb_verified
     @DrawableRes val Receipt = R.drawable.ic_tb_receipt

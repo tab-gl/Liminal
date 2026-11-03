@@ -59,6 +59,9 @@ interface CatalogRepository {
         pageSize: Int = 20,
         pageToken: String? = null,
     ): DataResult<ProductPage>
+    /** Flags a listing for moderation. */
+    suspend fun reportProduct(productId: String, reason: String): DataResult<Unit>
+
     fun observeProduct(productId: String): Flow<Product?>
     suspend fun recordProductView(productId: String)
     fun observeRecentlyViewed(limit: Int = 10): Flow<List<Product>>

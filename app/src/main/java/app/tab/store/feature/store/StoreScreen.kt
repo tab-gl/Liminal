@@ -111,7 +111,7 @@ fun StoreScreen(
                         .size(40.dp),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        TablerIcon(TablerIcons.ArrowLeft, contentDescription = "Back")
+                        TablerIcon(TablerIcons.ChevronLeft, contentDescription = "Back")
                     }
                 }
             }

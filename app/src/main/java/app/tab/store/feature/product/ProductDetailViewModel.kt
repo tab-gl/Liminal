@@ -123,4 +123,16 @@ class ProductDetailViewModel @Inject constructor(
     fun consumeMessage() = _uiState.update { it.copy(message = null) }
 
     fun consumeNavigation() = _uiState.update { it.copy(navigateToLibrary = false) }
+
+    /** Flags the listing; the admin queue reads the same field. */
+    fun report(reason: String) {
+        viewModelScope.launch {
+            when (val result = catalogRepository.reportProduct(productId, reason)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(message = "Thanks — this app is with our moderators.")
+                }
+            }
+        }
+    }
 }

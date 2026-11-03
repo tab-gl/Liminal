@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -130,25 +134,15 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        // The bar floats over the content instead of reserving a strip at the
+        // bottom, so it is drawn in the Box below rather than in bottomBar.
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            if (showBottomBar) {
-                SproutlyBottomBar(
-                    currentRoute = currentRoute,
-                    onNavigate = { route ->
-                        // Studio is the developer's home; someone who has not
-                        // opened a developer profile goes to the setup instead
-                        // of an empty dashboard.
-                        if (route == Routes.SELLER_DASHBOARD && profileState.user?.isSeller != true) {
-                            go(Routes.SELLER_SETUP)
-                        } else {
-                            goTab(route)
-                        }
-                    },
-                )
-            }
-        },
     ) { innerPadding ->
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
         NavHost(
             navController = navController,
             // Resolved once per session, so a later role change does not move
@@ -162,7 +156,9 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     else -> Routes.HOME
                 }
             },
-            modifier = Modifier.padding(innerPadding),
+            // Edge-to-edge is on, so the content has to clear the status bar
+            // itself; without this the wordmark sat under the clock.
+            modifier = Modifier.statusBarsPadding(),
             enterTransition = { enter },
             exitTransition = { exit },
             popEnterTransition = { fadeIn(tween(200)) },
@@ -392,6 +388,24 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             }
             composable(Routes.ADMIN_CATEGORIES) {
                 AdminCategoriesScreen(onBack = { navController.popBackStack() })
+            }
+        }
+
+            if (showBottomBar) {
+                SproutlyBottomBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        // Studio is the developer's home; someone who has not
+                        // opened a developer profile goes to the setup instead
+                        // of an empty dashboard.
+                        if (route == Routes.SELLER_DASHBOARD && profileState.user?.isSeller != true) {
+                            go(Routes.SELLER_SETUP)
+                        } else {
+                            goTab(route)
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
             }
         }
 

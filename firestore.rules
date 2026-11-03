@@ -262,6 +262,18 @@ service cloud.firestore {
         && resource.data.status == 'ACTIVE'
         && stockOnlyChange();
 
+      // Anyone signed in can flag a published app. Only the flag fields move and
+      // the count may only rise by one — without this the admin's "Reported
+      // apps" queue could never contain anything.
+      allow update: if isSignedIn()
+        && resource.data.status == 'ACTIVE'
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['reported', 'reportReason', 'reportCount', 'updatedAt'])
+        && request.resource.data.reported == true
+        && request.resource.data.reportReason is string
+        && request.resource.data.reportReason.size() <= 200
+        && request.resource.data.reportCount == resource.data.get('reportCount', 0) + 1;
+
       // Moderation (Admin → Products).
       allow update: if isAdmin();
 

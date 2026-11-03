@@ -108,7 +108,7 @@ fun SproutlyTopBar(
         navigationIcon = {
             if (onBack != null) {
                 IconButton(onClick = onBack) {
-                    TablerIcon(TablerIcons.ArrowLeft, contentDescription = "Back")
+                    TablerIcon(TablerIcons.ChevronLeft, contentDescription = "Back")
                 }
             }
         },

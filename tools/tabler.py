@@ -49,6 +49,7 @@ ICONS = {
     "Upload": "upload",
     "Analytics": "chart-bar",
     "ChevronDown": "chevron-down",
+    "ChevronLeft": "chevron-left",
     "Link": "link",
     "Verified": "shield-check",
     "Receipt": "receipt",

@@ -70,6 +70,7 @@ fun ProductDetailScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var showDeveloperSheet by remember { mutableStateOf(false) }
+    var showReportDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -135,7 +136,7 @@ fun ProductDetailScreen(
                             modifier = Modifier.size(40.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                TablerIcon(TablerIcons.ArrowLeft, contentDescription = "Back")
+                                TablerIcon(TablerIcons.ChevronLeft, contentDescription = "Back")
                             }
                         }
                         Row {
@@ -275,6 +276,32 @@ fun ProductDetailScreen(
                         }
                     }
 
+                    Spacer(Modifier.height(14.dp))
+                    Surface(
+                        onClick = { showReportDialog = true },
+                        shape = SproutlyRadii.card,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TablerIcon(
+                                TablerIcons.Tag,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "Report this app",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
                     Spacer(Modifier.height(20.dp))
                     Text("About this app", style = MaterialTheme.typography.headlineSmall)
                     Spacer(Modifier.height(8.dp))
@@ -324,6 +351,16 @@ fun ProductDetailScreen(
                     Spacer(Modifier.height(28.dp))
                 }
             }
+        }
+
+        if (showReportDialog) {
+            ReportDialog(
+                onDismiss = { showReportDialog = false },
+                onReport = { reason ->
+                    showReportDialog = false
+                    viewModel.report(reason)
+                },
+            )
         }
 
         if (showDeveloperSheet) {
@@ -430,4 +467,57 @@ private fun DeveloperSheet(
             Spacer(Modifier.height(28.dp))
         }
     }
+}
+
+/** A short, structured report — the reason is what a moderator needs. */
+@Composable
+private fun ReportDialog(onDismiss: () -> Unit, onReport: (String) -> Unit) {
+    val reasons = listOf(
+        "It does not work",
+        "Misleading description",
+        "Harmful or inappropriate",
+        "It is not my content / copyright",
+        "Something else",
+    )
+    var chosen by remember { mutableStateOf(reasons.first()) }
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Report this app") },
+        text = {
+            Column {
+                Text(
+                    "Reports go to Sproutly moderators. You are not identified to the developer.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+                reasons.forEach { reason ->
+                    Surface(
+                        onClick = { chosen = reason },
+                        shape = SproutlyRadii.pill,
+                        color = if (chosen == reason) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 3.dp),
+                    ) {
+                        Text(
+                            reason,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = { onReport(chosen) }) {
+                Text("Send report")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }

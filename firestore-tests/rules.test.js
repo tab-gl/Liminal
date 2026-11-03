@@ -246,3 +246,42 @@ describe("wishlist", () => {
     );
   });
 });
+
+describe("reporting", () => {
+  it("lets a signed-in user flag a published app", async () => {
+    await assertSucceeds(
+      updateDoc(doc(shopper(), "products", "app1"), {
+        reported: true,
+        reportReason: "It does not work",
+        reportCount: 1,
+        updatedAt: 2,
+      }),
+    );
+  });
+
+  it("does not let a report smuggle other fields through", async () => {
+    await assertFails(
+      updateDoc(doc(shopper(), "products", "app1"), {
+        reported: true,
+        reportReason: "spam",
+        reportCount: 1,
+        title: "Something else",
+      }),
+    );
+  });
+
+  it("surfaces a reported app to the admin queue", async () => {
+    await assertSucceeds(
+      updateDoc(doc(shopper(), "products", "app1"), {
+        reported: true,
+        reportReason: "Misleading description",
+        reportCount: 1,
+        updatedAt: 2,
+      }),
+    );
+    const reported = await getDocs(
+      query(collection(admin(), "products"), where("reported", "==", true)),
+    );
+    assert.strictEqual(reported.size, 1);
+  });
+});

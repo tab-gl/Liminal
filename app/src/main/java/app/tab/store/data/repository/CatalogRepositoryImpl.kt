@@ -146,6 +146,20 @@ class CatalogRepositoryImpl @Inject constructor(
         DataResult.Failure(t.toUserMessage(), t)
     }
 
+    override suspend fun reportProduct(productId: String, reason: String): DataResult<Unit> =
+        firestoreResult {
+            firestore.collection(FirestorePaths.PRODUCTS).document(productId)
+                .update(
+                    mapOf(
+                        "reported" to true,
+                        "reportReason" to reason.trim().take(200),
+                        "reportCount" to com.google.firebase.firestore.FieldValue.increment(1),
+                        "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    ),
+                )
+                .await()
+        }
+
     override fun observeProduct(productId: String): Flow<Product?> =
         products.document(productId).snapshotFlow()
             .map { snap -> if (snap.exists()) snap.toProduct() else null }.orFallback(null)
