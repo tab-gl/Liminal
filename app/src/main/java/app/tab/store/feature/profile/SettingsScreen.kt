@@ -1,5 +1,7 @@
 package app.tab.store.feature.profile
 
+import androidx.compose.foundation.layout.Arrangement
+import app.tab.store.core.designsystem.SproutlyChip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer

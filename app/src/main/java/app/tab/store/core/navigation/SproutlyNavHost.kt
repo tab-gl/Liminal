@@ -295,7 +295,6 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onSellerHub = { go(Routes.SELLER_DASHBOARD) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
                     onOpenSwitcher = { showSwitcher = true },
-                    onRankings = { go(Routes.RANKINGS) },
                     onAdmin = { go(Routes.ADMIN_DASHBOARD) },
                     onSettings = { go(Routes.SETTINGS) },
                 )
