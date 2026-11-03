@@ -83,18 +83,68 @@ import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.domain.model.Category
 import app.tab.store.domain.model.Product
 
-private data class Promo(
+/**
+ * A hero card. These used to be three hardcoded slogans; they are now built from
+ * whatever is actually in the catalogue, and fall back to the developer invite
+ * only when there is nothing to show.
+ */
+private data class HeroSlide(
     val eyebrow: String,
     val title: String,
     val body: String,
     val cta: String,
+    val onClick: () -> Unit,
 )
 
-private val promos = listOf(
-    Promo("New this week", "Ship it,\nwe surface it", "Fresh releases from independent developers, updated daily.", "Browse new"),
-    Promo("Editor's picks", "Apps worth\nyour home screen", "Hand-picked by the Sproutly team this week.", "See the picks"),
-    Promo("Publish with us", "Build it.\nPublish it.\nGrow it.", "Open a developer profile and ship your first app today.", "Start building"),
-)
+private fun heroSlides(
+    state: HomeUiState,
+    onProduct: (String) -> Unit,
+    onSeeAll: () -> Unit,
+    onOffers: () -> Unit,
+    onBecomeDeveloper: () -> Unit,
+): List<HeroSlide> {
+    val slides = mutableListOf<HeroSlide>()
+
+    state.newArrivals.firstOrNull()?.let { app ->
+        slides += HeroSlide(
+            eyebrow = "New this week",
+            title = app.title,
+            body = "Fresh from ${app.storeName.ifBlank { "an independent developer" }}.",
+            cta = "Open",
+            onClick = { onProduct(app.id) },
+        )
+    }
+
+    (state.featured + state.trending).firstOrNull { it.hasActiveOffer }?.let { app ->
+        slides += HeroSlide(
+            eyebrow = "${app.discountPercent}% off",
+            title = app.title,
+            body = "On offer now — ${formatPrice(app.price)}.",
+            cta = "See all offers",
+            onClick = onOffers,
+        )
+    }
+
+    state.trending.firstOrNull()?.let { app ->
+        slides += HeroSlide(
+            eyebrow = "Top of the charts",
+            title = app.title,
+            body = "${app.unitsSold} installs and counting.",
+            cta = "Open",
+            onClick = { onProduct(app.id) },
+        )
+    }
+
+    // Always last, and the only one that is not about a specific app.
+    slides += HeroSlide(
+        eyebrow = "Publish with us",
+        title = "Build it.\nPublish it.\nGrow it.",
+        body = "Open a developer profile and ship your first app today.",
+        cta = "Start building",
+        onClick = onBecomeDeveloper,
+    )
+    return slides
+}
 
 @Composable
 fun HomeScreen(
@@ -109,6 +159,7 @@ fun HomeScreen(
     onBecomeDeveloper: () -> Unit,
     onOpenSwitcher: () -> Unit,
     onRankings: () -> Unit,
+    onOffers: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -232,7 +283,8 @@ fun HomeScreen(
 
             // Promotional banners
             item {
-                val pager = rememberPagerState(pageCount = { promos.size })
+                val slides = heroSlides(state, onProduct, onSeeAll, onOffers, onBecomeDeveloper)
+                val pager = rememberPagerState(pageCount = { slides.size })
                 HorizontalPager(
                     state = pager,
                     contentPadding = PaddingValues(horizontal = 20.dp),
@@ -241,7 +293,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .height(168.dp),
                 ) { page ->
-                    val promo = promos[page]
+                    val promo = slides[page]
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -285,9 +337,7 @@ fun HomeScreen(
                             )
                             Spacer(Modifier.height(12.dp))
                             Surface(
-                                // The third card invites developers to publish;
-                                // the others browse the store.
-                                onClick = if (page == promos.lastIndex) onBecomeDeveloper else onSeeAll,
+                                onClick = promo.onClick,
                                 shape = SproutlyRadii.pill,
                                 color = if (page % 2 == 0) SproutlyPalette.Olive
                                 else SproutlyPalette.Lime,
@@ -316,6 +366,33 @@ fun HomeScreen(
                             selected = true,
                             onClick = onSeeAll,
                         )
+                    }
+                    // Always reachable, even with an empty catalogue — otherwise
+                    // the charts are only linked from a rail that may not exist.
+                    item {
+                        Surface(
+                            onClick = onRankings,
+                            shape = SproutlyRadii.pill,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                TablerIcon(
+                                    TablerIcons.Analytics,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    "Top charts",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            }
+                        }
                     }
                     // Games have their own tab, so they are not a chip here.
                     items(

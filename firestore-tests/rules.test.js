@@ -285,3 +285,58 @@ describe("reporting", () => {
     assert.strictEqual(reported.size, 1);
   });
 });
+
+describe("admin permissions", () => {
+  it("can list every user", async () => {
+    await assertSucceeds(getDocs(collection(admin(), "users")));
+  });
+
+  it("can list every store", async () => {
+    await assertSucceeds(getDocs(collection(admin(), "stores")));
+  });
+
+  it("can list every install", async () => {
+    await assertSucceeds(getDocs(collection(admin(), "orders")));
+  });
+
+  it("can verify a store, which unlocks paid listings", async () => {
+    await assertSucceeds(
+      updateDoc(doc(admin(), "stores", STORE), { verified: true, verificationStatus: "APPROVED" }),
+    );
+  });
+
+  it("can change someone's role", async () => {
+    await assertSucceeds(updateDoc(doc(admin(), "users", SHOPPER), { role: "SELLER" }));
+  });
+});
+
+describe("user permissions", () => {
+  it("can edit their own name", async () => {
+    await assertSucceeds(
+      updateDoc(doc(shopper(), "users", SHOPPER), { displayName: "Carol B" }),
+    );
+  });
+
+  it("cannot promote themselves without owning a store", async () => {
+    await assertFails(updateDoc(doc(shopper(), "users", SHOPPER), { role: "ADMIN" }));
+  });
+
+  it("cannot read another person's profile", async () => {
+    await assertFails(getDoc(doc(shopper(), "users", DEV)));
+  });
+
+  it("cannot list every user", async () => {
+    await assertFails(getDocs(collection(shopper(), "users")));
+  });
+
+  it("cannot verify their own store", async () => {
+    await assertFails(updateDoc(doc(dev(), "stores", STORE), { verified: true }));
+  });
+
+  it("cannot approve their own listing", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "products", "app1"), { status: "DRAFT" });
+    });
+    await assertFails(updateDoc(doc(dev(), "products", "app1"), { status: "ACTIVE" }));
+  });
+});

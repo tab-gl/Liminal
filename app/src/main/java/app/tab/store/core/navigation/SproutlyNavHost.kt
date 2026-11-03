@@ -192,6 +192,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
                     onOpenSwitcher = { showSwitcher = true },
                     onRankings = { go(Routes.RANKINGS) },
+                    onOffers = { go(Routes.OFFERS) },
                 )
             }
             composable(
