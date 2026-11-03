@@ -137,10 +137,9 @@ fun SellerOrdersScreen(
                                             style = MaterialTheme.typography.titleSmall,
                                         )
                                         Text(
-                                            order.address?.oneLine.orEmpty(),
+                                            "${order.itemCount} app${if (order.itemCount == 1) "" else "s"} installed",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 2,
                                         )
                                     }
                                     nextStatus(order)?.let { (next, label) ->
