@@ -186,8 +186,7 @@ fun SellerProductsScreen(
                                         }
                                     }
                                     IconButton(onClick = { viewModel.delete(product) }) {
-                                        Icon(
-                                            HugeIcons.Trash,
+                                        HugeIcon(HugeIcons.Trash,
                                             contentDescription = "Delete",
                                             tint = MaterialTheme.colorScheme.error,
                                             modifier = Modifier.size(19.dp),
@@ -254,8 +253,7 @@ fun SellerProductEditScreen(
                                 .padding(3.dp)
                                 .size(22.dp),
                         ) {
-                            Icon(
-                                HugeIcons.Close,
+                            HugeIcon(HugeIcons.Close,
                                 contentDescription = "Remove image",
                                 modifier = Modifier.padding(4.dp),
                             )

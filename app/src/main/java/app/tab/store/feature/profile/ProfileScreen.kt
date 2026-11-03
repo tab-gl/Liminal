@@ -117,8 +117,7 @@ fun ProfileScreen(
                     modifier = Modifier.size(38.dp),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            HugeIcons.Edit,
+                        HugeIcon(HugeIcons.Edit,
                             contentDescription = "Edit profile",
                             tint = SproutlyPalette.Lime,
                             modifier = Modifier.size(18.dp),
@@ -182,8 +181,7 @@ fun ProfileScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        HugeIcons.ArrowRight,
+                    HugeIcon(HugeIcons.ArrowRight,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                     )
@@ -276,8 +274,7 @@ private fun ProfileRow(icon: ImageVector, title: String, subtitle: String, onCli
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    icon,
+                HugeIcon(icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(19.dp),
@@ -292,8 +289,7 @@ private fun ProfileRow(icon: ImageVector, title: String, subtitle: String, onCli
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Icon(
-                HugeIcons.ArrowRight,
+            HugeIcon(HugeIcons.ArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )

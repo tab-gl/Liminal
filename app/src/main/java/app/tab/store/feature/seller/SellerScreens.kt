@@ -80,8 +80,7 @@ fun SellerSetupScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(20.dp)) {
-                    Icon(
-                        HugeIcons.Store,
+                    HugeIcon(HugeIcons.Store,
                         contentDescription = null,
                         tint = SproutlyPalette.OliveDeep,
                         modifier = Modifier.size(30.dp),
@@ -390,8 +389,7 @@ private fun QuickAction(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    icon,
+                HugeIcon(icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(18.dp),

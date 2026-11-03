@@ -75,8 +75,7 @@ fun ProfileEditScreen(
                             .padding(2.dp),
                     ) {
                         Box(Modifier.padding(8.dp)) {
-                            Icon(
-                                HugeIcons.Image,
+                            HugeIcon(HugeIcons.Image,
                                 contentDescription = "Change photo",
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.height(18.dp),

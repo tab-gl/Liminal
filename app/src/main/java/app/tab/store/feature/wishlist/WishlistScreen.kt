@@ -101,8 +101,7 @@ fun WishlistScreen(
                         trailing = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 IconButton(onClick = { viewModel.remove(product.id) }) {
-                                    Icon(
-                                        HugeIcons.Close,
+                                    HugeIcon(HugeIcons.Close,
                                         contentDescription = "Remove",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )

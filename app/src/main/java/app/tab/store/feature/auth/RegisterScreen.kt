@@ -85,8 +85,7 @@ fun RegisterScreen(
                 errorText = "Use at least 8 characters.",
                 trailing = {
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
-                        Icon(
-                            if (state.passwordVisible) HugeIcons.Notification else HugeIcons.Notification,
+                        HugeIcon(if (state.passwordVisible) HugeIcons.Notification else HugeIcons.Notification,
                             contentDescription = "Toggle password visibility",
                         )
                     }

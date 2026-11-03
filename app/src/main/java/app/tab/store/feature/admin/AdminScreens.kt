@@ -224,8 +224,7 @@ private fun AdminRow(@DrawableRes icon: Int, title: String, subtitle: String, on
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    icon,
+                HugeIcon(icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(19.dp),

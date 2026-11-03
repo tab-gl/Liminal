@@ -139,7 +139,7 @@ fun ProductDetailScreen(
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Icon(
+                                    HugeIcon(
                                         if (state.isWishlisted) HugeIcons.Favourite
                                         else HugeIcons.Favourite,
                                         contentDescription = "Wishlist",
@@ -241,8 +241,7 @@ fun ProductDetailScreen(
                                     .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Icon(
-                                    HugeIcons.Store,
+                                HugeIcon(HugeIcons.Store,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(20.dp),

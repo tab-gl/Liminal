@@ -84,8 +84,7 @@ fun OrderTimeline(events: List<OrderEvent>, currentStatus: OrderStatus, modifier
                         contentAlignment = Alignment.Center,
                     ) {
                         if (done) {
-                            Icon(
-                                HugeIcons.Tick,
+                            HugeIcon(HugeIcons.Tick,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(13.dp),

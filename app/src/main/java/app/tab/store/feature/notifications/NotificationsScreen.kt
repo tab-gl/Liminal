@@ -139,7 +139,7 @@ fun NotificationsScreen(
 
 @Composable
 private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
-    val icon: ImageVector = when (item.type) {
+    val icon: Int = when (item.type) {
         NotificationType.ORDER -> HugeIcons.Receipt
         NotificationType.STORE -> HugeIcons.Store
         NotificationType.PROMO -> HugeIcons.Notification
@@ -163,7 +163,7 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                HugeIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
