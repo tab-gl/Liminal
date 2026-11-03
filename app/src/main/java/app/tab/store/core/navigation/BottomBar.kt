@@ -43,8 +43,7 @@ data class TabDestination(
 val mainTabs = listOf(
     TabDestination(Routes.HOME, "Store", HugeIcons.Store),
     TabDestination(Routes.SEARCH, "Search", HugeIcons.Search),
-    TabDestination(Routes.CART, "Library", HugeIcons.Library),
-    TabDestination(Routes.ORDERS, "My apps", HugeIcons.Download),
+    TabDestination(Routes.WISHLIST, "Wishlist", HugeIcons.Favourite),
     TabDestination(Routes.PROFILE, "Profile", HugeIcons.User),
 )
 
@@ -56,7 +55,6 @@ val mainTabs = listOf(
 @Composable
 fun SproutlyBottomBar(
     currentRoute: String?,
-    cartCount: Int,
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -82,7 +80,7 @@ fun SproutlyBottomBar(
                     FloatingTab(
                         tab = tab,
                         selected = currentRoute == tab.route,
-                        badgeCount = if (tab.route == Routes.CART) cartCount else 0,
+                        badgeCount = 0,
                         onClick = { if (currentRoute != tab.route) onNavigate(tab.route) },
                         modifier = Modifier.weight(1f, fill = false),
                     )

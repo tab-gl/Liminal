@@ -52,7 +52,6 @@ import app.tab.store.feature.seller.DeveloperSwitchDialog
 @Composable
 fun ProfileScreen(
     onEditProfile: () -> Unit,
-    onAddresses: () -> Unit,
     onWishlist: () -> Unit,
     onOrders: () -> Unit,
     onNotifications: () -> Unit,
@@ -142,7 +141,6 @@ fun ProfileScreen(
             Spacer(Modifier.height(8.dp))
             ProfileRow(Icons.Filled.Receipt, "My apps", "Installed and updates", onOrders)
             ProfileRow(Icons.Filled.FavoriteBorder, "Wishlist", "Saved for later", onWishlist)
-            ProfileRow(Icons.Filled.LocationOn, "Addresses", "Billing details", onAddresses)
             ProfileRow(Icons.Filled.Notifications, "Notifications", "Updates and offers", onNotifications)
 
             Spacer(Modifier.height(18.dp))

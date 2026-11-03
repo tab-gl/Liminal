@@ -1,9 +1,7 @@
 package app.tab.store.domain.repository
 
-import app.tab.store.domain.model.Address
 import app.tab.store.domain.model.AdminOverview
 import app.tab.store.domain.model.AppNotification
-import app.tab.store.domain.model.Cart
 import app.tab.store.domain.model.Category
 import app.tab.store.domain.model.Order
 import app.tab.store.domain.model.OrderStatus
@@ -72,15 +70,6 @@ enum class ProductSort { RELEVANCE, PRICE_LOW_HIGH, PRICE_HIGH_LOW, NEWEST, TOP_
 
 data class ProductPage(val products: List<Product>, val nextPageToken: String?)
 
-interface CartRepository {
-    fun observeCart(): Flow<Cart>
-    suspend fun add(product: Product, quantity: Int = 1): DataResult<Unit>
-    suspend fun setQuantity(productId: String, quantity: Int): DataResult<Unit>
-    suspend fun remove(productId: String): DataResult<Unit>
-    suspend fun clear(): DataResult<Unit>
-    fun itemCount(): Flow<Int>
-}
-
 interface WishlistRepository {
     fun observeWishlist(): Flow<List<Product>>
     fun observeWishlistIds(): Flow<Set<String>>
@@ -88,17 +77,11 @@ interface WishlistRepository {
     suspend fun remove(productId: String): DataResult<Unit>
 }
 
-interface AddressRepository {
-    fun observeAddresses(): Flow<List<Address>>
-    suspend fun upsert(address: Address): DataResult<String>
-    suspend fun delete(addressId: String): DataResult<Unit>
-    suspend fun setDefault(addressId: String): DataResult<Unit>
-}
-
 interface OrderRepository {
     fun observeBuyerOrders(): Flow<List<Order>>
     fun observeOrder(orderId: String): Flow<Order?>
-    suspend fun placeOrder(addressId: String, note: String? = null): DataResult<String>
+    /** Adds an app to the library. No cart, no address: a digital install. */
+    suspend fun install(productId: String): DataResult<String>
     suspend fun cancelOrder(orderId: String): DataResult<Unit>
     fun observeSellerOrders(storeId: String): Flow<List<Order>>
     suspend fun updateOrderStatus(orderId: String, status: OrderStatus): DataResult<Unit>

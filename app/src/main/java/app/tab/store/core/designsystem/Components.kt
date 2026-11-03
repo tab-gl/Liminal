@@ -574,7 +574,6 @@ fun QuantityStepper(
 fun ProductCard(
     product: Product,
     onClick: () -> Unit,
-    onAddToCart: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
@@ -602,7 +601,7 @@ fun ProductCard(
                         .padding(8.dp),
                 ) {
                     SproutlyTag(
-                        text = "SOLD OUT",
+                        text = "UNAVAILABLE",
                         container = MaterialTheme.colorScheme.surface,
                         content = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -653,24 +652,6 @@ fun ProductCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough,
-                    )
-                }
-            }
-            Surface(
-                onClick = onAddToCart,
-                enabled = !product.isOutOfStock,
-                shape = CircleShape,
-                color = if (product.isOutOfStock) MaterialTheme.colorScheme.surfaceContainerHigh
-                else MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(34.dp),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = "Add ${product.title} to cart",
-                        tint = if (product.isOutOfStock) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(18.dp),
                     )
                 }
             }

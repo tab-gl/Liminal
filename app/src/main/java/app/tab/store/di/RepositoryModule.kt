@@ -1,20 +1,16 @@
 package app.tab.store.di
 
 import app.tab.store.core.media.CloudinaryUploader
-import app.tab.store.data.repository.AddressRepositoryImpl
 import app.tab.store.data.repository.AdminRepositoryImpl
 import app.tab.store.data.repository.AuthRepositoryImpl
-import app.tab.store.data.repository.CartRepositoryImpl
 import app.tab.store.data.repository.CatalogRepositoryImpl
 import app.tab.store.data.repository.NotificationRepositoryImpl
 import app.tab.store.data.repository.OrderRepositoryImpl
 import app.tab.store.data.repository.ProfileRepositoryImpl
 import app.tab.store.data.repository.SellerRepositoryImpl
 import app.tab.store.data.repository.WishlistRepositoryImpl
-import app.tab.store.domain.repository.AddressRepository
 import app.tab.store.domain.repository.AdminRepository
 import app.tab.store.domain.repository.AuthRepository
-import app.tab.store.domain.repository.CartRepository
 import app.tab.store.domain.repository.CatalogRepository
 import app.tab.store.domain.repository.MediaRepository
 import app.tab.store.domain.repository.NotificationRepository
@@ -42,13 +38,7 @@ abstract class RepositoryModule {
     abstract fun bindCatalogRepository(impl: CatalogRepositoryImpl): CatalogRepository
 
     @Binds @Singleton
-    abstract fun bindCartRepository(impl: CartRepositoryImpl): CartRepository
-
-    @Binds @Singleton
     abstract fun bindWishlistRepository(impl: WishlistRepositoryImpl): WishlistRepository
-
-    @Binds @Singleton
-    abstract fun bindAddressRepository(impl: AddressRepositoryImpl): AddressRepository
 
     @Binds @Singleton
     abstract fun bindOrderRepository(impl: OrderRepositoryImpl): OrderRepository

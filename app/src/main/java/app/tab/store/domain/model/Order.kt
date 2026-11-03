@@ -30,7 +30,6 @@ data class Order(
     val shipping: Long = 0L,
     val total: Long = 0L,
     val status: OrderStatus = OrderStatus.PENDING,
-    val address: Address? = null,
     val storeIds: List<String> = emptyList(),
     val placedAt: Long = 0L,
     val updatedAt: Long = 0L,

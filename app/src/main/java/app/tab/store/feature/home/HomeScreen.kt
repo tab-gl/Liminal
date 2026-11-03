@@ -56,6 +56,8 @@ import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyChip
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
+import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.HugeIcons
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.domain.model.Category
 import app.tab.store.domain.model.Product
@@ -80,7 +82,7 @@ fun HomeScreen(
     onSearch: () -> Unit,
     onCategory: (String) -> Unit,
     onSeeAll: () -> Unit,
-    onCart: () -> Unit,
+    onDownloads: () -> Unit,
     onProfile: () -> Unit,
     onNotifications: () -> Unit,
     onBecomeDeveloper: () -> Unit,
@@ -115,8 +117,16 @@ fun HomeScreen(
                             Icon(Icons.Filled.Notifications, contentDescription = "Notifications")
                         }
                     }
-                    IconButton(onClick = onCart) {
-                        Icon(Icons.Outlined.ShoppingBag, contentDescription = "Cart")
+                    // Downloads (the library of installed apps) lives in the top
+                    // bar, not the bottom navigation: installing is a rare action
+                    // compared with browsing, but checking what you own is common.
+                    IconButton(onClick = onDownloads) {
+                        HugeIcon(
+                            icon = HugeIcons.Download,
+                            contentDescription = "Downloads",
+                            modifier = Modifier.size(22.dp),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                     Avatar(
                         url = state.user?.photoUrl,
@@ -297,7 +307,6 @@ fun HomeScreen(
                                 ProductCard(
                                     product = product,
                                     onClick = { onProduct(product.id) },
-                                    onAddToCart = { viewModel.addToCart(product) },
                                     modifier = Modifier.width(164.dp),
                                     compact = true,
                                 )
@@ -326,7 +335,6 @@ fun HomeScreen(
                                 ProductCard(
                                     product = product,
                                     onClick = { onProduct(product.id) },
-                                    onAddToCart = { viewModel.addToCart(product) },
                                     modifier = Modifier.weight(1f),
                                 )
                             }

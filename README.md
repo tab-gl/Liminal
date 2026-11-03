@@ -39,7 +39,7 @@ still supporting AGP 8.x. The later betas require AGP 9.1 and compileSdk 37.
 personalised home with promo banners, categories, featured / trending / new /
 recommended rails and recently-viewed; search with category, price and sort
 filters and pagination; product detail with gallery, stock awareness and
-wishlist; cart with per-line quantity and stock guards; address book; checkout;
+wishlist; library with per-line quantity and stock guards; address book; checkout;
 order history, live timeline and cancellation.
 
 **Seller** — store onboarding, store profile with logo and banner uploads,

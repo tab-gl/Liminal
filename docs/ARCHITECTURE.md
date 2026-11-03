@@ -9,7 +9,7 @@ app/
   domain/          models, repository interfaces, DataResult
   data/            Firestore implementations, DTO mappers, DI bindings
   feature/         one package per surface: auth, home, search, product, store,
-                   cart, wishlist, checkout, orders, profile, seller, admin,
+                   library, wishlist, checkout, orders, profile, seller, admin,
                    notifications
 functions/src/     trusted backend: auth, orders, media, products, admin,
                    notifications, platform
@@ -26,7 +26,7 @@ with `collectAsStateWithLifecycle()`. UiState classes are immutable data classes
 with derived properties (`canSubmit`, `hasMore`, `isEmpty`) so the UI stays
 declarative and the branching logic is unit-testable without Android.
 
-One-shot events (snackbars, "navigate to cart") are modelled as nullable fields
+One-shot events (snackbars, "navigate to library") are modelled as nullable fields
 consumed by a `consume*()` call, which keeps them out of recomposition.
 
 ## Money
@@ -41,14 +41,14 @@ Checkout screen
   └── OrderRepository.placeOrder(addressId, note)
         └── FunctionsClient.call("createOrder")
               └── [server] transaction:
-                    read carts/{uid}/lines
+                    read librarys/{uid}/lines
                     read every product document
                     reject if not ACTIVE or stock < quantity
                     recompute subtotal from product prices
                     apply shipping policy (free ≥ ₹999, else ₹49)
                     write orders/{id} with address snapshot + timeline
                     decrement stock, increment unitsSold
-                    delete the cart lines
+                    delete the library lines
                     increment platform/stats.orderCount
                     return orderId
 ```

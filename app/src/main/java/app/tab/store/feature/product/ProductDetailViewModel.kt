@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.tab.store.domain.model.Product
-import app.tab.store.domain.repository.CartRepository
+import app.tab.store.domain.repository.OrderRepository
 import app.tab.store.domain.repository.CatalogRepository
 import app.tab.store.domain.repository.DataResult
 import app.tab.store.domain.repository.WishlistRepository
@@ -22,11 +22,11 @@ data class ProductDetailUiState(
     val error: String? = null,
     val quantity: Int = 1,
     val isWishlisted: Boolean = false,
-    val isAddingToCart: Boolean = false,
+    val isInstalling: Boolean = false,
     val message: String? = null,
-    val navigateToCart: Boolean = false,
+    val navigateToLibrary: Boolean = false,
 ) {
-    val canAdd: Boolean get() = product?.isPurchasable == true && !isAddingToCart
+    val canInstall: Boolean get() = product?.status == app.tab.store.domain.model.ProductStatus.ACTIVE && !isInstalling
     val maxQuantity: Int get() = product?.stock ?: 1
 }
 
@@ -34,7 +34,7 @@ data class ProductDetailUiState(
 class ProductDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val catalogRepository: CatalogRepository,
-    private val cartRepository: CartRepository,
+    private val orderRepository: OrderRepository,
     private val wishlistRepository: WishlistRepository,
 ) : ViewModel() {
 
@@ -81,19 +81,20 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
-    fun addToCart(goToCart: Boolean = false) {
+    /** Get / Install: writes the install record and opens the library. */
+    fun install() {
         val product = _uiState.value.product ?: return
         viewModelScope.launch {
-            _uiState.update { it.copy(isAddingToCart = true) }
-            when (val res = cartRepository.add(product, _uiState.value.quantity)) {
+            _uiState.update { it.copy(isInstalling = true) }
+            when (val res = orderRepository.install(product.id)) {
                 is DataResult.Failure -> _uiState.update {
-                    it.copy(isAddingToCart = false, message = res.message)
+                    it.copy(isInstalling = false, message = res.message)
                 }
                 is DataResult.Success -> _uiState.update {
                     it.copy(
-                        isAddingToCart = false,
-                        message = if (goToCart) null else "Added to your library",
-                        navigateToCart = goToCart,
+                        isInstalling = false,
+                        message = "${product.title} added to your library",
+                        navigateToLibrary = true,
                     )
                 }
             }
@@ -102,5 +103,5 @@ class ProductDetailViewModel @Inject constructor(
 
     fun consumeMessage() = _uiState.update { it.copy(message = null) }
 
-    fun consumeNavigation() = _uiState.update { it.copy(navigateToCart = false) }
+    fun consumeNavigation() = _uiState.update { it.copy(navigateToLibrary = false) }
 }

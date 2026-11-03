@@ -206,7 +206,6 @@ fun StoreScreen(
                         ProductCard(
                             product = product,
                             onClick = { onProduct(product.id) },
-                            onAddToCart = {},
                             modifier = Modifier.weight(1f),
                         )
                     }

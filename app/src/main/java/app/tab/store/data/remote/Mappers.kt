@@ -1,6 +1,5 @@
 package app.tab.store.data.remote
 
-import app.tab.store.domain.model.Address
 import app.tab.store.domain.model.AppNotification
 import app.tab.store.domain.model.Category
 import app.tab.store.domain.model.NotificationType
@@ -103,7 +102,7 @@ fun DocumentSnapshot.toCategory(): Category = Category(
     imageUrl = strOrNull("imageUrl"),
 )
 
-fun DocumentSnapshot.toAddress(): Address = Address(
+: Address = Address(
     id = id,
     label = getString("label") ?: "Home",
     fullName = str("fullName"),
@@ -138,21 +137,6 @@ fun DocumentSnapshot.toOrder(): Order {
             note = map["note"] as? String,
         )
     }
-    val addressMap = get("address") as? Map<String, Any?>
-    val address = addressMap?.let {
-        Address(
-            id = it["id"] as? String ?: "",
-            label = it["label"] as? String ?: "Home",
-            fullName = it["fullName"] as? String ?: "",
-            phone = it["phone"] as? String ?: "",
-            line1 = it["line1"] as? String ?: "",
-            line2 = it["line2"] as? String ?: "",
-            city = it["city"] as? String ?: "",
-            state = it["state"] as? String ?: "",
-            pincode = it["pincode"] as? String ?: "",
-            isDefault = it["isDefault"] as? Boolean ?: false,
-        )
-    }
     return Order(
         id = id,
         buyerId = str("buyerId"),
@@ -162,7 +146,6 @@ fun DocumentSnapshot.toOrder(): Order {
         shipping = long("shipping"),
         total = long("total"),
         status = OrderStatus.from(str("status")),
-        address = address,
         storeIds = (get("storeIds") as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
         placedAt = long("placedAt"),
         updatedAt = long("updatedAt"),

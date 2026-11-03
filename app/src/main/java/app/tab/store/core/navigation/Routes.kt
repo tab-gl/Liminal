@@ -10,19 +10,15 @@ object Routes {
     // Customer tabs
     const val HOME = "home"
     const val SEARCH = "search"
-    const val CART = "cart"
     const val ORDERS = "orders"
     const val PROFILE = "profile"
 
     // Customer detail destinations
     const val PRODUCT = "product/{productId}"
     const val STORE = "store/{storeId}"
-    const val CHECKOUT = "checkout"
     const val ORDER_DETAIL = "order/{orderId}"
     const val ORDER_PLACED = "order-placed/{orderId}"
     const val WISHLIST = "wishlist"
-    const val ADDRESSES = "addresses"
-    const val ADDRESS_EDIT = "address-edit?addressId={addressId}"
     const val PROFILE_EDIT = "profile-edit"
     const val NOTIFICATIONS = "notifications"
     const val SETTINGS = "settings"
@@ -47,7 +43,6 @@ object Routes {
     fun store(id: String) = "store/$id"
     fun orderDetail(id: String) = "order/$id"
     fun orderPlaced(id: String) = "order-placed/$id"
-    fun addressEdit(id: String?) = "address-edit?addressId=${id ?: ""}"
     fun sellerProductEdit(id: String?) = "seller/product-edit?productId=${id ?: ""}"
     fun searchInCategory(categoryId: String) = "search?categoryId=$categoryId"
 }

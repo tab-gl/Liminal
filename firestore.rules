@@ -217,20 +217,6 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // ---------------------------------------------------------------- cart
-    match /carts/{userId} {
-      allow read, write: if isSignedIn() && userId == uid();
-
-      match /lines/{productId} {
-        allow read, delete: if isSignedIn() && userId == uid();
-        allow create, update: if isSignedIn() && userId == uid()
-          && request.resource.data.quantity is int
-          && request.resource.data.quantity > 0
-          && request.resource.data.quantity <= 99
-          && request.resource.data.productId == productId;
-      }
-    }
-
     // ------------------------------------------------------------ wishlist
     match /wishlists/{userId} {
       allow read, write: if isSignedIn() && userId == uid();
@@ -238,20 +224,6 @@ service cloud.firestore {
       match /items/{productId} {
         allow read, write: if isSignedIn() && userId == uid()
           && request.resource.data.productId == productId;
-      }
-    }
-
-    // ----------------------------------------------------------- addresses
-    match /addresses/{userId} {
-      allow read, write: if isSignedIn() && userId == uid();
-
-      match /items/{addressId} {
-        // Billing details only. No phone requirement: nothing is delivered.
-        allow read, write: if isSignedIn() && userId == uid()
-          && request.resource.data.pincode is string
-          && request.resource.data.pincode.matches('^[0-9]{6}$')
-          && request.resource.data.line1 is string
-          && request.resource.data.line1.size() >= 4;
       }
     }
 
@@ -326,8 +298,6 @@ service cloud.firestore {
         && request.resource.data.items.size() <= 8
         && request.resource.data.storeIds is list
         && request.resource.data.storeIds.size() > 0
-        && request.resource.data.address is map
-        && request.resource.data.address.pincode is string
         && totalsConsistent()
         && itemValid(0)
         && (request.resource.data.items.size() < 2 || itemValid(1))

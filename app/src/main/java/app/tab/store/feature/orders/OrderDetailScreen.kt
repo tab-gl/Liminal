@@ -140,30 +140,7 @@ fun OrderDetailScreen(
                         Text(formatPrice(order.total), style = MaterialTheme.typography.headlineSmall)
                     }
 
-                    if (order.address != null) {
-                        Spacer(Modifier.height(20.dp))
-                        Text("Billing address", style = MaterialTheme.typography.headlineSmall)
-                        Spacer(Modifier.height(6.dp))
-                        Surface(
-                            shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Column(Modifier.padding(14.dp)) {
-                                Text(order.address.fullName, style = MaterialTheme.typography.titleSmall)
-                                Text(
-                                    order.address.oneLine,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                Text(
-                                    order.address.phone,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
+
 
                     if (order.canCancel) {
                         Spacer(Modifier.height(22.dp))

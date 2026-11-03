@@ -68,8 +68,8 @@ fun ProductDetailScreen(
             viewModel.consumeMessage()
         }
     }
-    LaunchedEffect(state.navigateToCart) {
-        if (state.navigateToCart) {
+    LaunchedEffect(state.navigateToLibrary) {
+        if (state.navigateToLibrary) {
             viewModel.consumeNavigation()
             onCart()
         }
@@ -285,34 +285,12 @@ fun ProductDetailScreen(
 
                     Spacer(Modifier.height(24.dp))
                     Spacer(Modifier.height(20.dp))
-                    Row {
-                        Surface(
-                            onClick = { viewModel.addToCart(goToCart = false) },
-                            enabled = state.canAdd,
-                            shape = SproutlyRadii.pill,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(54.dp),
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    if (product.isOutOfStock) "Unavailable" else "Get",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
-                            }
-                        }
-                        Spacer(Modifier.width(10.dp))
-                        Box(Modifier.weight(1f)) {
-                            SproutlyButton(
-                                text = "Install",
-                                onClick = { viewModel.addToCart(goToCart = true) },
-                                enabled = state.canAdd,
-                                loading = state.isAddingToCart,
-                            )
-                        }
-                    }
+                    SproutlyButton(
+                        text = if (product.isOutOfStock) "Unavailable" else "Get",
+                        onClick = viewModel::install,
+                        enabled = state.canInstall,
+                        loading = state.isInstalling,
+                    )
                     Spacer(Modifier.height(28.dp))
                 }
             }

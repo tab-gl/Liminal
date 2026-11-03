@@ -6,7 +6,6 @@ import app.tab.store.domain.model.Category
 import app.tab.store.domain.model.Product
 import app.tab.store.domain.model.User
 import app.tab.store.domain.repository.AuthRepository
-import app.tab.store.domain.repository.CartRepository
 import app.tab.store.domain.repository.CatalogRepository
 import app.tab.store.domain.repository.DataResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,7 +48,6 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val catalogRepository: CatalogRepository,
-    private val cartRepository: CartRepository,
     authRepository: AuthRepository,
 ) : ViewModel() {
 
@@ -91,16 +89,6 @@ class HomeViewModel @Inject constructor(
                 )
             }.collect { state ->
                 _uiState.value = state
-            }
-        }
-    }
-
-    fun addToCart(product: Product) {
-        viewModelScope.launch {
-            when (val res = cartRepository.add(product)) {
-                is DataResult.Failure -> _uiState.value = _uiState.value.copy(message = res.message)
-                is DataResult.Success ->
-                    _uiState.value = _uiState.value.copy(message = "${product.title} added to your library")
             }
         }
     }

@@ -53,83 +53,40 @@ class OrderRepositoryImpl @Inject constructor(
         orders.document(orderId).snapshotFlow()
             .map { snap -> if (snap.exists()) snap.toOrder() else null }.orFallback(null)
 
-    override suspend fun placeOrder(addressId: String, note: String?): DataResult<String> {
-        val uid = uid ?: return DataResult.Failure("Sign in to place an order.")
+    /**
+     * Installs an app: one record, no cart, no address, no shipping.
+     *
+     * A digital install has nothing to fulfil, so the record is written as
+     * already installed. Paid apps will need the payment step in front of this
+     * once Razorpay is wired; today everything is a free install.
+     */
+    override suspend fun install(productId: String): DataResult<String> {
+        val uid = uid ?: return DataResult.Failure("Sign in to install apps.")
+        val productRef = firestore.collection(FirestorePaths.PRODUCTS).document(productId)
         val orderRef = orders.document()
+        var item: Map<String, Any?> = emptyMap()
         return try {
-            // The cart is read outside the transaction (Transaction has no
-            // collection read); products are re-read *inside* it, so stock and
-            // price are always the transactional values.
-            val cartSnap = firestore.collection(FirestorePaths.cartLines(uid)).get().await()
-            if (cartSnap.isEmpty) return DataResult.Failure("Your cart is empty.")
-
-            val lines = cartSnap.documents.mapNotNull { doc ->
-                val qty = (doc.get("quantity") as? Number)?.toInt() ?: 0
-                if (qty > 0) doc.id to qty else null
-            }
-            if (lines.isEmpty()) return DataResult.Failure("Your cart is empty.")
-            val cartRefs = cartSnap.documents.map { it.reference }
-
-            // Captured for the seller notification below.
-            var placedItems: List<Map<String, Any?>> = emptyList()
-            var placedSubtotal = 0L
-
             val orderId = firestore.runTransaction { tx ->
-                val addressSnap = tx.get(
-                    firestore.collection(FirestorePaths.addressItems(uid)).document(addressId),
+                val snap = tx.get(productRef)
+                if (!snap.exists()) error("That app is no longer available.")
+                if (snap.getString("status") != "ACTIVE") error("That app is not published.")
+
+                @Suppress("UNCHECKED_CAST")
+                val images = snap.get("images") as? List<Map<String, Any?>>
+                val title = snap.getString("title").orEmpty()
+                val price = (snap.get("price") as? Number)?.toLong() ?: 0L
+                val storeId = snap.getString("storeId").orEmpty()
+                val now = System.currentTimeMillis()
+
+                item = mapOf(
+                    "productId" to snap.id,
+                    "title" to title,
+                    "imageUrl" to images?.firstOrNull()?.get("url"),
+                    "unitPrice" to price,
+                    "quantity" to 1,
+                    "storeId" to storeId,
+                    "storeName" to snap.getString("storeName").orEmpty(),
                 )
-                if (!addressSnap.exists()) error("Those billing details are no longer saved.")
-
-                val productRefs = lines.map {
-                    firestore.collection(FirestorePaths.PRODUCTS).document(it.first)
-                }
-                // This SDK's Transaction only exposes get(DocumentReference),
-                // so each product is read transactionally, one by one.
-                val productSnaps = productRefs.map { ref -> tx.get(ref) }
-
-                val items = mutableListOf<Map<String, Any?>>()
-                var subtotal = 0L
-                val storeIds = linkedSetOf<String>()
-
-                productSnaps.forEachIndexed { index, snap ->
-                    val qty = lines[index].second
-                    if (!snap.exists()) error("An item in your cart is no longer available.")
-
-                    val status = snap.getString("status").orEmpty()
-                    val stock = (snap.get("stock") as? Number)?.toInt() ?: 0
-                    val price = (snap.get("price") as? Number)?.toLong() ?: 0L
-                    val title = snap.getString("title").orEmpty()
-                    if (status != "ACTIVE") error("$title is no longer for sale.")
-                    if (stock < qty) error("$title is no longer available. Please update your library.")
-
-                    @Suppress("UNCHECKED_CAST")
-                    val images = snap.get("images") as? List<Map<String, Any?>>
-                    val storeId = snap.getString("storeId").orEmpty()
-                    storeIds += storeId
-
-                    items += mapOf(
-                        "productId" to snap.id,
-                        "title" to title,
-                        "imageUrl" to images?.firstOrNull()?.get("url"),
-                        "unitPrice" to price,
-                        "quantity" to qty,
-                        "storeId" to storeId,
-                        "storeName" to snap.getString("storeName").orEmpty(),
-                    )
-                    subtotal += price * qty
-
-                    tx.update(
-                        snap.reference,
-                        mapOf(
-                            "stock" to stock - qty,
-                            "unitsSold" to ((snap.get("unitsSold") as? Number)?.toInt() ?: 0) + qty,
-                            "updatedAt" to FieldValue.serverTimestamp(),
-                        ),
-                    )
-                }
-
-                val shipping = if (subtotal >= FREE_SHIPPING_PAISE) 0L else FLAT_SHIPPING_PAISE
-                val address = addressSnap.data ?: emptyMap()
 
                 tx.set(
                     orderRef,
@@ -137,46 +94,43 @@ class OrderRepositoryImpl @Inject constructor(
                         "buyerId" to uid,
                         "buyerName" to (auth.currentUser?.displayName
                             ?: auth.currentUser?.email?.substringBefore("@").orEmpty()),
-                        "items" to items,
-                        "subtotal" to subtotal,
-                        "shipping" to shipping,
-                        "total" to subtotal + shipping,
+                        "items" to listOf(item),
+                        "subtotal" to price,
+                        "shipping" to 0L,
+                        "total" to price,
                         "currency" to "INR",
-                        "status" to OrderStatus.PENDING.name,
-                        "note" to note.orEmpty(),
-                        "address" to mapOf(
-                            "id" to addressId,
-                            "label" to address["label"],
-                            "fullName" to address["fullName"],
-                            "phone" to address["phone"],
-                            "line1" to address["line1"],
-                            "line2" to address["line2"],
-                            "city" to address["city"],
-                            "state" to address["state"],
-                            "pincode" to address["pincode"],
-                            "isDefault" to address["isDefault"],
-                        ),
-                        "storeIds" to storeIds.toList(),
+                        "status" to OrderStatus.DELIVERED.name,
+                        "note" to "",
+                        "storeIds" to listOf(storeId),
                         "placedAt" to FieldValue.serverTimestamp(),
                         "updatedAt" to FieldValue.serverTimestamp(),
                         "timeline" to listOf(
                             mapOf(
                                 "status" to OrderStatus.PENDING.name,
-                                "at" to System.currentTimeMillis(),
-                                "note" to "Order placed",
+                                "at" to now,
+                                "note" to "Install requested",
+                            ),
+                            mapOf(
+                                "status" to OrderStatus.DELIVERED.name,
+                                "at" to now,
+                                "note" to "Added to library",
                             ),
                         ),
-                        "payment" to mapOf("method" to "COD", "status" to "PENDING"),
+                        "payment" to mapOf("method" to "NONE", "status" to "PAID"),
                     ),
                 )
 
-                cartRefs.forEach { tx.delete(it) }
-                placedItems = items
-                placedSubtotal = subtotal
+                tx.update(
+                    productRef,
+                    mapOf(
+                        "unitsSold" to ((snap.get("unitsSold") as? Number)?.toInt() ?: 0) + 1,
+                        "updatedAt" to FieldValue.serverTimestamp(),
+                    ),
+                )
                 orderRef.id
             }.await()
 
-            notifySeller(orderId, placedItems, placedSubtotal)
+            notifySeller(orderId, listOf(item), 0L)
             DataResult.Success(orderId)
         } catch (t: Throwable) {
             DataResult.Failure(t.toUserMessage(), t)
@@ -225,26 +179,6 @@ class OrderRepositoryImpl @Inject constructor(
                 val status = snap.getString("status").orEmpty()
                 if (status != OrderStatus.PENDING.name && status != OrderStatus.CONFIRMED.name) {
                     error("This order can no longer be cancelled.")
-                }
-
-                @Suppress("UNCHECKED_CAST")
-                val items = snap.get("items") as? List<Map<String, Any?>> ?: emptyList()
-                items.forEach { item ->
-                    val productRef = firestore.collection(FirestorePaths.PRODUCTS)
-                        .document(item["productId"] as? String ?: return@forEach)
-                    val productSnap = tx.get(productRef)
-                    if (productSnap.exists()) {
-                        val qty = (item["quantity"] as? Number)?.toInt() ?: 0
-                        tx.update(
-                            productRef,
-                            mapOf(
-                                "stock" to ((productSnap.get("stock") as? Number)?.toInt() ?: 0) + qty,
-                                "unitsSold" to (((productSnap.get("unitsSold") as? Number)?.toInt() ?: 0) - qty)
-                                    .coerceAtLeast(0),
-                                "updatedAt" to FieldValue.serverTimestamp(),
-                            ),
-                        )
-                    }
                 }
 
                 @Suppress("UNCHECKED_CAST")
@@ -308,8 +242,4 @@ class OrderRepositoryImpl @Inject constructor(
             .snapshotFlow()
             .map { snap -> snap.documents.map { it.toOrder() } }.orFallback(emptyList())
 
-    private companion object {
-        const val FREE_SHIPPING_PAISE = 99_900L
-        const val FLAT_SHIPPING_PAISE = 4_900L
-    }
 }

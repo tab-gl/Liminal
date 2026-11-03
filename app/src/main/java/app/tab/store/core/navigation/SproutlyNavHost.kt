@@ -37,17 +37,12 @@ import app.tab.store.feature.admin.AdminUsersScreen
 import app.tab.store.feature.auth.ForgotPasswordScreen
 import app.tab.store.feature.auth.LoginScreen
 import app.tab.store.feature.auth.RegisterScreen
-import app.tab.store.feature.cart.CartScreen
-import app.tab.store.feature.cart.CartViewModel
-import app.tab.store.feature.checkout.CheckoutScreen
 import app.tab.store.feature.home.HomeScreen
 import app.tab.store.feature.notifications.NotificationsScreen
 import app.tab.store.feature.orders.OrderDetailScreen
 import app.tab.store.feature.orders.OrderPlacedScreen
 import app.tab.store.feature.orders.OrdersScreen
 import app.tab.store.feature.product.ProductDetailScreen
-import app.tab.store.feature.profile.AddressEditScreen
-import app.tab.store.feature.profile.AddressListScreen
 import app.tab.store.feature.profile.ProfileEditScreen
 import app.tab.store.feature.profile.ProfileScreen
 import app.tab.store.feature.profile.SettingsScreen
@@ -88,10 +83,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     val navController: NavHostController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val cartViewModel: CartViewModel = hiltViewModel()
     // Held at graph scope so "Add another account" can sign out from anywhere.
     val profileViewModel: ProfileViewModel = hiltViewModel()
-    val cartState by cartViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Background stream failures surface here with the actionable message.
@@ -121,7 +114,6 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             if (showBottomBar) {
                 SproutlyBottomBar(
                     currentRoute = currentRoute,
-                    cartCount = cartState.cart.itemCount,
                     onNavigate = ::goTab,
                 )
             }
@@ -168,7 +160,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onSearch = { goTab(Routes.SEARCH) },
                     onCategory = { go(Routes.searchInCategory(it)) },
                     onSeeAll = { goTab(Routes.SEARCH) },
-                    onCart = { goTab(Routes.CART) },
+                    onDownloads = { goTab(Routes.ORDERS) },
                     onProfile = { goTab(Routes.PROFILE) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
@@ -197,7 +189,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     productId = entry.arguments?.getString("productId").orEmpty(),
                     onBack = { navController.popBackStack() },
                     onStore = { go(Routes.store(it)) },
-                    onCart = { goTab(Routes.CART) },
+                    onDownloads = { goTab(Routes.ORDERS) },
                 )
             }
             composable(
@@ -210,30 +202,14 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onProduct = { go(Routes.product(it)) },
                 )
             }
-            composable(Routes.CART) {
-                CartScreen(
-                    onCheckout = { go(Routes.CHECKOUT) },
-                    onProduct = { go(Routes.product(it)) },
-                    onContinueShopping = { goTab(Routes.HOME) },
-                )
-            }
+
             composable(Routes.WISHLIST) {
                 WishlistScreen(
                     onBack = { navController.popBackStack() },
                     onProduct = { go(Routes.product(it)) },
                 )
             }
-            composable(Routes.CHECKOUT) {
-                CheckoutScreen(
-                    onBack = { navController.popBackStack() },
-                    onOrderPlaced = { orderId ->
-                        navController.navigate(Routes.orderPlaced(orderId)) {
-                            popUpTo(Routes.CART) { inclusive = true }
-                        }
-                    },
-                    onManageAddresses = { go(Routes.ADDRESSES) },
-                )
-            }
+
             composable(Routes.ORDERS) {
                 OrdersScreen(
                     onOrder = { go(Routes.orderDetail(it)) },
@@ -268,7 +244,6 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             composable(Routes.PROFILE) {
                 ProfileScreen(
                     onEditProfile = { go(Routes.PROFILE_EDIT) },
-                    onAddresses = { go(Routes.ADDRESSES) },
                     onWishlist = { go(Routes.WISHLIST) },
                     onOrders = { goTab(Routes.ORDERS) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
@@ -289,20 +264,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             composable(Routes.PROFILE_EDIT) {
                 ProfileEditScreen(onBack = { navController.popBackStack() })
             }
-            composable(Routes.ADDRESSES) {
-                AddressListScreen(
-                    onBack = { navController.popBackStack() },
-                    onEdit = { go(Routes.addressEdit(it)) },
-                )
-            }
-            composable(
-                route = Routes.ADDRESS_EDIT,
-                arguments = listOf(
-                    navArgument("addressId") {
-                        type = NavType.StringType
-                        nullable = true
-                        defaultValue = null
-                    },
+
+,
                 ),
             ) { entry ->
                 AddressEditScreen(

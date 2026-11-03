@@ -37,7 +37,7 @@ Subcollection `tokens/{fcmToken}` — device push tokens, owner-only.
 ### `categories/{categoryId}`
 `name`, `slug`, `iconKey`, `order`, `productCount`, `imageUrl`.
 
-### `carts/{uid}/lines/{productId}`
+### `wishlists/{uid}/items/{productId}`
 Denormalised snapshot for a fast cart render: `productId`, `storeId`,
 `storeName`, `title`, `imageUrl`, `unitPrice`, `quantity`, `stock`, `status`,
 `addedAt`. The server re-reads the real product before charging anyone.
@@ -45,7 +45,7 @@ Denormalised snapshot for a fast cart render: `productId`, `storeId`,
 ### `wishlists/{uid}/items/{productId}`
 Same snapshot shape as a cart line, minus quantity.
 
-### `addresses/{uid}/items/{addressId}`
+### `wishlists/{uid}/items/{addressId}`
 `label`, `fullName`, `phone`, `line1`, `line2`, `city`, `state`, `pincode`,
 `isDefault`.
 
