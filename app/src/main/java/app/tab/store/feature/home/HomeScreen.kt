@@ -72,8 +72,8 @@ import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyChip
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
-import app.tab.store.core.designsystem.HugeIcon
-import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.TablerIcons
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.domain.model.Category
 import app.tab.store.domain.model.Product
@@ -144,15 +144,15 @@ fun HomeScreen(
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = onNotifications) {
                         BadgedBox(badge = {}) {
-                            HugeIcon(HugeIcons.Notification, contentDescription = "Notifications")
+                            TablerIcon(TablerIcons.Notification, contentDescription = "Notifications")
                         }
                     }
                     // Downloads (the library of installed apps) lives in the top
                     // bar, not the bottom navigation: installing is a rare action
                     // compared with browsing, but checking what you own is common.
                     IconButton(onClick = onDownloads) {
-                        HugeIcon(
-                            icon = HugeIcons.Download,
+                        TablerIcon(
+                            icon = TablerIcons.Download,
                             contentDescription = "Downloads",
                             modifier = Modifier.size(22.dp),
                             tint = MaterialTheme.colorScheme.onSurface,
@@ -212,7 +212,7 @@ fun HomeScreen(
                             modifier = Modifier.padding(horizontal = 18.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            HugeIcon(HugeIcons.Search,
+                            TablerIcon(TablerIcons.Search,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp),
@@ -330,6 +330,7 @@ fun HomeScreen(
                         message = "Once developers publish their first apps they will appear right here.",
                         actionLabel = "Browse the store",
                         onAction = onSeeAll,
+                        icon = TablerIcons.Store,
                     )
                 }
             } else {
@@ -500,8 +501,10 @@ fun HomeScreen(
             }
         }
 
-        // Search FAB: a labelled pill at rest, a circle once you scroll.
-        Surface(
+        // Search FAB: a labelled pill at rest, a circle once you scroll. Hidden
+        // while the store is empty — there is nothing to search, and it would
+        // sit on top of the empty state.
+        if (state.hasAnyContent) Surface(
             onClick = onSearch,
             shape = RoundedCornerShape(50),
             color = MaterialTheme.colorScheme.primary,
@@ -518,8 +521,8 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                HugeIcon(
-                    icon = HugeIcons.Search,
+                TablerIcon(
+                    icon = TablerIcons.Search,
                     contentDescription = "Search apps",
                     modifier = Modifier.size(22.dp),
                 )

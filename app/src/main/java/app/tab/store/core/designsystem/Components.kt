@@ -101,7 +101,7 @@ fun SproutlyTopBar(
         navigationIcon = {
             if (onBack != null) {
                 IconButton(onClick = onBack) {
-                    HugeIcon(HugeIcons.ArrowLeft, contentDescription = "Back")
+                    TablerIcon(TablerIcons.ArrowLeft, contentDescription = "Back")
                 }
             }
         },
@@ -165,7 +165,7 @@ fun SproutlyButton(
                 )
             } else {
                 if (icon != null) {
-                    HugeIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
+                    TablerIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(text, style = MaterialTheme.typography.labelLarge)
@@ -198,7 +198,7 @@ fun SproutlySecondaryButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
-                HugeIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
+                TablerIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                 Spacer(Modifier.width(8.dp))
             }
             Text(text, style = MaterialTheme.typography.labelLarge)
@@ -256,7 +256,7 @@ fun SproutlyChip(
 @Composable
 fun RatingBadge(rating: Double, count: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        HugeIcon(HugeIcons.Star,
+        TablerIcon(TablerIcons.Star,
             contentDescription = null,
             modifier = Modifier.size(13.dp),
             tint = LocalSproutlyExtra.current.ratingGold,
@@ -331,7 +331,7 @@ fun SproutlyImage(
     ) {
         if (url.isNullOrBlank()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                HugeIcon(HugeIcons.Image,
+                TablerIcon(TablerIcons.Image,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(26.dp),
@@ -346,7 +346,7 @@ fun SproutlyImage(
                 loading = { ShimmerBox(Modifier.fillMaxSize(), corner = corner) },
                 error = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        HugeIcon(HugeIcons.Image,
+                        TablerIcon(TablerIcons.Image,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -403,26 +403,26 @@ fun EmptyState(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 48.dp),
+            .padding(horizontal = 32.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(
-            modifier = Modifier
-                .size(84.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (icon != null) {
-                HugeIcon(
-            icon,
+        if (icon != null) {
+            Box(
+                modifier = Modifier
+                    .size(84.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                TablerIcon(
+                    icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(34.dp),
                 )
             }
+            Spacer(Modifier.height(18.dp))
         }
-        Spacer(Modifier.height(18.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
@@ -550,7 +550,7 @@ fun QuantityStepper(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onDecrease, enabled = enabled) {
-                HugeIcon(HugeIcons.Close, contentDescription = "Decrease", modifier = Modifier.size(17.dp))
+                TablerIcon(TablerIcons.Close, contentDescription = "Decrease", modifier = Modifier.size(17.dp))
             }
             Text(
                 text = quantity.toString(),
@@ -559,7 +559,7 @@ fun QuantityStepper(
                 textAlign = TextAlign.Center,
             )
             IconButton(onClick = onIncrease, enabled = enabled && quantity < max) {
-                HugeIcon(HugeIcons.Plus, contentDescription = "Increase", modifier = Modifier.size(17.dp))
+                TablerIcon(TablerIcons.Plus, contentDescription = "Increase", modifier = Modifier.size(17.dp))
             }
         }
     }
@@ -815,7 +815,7 @@ fun SuccessCheck(modifier: Modifier = Modifier, size: Dp = 64.dp) {
             .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
-        HugeIcon(HugeIcons.Tick,
+        TablerIcon(TablerIcons.Tick,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.size(size / 2),

@@ -40,11 +40,11 @@ keep clear space equal to one leaf width.
 
 ## Icons
 
-Hugeicons (Free 4.4.0) — a single 24dp stroke family at 1.5 stroke width, so
+Tabler (Free 4.4.0) — a single 24dp stroke family at 1.5 stroke width, so
 icons stay optically consistent instead of mixing Material's filled and
-outlined sets. Hugeicons has no Android artifact, so the icons the app uses are
-compiled into vector drawables by `tools/hugeicons.py` and addressed through
-`HugeIcons` in `core/designsystem`.
+outlined sets. Tabler has no Android artifact, so the icons the app uses are
+compiled into vector drawables by `tools/tabler.py` and addressed through
+`TablerIcons` in `core/designsystem`.
 
 ## Type
 

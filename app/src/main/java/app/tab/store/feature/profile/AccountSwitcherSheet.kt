@@ -23,8 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.tab.store.core.designsystem.Avatar
-import app.tab.store.core.designsystem.HugeIcon
-import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.TablerIcons
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.domain.model.User
 
@@ -117,11 +117,11 @@ fun AccountSwitcherSheet(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        HugeIcon(
+                        TablerIcon(
                             icon = when (workspace) {
-                                Workspace.SHOPPER -> HugeIcons.Store
-                                Workspace.DEVELOPER -> HugeIcons.Sparkles
-                                Workspace.ADMIN -> HugeIcons.Settings
+                                Workspace.SHOPPER -> TablerIcons.Store
+                                Workspace.DEVELOPER -> TablerIcons.Sparkles
+                                Workspace.ADMIN -> TablerIcons.Settings
                             },
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
@@ -144,8 +144,8 @@ fun AccountSwitcherSheet(
                             )
                         }
                         if (selected) {
-                            HugeIcon(
-                                icon = HugeIcons.Tick,
+                            TablerIcon(
+                                icon = TablerIcons.Tick,
                                 contentDescription = "Current workspace",
                                 modifier = Modifier.size(20.dp),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -159,8 +159,8 @@ fun AccountSwitcherSheet(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(6.dp))
 
-            SheetAction(HugeIcons.Plus, "Add another account", onAddAccount)
-            SheetAction(HugeIcons.ArrowRight, "Sign out", onSignOut)
+            SheetAction(TablerIcons.Plus, "Add another account", onAddAccount)
+            SheetAction(TablerIcons.ArrowRight, "Sign out", onSignOut)
 
             Spacer(Modifier.height(24.dp))
         }
@@ -185,7 +185,7 @@ private fun SheetAction(icon: Int, label: String, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                HugeIcon(
+                TablerIcon(
                     icon = icon,
                     contentDescription = null,
                     modifier = Modifier.size(17.dp),

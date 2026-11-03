@@ -15,8 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.tab.store.core.designsystem.HugeIcon
-import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.TablerIcons
 import app.tab.store.core.designsystem.SproutlyRadii
 
 /**
@@ -43,8 +43,8 @@ fun DeveloperSwitchDialog(
                     .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                HugeIcon(
-                    icon = HugeIcons.Sparkles,
+                TablerIcon(
+                    icon = TablerIcons.Sparkles,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,

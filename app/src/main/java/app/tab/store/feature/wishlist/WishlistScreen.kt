@@ -24,8 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.HugeIcons
-import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.ProductRowCard
 import app.tab.store.core.designsystem.SproutlyTopBar
@@ -84,7 +84,7 @@ fun WishlistScreen(
             EmptyState(
                 title = "Nothing saved yet",
                 message = "Tap the heart on any product to keep it here for later.",
-                icon = HugeIcons.Favourite,
+                icon = TablerIcons.Favourite,
             )
         } else {
             LazyColumn(
@@ -101,7 +101,7 @@ fun WishlistScreen(
                         trailing = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 IconButton(onClick = { viewModel.remove(product.id) }) {
-                                    HugeIcon(HugeIcons.Close,
+                                    TablerIcon(TablerIcons.Close,
                                         contentDescription = "Remove",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )

@@ -41,8 +41,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.HugeIcons
-import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.ErrorState
 import app.tab.store.core.designsystem.PriceText
 import app.tab.store.core.designsystem.RatingBadge
@@ -128,7 +128,7 @@ fun ProductDetailScreen(
                             modifier = Modifier.size(40.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                HugeIcon(HugeIcons.ArrowLeft, contentDescription = "Back")
+                                TablerIcon(TablerIcons.ArrowLeft, contentDescription = "Back")
                             }
                         }
                         Row {
@@ -139,9 +139,9 @@ fun ProductDetailScreen(
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    HugeIcon(
-                                        if (state.isWishlisted) HugeIcons.Favourite
-                                        else HugeIcons.Favourite,
+                                    TablerIcon(
+                                        if (state.isWishlisted) TablerIcons.Favourite
+                                        else TablerIcons.Favourite,
                                         contentDescription = "Wishlist",
                                         tint = MaterialTheme.colorScheme.primary,
                                     )
@@ -155,7 +155,7 @@ fun ProductDetailScreen(
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    HugeIcon(HugeIcons.Share, contentDescription = "Share")
+                                    TablerIcon(TablerIcons.Share, contentDescription = "Share")
                                 }
                             }
                         }
@@ -241,7 +241,7 @@ fun ProductDetailScreen(
                                     .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                HugeIcon(HugeIcons.Store,
+                                TablerIcon(TablerIcons.Store,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(20.dp),

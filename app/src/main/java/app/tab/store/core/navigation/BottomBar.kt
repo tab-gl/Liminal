@@ -31,8 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.tab.store.core.designsystem.HugeIcon
-import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.TablerIcons
 
 data class TabDestination(
     val route: String,
@@ -42,9 +42,9 @@ data class TabDestination(
 
 /** Store · Wishlist · Profile — search lives in a FAB, downloads in the top bar. */
 val mainTabs = listOf(
-    TabDestination(Routes.HOME, "Store", HugeIcons.Store),
-    TabDestination(Routes.WISHLIST, "Wishlist", HugeIcons.Favourite),
-    TabDestination(Routes.PROFILE, "Profile", HugeIcons.User),
+    TabDestination(Routes.HOME, "Store", TablerIcons.Store),
+    TabDestination(Routes.WISHLIST, "Wishlist", TablerIcons.Favourite),
+    TabDestination(Routes.PROFILE, "Profile", TablerIcons.User),
 )
 
 /**
@@ -134,10 +134,10 @@ private fun FloatingTab(
                         ) { Text(badgeCount.coerceAtMost(99).toString()) }
                     },
                 ) {
-                    HugeIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
+                    TablerIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
                 }
             } else {
-                HugeIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
+                TablerIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
             }
 
             AnimatedVisibility(

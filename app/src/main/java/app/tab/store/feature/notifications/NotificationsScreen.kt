@@ -36,8 +36,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.HugeIcons
-import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTopBar
@@ -112,7 +112,7 @@ fun NotificationsScreen(
             EmptyState(
                 title = "You are all caught up",
                 message = "Order updates and store news will land here.",
-                icon = HugeIcons.Notification,
+                icon = TablerIcons.Notification,
             )
         } else {
             LazyColumn(
@@ -140,10 +140,10 @@ fun NotificationsScreen(
 @Composable
 private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
     val icon: Int = when (item.type) {
-        NotificationType.ORDER -> HugeIcons.Receipt
-        NotificationType.STORE -> HugeIcons.Store
-        NotificationType.PROMO -> HugeIcons.Notification
-        NotificationType.SYSTEM -> HugeIcons.Notification
+        NotificationType.ORDER -> TablerIcons.Receipt
+        NotificationType.STORE -> TablerIcons.Store
+        NotificationType.PROMO -> TablerIcons.Notification
+        NotificationType.SYSTEM -> TablerIcons.Notification
     }
     Surface(
         onClick = onClick,
@@ -163,7 +163,7 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
                 contentAlignment = Alignment.Center,
             ) {
-                HugeIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                TablerIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {

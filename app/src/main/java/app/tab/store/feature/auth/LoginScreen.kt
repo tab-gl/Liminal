@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.R
-import app.tab.store.core.designsystem.HugeIcons
-import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.BrandMark
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyPalette
@@ -125,8 +125,8 @@ fun LoginScreen(
                 keyboardType = KeyboardType.Password,
                 trailing = {
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
-                        HugeIcon(if (state.passwordVisible) HugeIcons.Notification
-                            else HugeIcons.Notification,
+                        TablerIcon(if (state.passwordVisible) TablerIcons.Notification
+                            else TablerIcons.Notification,
                             contentDescription = "Toggle password visibility",
                         )
                     }

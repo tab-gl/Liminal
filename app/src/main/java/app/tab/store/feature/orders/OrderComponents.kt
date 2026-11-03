@@ -21,8 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import app.tab.store.core.designsystem.HugeIcons
-import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.core.utils.DateFormatters
@@ -84,7 +84,7 @@ fun OrderTimeline(events: List<OrderEvent>, currentStatus: OrderStatus, modifier
                         contentAlignment = Alignment.Center,
                     ) {
                         if (done) {
-                            HugeIcon(HugeIcons.Tick,
+                            TablerIcon(TablerIcons.Tick,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(13.dp),

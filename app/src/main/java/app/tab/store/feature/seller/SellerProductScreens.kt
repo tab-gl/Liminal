@@ -59,8 +59,8 @@ import kotlinx.coroutines.withContext
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.HugeIcons
-import app.tab.store.core.designsystem.HugeIcon
+import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.QuantityStepper
 import app.tab.store.core.designsystem.SproutlyButton
@@ -131,7 +131,7 @@ fun SellerProductsScreen(
                 EmptyState(
                     title = "No apps here",
                     message = "Publish your first app and it will appear in the store.",
-                    icon = HugeIcons.Package,
+                    icon = TablerIcons.Package,
                     actionLabel = "Publish app",
                     onAction = { onEdit(null) },
                 )
@@ -189,7 +189,7 @@ fun SellerProductsScreen(
                                         }
                                     }
                                     IconButton(onClick = { viewModel.delete(product) }) {
-                                        HugeIcon(HugeIcons.Trash,
+                                        TablerIcon(TablerIcons.Trash,
                                             contentDescription = "Delete",
                                             tint = MaterialTheme.colorScheme.error,
                                             modifier = Modifier.size(19.dp),
@@ -256,7 +256,7 @@ fun SellerProductEditScreen(
                                 .padding(3.dp)
                                 .size(22.dp),
                         ) {
-                            HugeIcon(HugeIcons.Close,
+                            TablerIcon(TablerIcons.Close,
                                 contentDescription = "Remove image",
                                 modifier = Modifier.padding(4.dp),
                             )
@@ -275,7 +275,7 @@ fun SellerProductEditScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            HugeIcon(HugeIcons.Plus, contentDescription = "Add photo")
+                            TablerIcon(TablerIcons.Plus, contentDescription = "Add photo")
                             Text("Photo", style = MaterialTheme.typography.labelSmall)
                         }
                     }
@@ -445,8 +445,8 @@ private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                HugeIcon(
-                    icon = if (isFree) HugeIcons.Sparkles else HugeIcons.Bag,
+                TablerIcon(
+                    icon = if (isFree) TablerIcons.Sparkles else TablerIcons.Bag,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -464,8 +464,8 @@ private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                HugeIcon(
-                    icon = HugeIcons.ChevronDown,
+                TablerIcon(
+                    icon = TablerIcons.ChevronDown,
                     contentDescription = "Change pricing",
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -558,8 +558,8 @@ private fun ApkSourcePicker(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        HugeIcon(
-                            icon = HugeIcons.Verified,
+                        TablerIcon(
+                            icon = TablerIcons.Verified,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -587,8 +587,8 @@ private fun ApkSourcePicker(
                             modifier = Modifier.size(28.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                HugeIcon(
-                                    icon = HugeIcons.Close,
+                                TablerIcon(
+                                    icon = TablerIcons.Close,
                                     contentDescription = "Remove build",
                                     modifier = Modifier.size(14.dp),
                                 )
@@ -600,7 +600,7 @@ private fun ApkSourcePicker(
             else -> {
                 SproutlyButton(
                     text = "Choose APK",
-                    icon = HugeIcons.Upload,
+                    icon = TablerIcons.Upload,
                     onClick = { picker.launch(APK_MIME_TYPES) },
                 )
                 Spacer(Modifier.height(6.dp))
@@ -637,8 +637,8 @@ private fun VerificationGate(
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                HugeIcon(
-                    icon = HugeIcons.Verified,
+                TablerIcon(
+                    icon = TablerIcons.Verified,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onErrorContainer,
