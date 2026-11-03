@@ -7,10 +7,4 @@
         <item name="android:windowBackground">@color/sproutly_ink</item>
     </style>
 
-    <style name="Theme.Sproutly.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/sproutly_olive</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
-        <item name="windowSplashScreenIconBackgroundColor">@color/sproutly_olive</item>
-        <item name="postSplashScreenTheme">@style/Theme.Sproutly</item>
-    </style>
 </resources>

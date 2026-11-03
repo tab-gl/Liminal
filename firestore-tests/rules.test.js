@@ -20,9 +20,10 @@ const {
   doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, writeBatch,
 } = require("firebase/firestore");
 
-const ALICE = "alice";
-const BOB = "bob";
-const ADMIN = "admin1";
+const DEV = "dev1";      // developer: role SELLER, owns STORE
+const SHOPPER = "carol"; // role CUSTOMER, no store
+const ADMIN = "admin1";  // role ADMIN, no store
+const BOB = "bob";       // bystander
 const STORE = "store1";
 
 let env;
@@ -69,14 +70,17 @@ beforeEach(async () => {
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (context) => {
     const db = context.firestore();
-    await setDoc(doc(db, "users", ALICE), {
-      uid: ALICE, email: "alice@example.com", displayName: "Alice", role: "CUSTOMER",
+    await setDoc(doc(db, "users", DEV), {
+      uid: DEV, email: "dev@example.com", displayName: "Dev", role: "SELLER", storeId: STORE,
+    });
+    await setDoc(doc(db, "users", SHOPPER), {
+      uid: SHOPPER, email: "carol@example.com", displayName: "Carol", role: "CUSTOMER",
     });
     await setDoc(doc(db, "users", ADMIN), {
       uid: ADMIN, email: "admin@example.com", displayName: "Admin", role: "ADMIN",
     });
     await setDoc(doc(db, "stores", STORE), {
-      ownerId: ALICE, name: "Ace Studio", slug: "ace-studio", status: "ACTIVE",
+      ownerId: DEV, name: "Ace Studio", slug: "ace-studio", status: "ACTIVE",
       verified: false, productCount: 0, rating: 0, ratingCount: 0, createdAt: 1,
     });
     await setDoc(doc(db, "products", "app1"), product());
@@ -84,7 +88,8 @@ beforeEach(async () => {
   });
 });
 
-const alice = () => env.authenticatedContext(ALICE).firestore();
+const dev = () => env.authenticatedContext(DEV).firestore();
+const shopper = () => env.authenticatedContext(SHOPPER).firestore();
 const admin = () => env.authenticatedContext(ADMIN).firestore();
 const guest = () => env.unauthenticatedContext().firestore();
 
@@ -121,20 +126,20 @@ describe("roles", () => {
   });
 
   it("does not let a shopper list every product", async () => {
-    await assertFails(getDocs(collection(alice(), "products")));
+    await assertFails(getDocs(collection(shopper(), "products")));
   });
 });
 
 describe("developer conversion", () => {
   it("promotes a shopper and opens a store in one batch", async () => {
-    const db = alice();
+    const db = shopper();
     const batch = writeBatch(db);
     batch.set(doc(db, "stores", "store2"), {
-      ownerId: ALICE, name: "Second Studio", slug: "second-studio", status: "PENDING",
+      ownerId: SHOPPER, name: "Second Studio", slug: "second-studio", status: "PENDING",
       verified: false, productCount: 0, rating: 0, ratingCount: 0, createdAt: 1,
     });
     batch.set(
-      doc(db, "users", ALICE),
+      doc(db, "users", SHOPPER),
       { role: "SELLER", storeId: "store2", updatedAt: 2 },
       { merge: true },
     );
@@ -160,7 +165,7 @@ describe("developer conversion", () => {
       });
     });
     await assertFails(
-      updateDoc(doc(alice(), "users", ALICE), { role: "SELLER", storeId: "someone-else" }),
+      updateDoc(doc(shopper(), "users", SHOPPER), { role: "SELLER", storeId: "someone-else" }),
     );
   });
 });
@@ -168,7 +173,7 @@ describe("developer conversion", () => {
 describe("paid apps", () => {
   it("refuses a paid listing from an unverified developer", async () => {
     await assertFails(
-      setDoc(doc(alice(), "products", "paid1"), product({ price: 9900, status: "DRAFT" })),
+      setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "DRAFT" })),
     );
   });
 
@@ -177,21 +182,21 @@ describe("paid apps", () => {
       await updateDoc(doc(context.firestore(), "stores", STORE), { verified: true });
     });
     await assertSucceeds(
-      setDoc(doc(alice(), "products", "paid1"), product({ price: 9900, status: "DRAFT" })),
+      setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "DRAFT" })),
     );
   });
 
   it("always allows a free listing", async () => {
     await assertSucceeds(
-      setDoc(doc(alice(), "products", "free1"), product({ price: 0, status: "DRAFT" })),
+      setDoc(doc(dev(), "products", "free1"), product({ price: 0, status: "DRAFT" })),
     );
   });
 });
 
 describe("installs", () => {
   const order = (overrides = {}) => ({
-    buyerId: ALICE,
-    buyerName: "Alice",
+    buyerId: SHOPPER,
+    buyerName: "Carol",
     items: [{
       productId: "app1",
       title: "Notes",
@@ -216,17 +221,17 @@ describe("installs", () => {
   });
 
   it("installs a free app with no address and no shipping", async () => {
-    await assertSucceeds(setDoc(doc(alice(), "orders", "o1"), order()));
+    await assertSucceeds(setDoc(doc(shopper(), "orders", "o1"), order()));
   });
 
   it("keeps an install private to its buyer", async () => {
-    await assertSucceeds(setDoc(doc(alice(), "orders", "o2"), order()));
+    await assertSucceeds(setDoc(doc(shopper(), "orders", "o2"), order()));
     await assertFails(getDoc(doc(env.authenticatedContext(BOB).firestore(), "orders", "o2")));
   });
 
   it("rejects a tampered price", async () => {
     await assertFails(
-      setDoc(doc(alice(), "orders", "o3"), order({ subtotal: 100, total: 100 })),
+      setDoc(doc(shopper(), "orders", "o3"), order({ subtotal: 100, total: 100 })),
     );
   });
 });
@@ -234,10 +239,10 @@ describe("installs", () => {
 describe("wishlist", () => {
   it("is scoped to its owner", async () => {
     await assertSucceeds(
-      setDoc(doc(alice(), "wishlists", ALICE, "items", "app1"), { productId: "app1" }),
+      setDoc(doc(shopper(), "wishlists", SHOPPER, "items", "app1"), { productId: "app1" }),
     );
     await assertFails(
-      getDocs(collection(env.authenticatedContext(BOB).firestore(), "wishlists", ALICE, "items")),
+      getDocs(collection(env.authenticatedContext(BOB).firestore(), "wishlists", SHOPPER, "items")),
     );
   });
 });
