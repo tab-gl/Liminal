@@ -7,6 +7,7 @@ import app.tab.store.core.database.RecentlyViewedEntity
 import app.tab.store.core.firebase.orFallback
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.firebase.toUserMessage
+import app.tab.store.core.firebase.firestoreResult
 import app.tab.store.data.remote.FirestorePaths
 import app.tab.store.data.remote.toCategory
 import app.tab.store.data.remote.toProduct
