@@ -1,5 +1,7 @@
 package app.tab.store.feature.seller
 
+import androidx.annotation.DrawableRes
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -367,7 +369,7 @@ private fun DashStat(label: String, value: String, modifier: Modifier = Modifier
 
 @Composable
 private fun QuickAction(
-    icon: ImageVector,
+    @DrawableRes icon: Int,
     label: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
