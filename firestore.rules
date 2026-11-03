@@ -39,8 +39,14 @@ service cloud.firestore {
     // Normalised to lower case: a role typed by hand in the console is very
     // often "admin" or "Admin", and comparing case-sensitively meant the app
     // showed the admin console while every write was denied.
+    // A signed-in account can have no profile document yet (a second account
+    // created elsewhere, or a write that failed). Reading .role on a missing
+    // document is an evaluation error, and an error denies the whole rule — so
+    // the document is checked first and a missing profile means 'guest'.
     function role() {
-      return isSignedIn() && userDoc().role is string
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(uid()))
+        && userDoc().role is string
         ? userDoc().role.lower()
         : 'guest';
     }

@@ -47,6 +47,10 @@ class AuthRepositoryImpl @Inject constructor(
         if (uid == null) {
             flowOf(null)
         } else {
+            // A restored session (second account, reinstall) may have no profile
+            // document yet. Repair it before anyone queries rules that read the
+            // role, otherwise those rules evaluate on a missing document.
+            runCatching { auth.currentUser?.let { ensureProfile(it) } }
             firestore.collection(FirestorePaths.USERS).document(uid)
                 .snapshotFlow()
                 .map { snap -> if (snap.exists()) snap.toUser() else pendingUser() }.orFallback(pendingUser())

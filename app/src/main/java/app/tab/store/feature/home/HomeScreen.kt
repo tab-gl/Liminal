@@ -120,8 +120,9 @@ fun HomeScreen(
         derivedStateOf { listState.firstVisibleItemScrollOffset > 40 || listState.firstVisibleItemIndex > 0 }
     }
     val fabWidth by animateDpAsState(
-        targetValue = if (collapsed) 56.dp else 132.dp,
-        animationSpec = spring(dampingRatio = 0.8f, stiffness = 700f),
+        targetValue = if (collapsed) 56.dp else 124.dp,
+        // Snappy: the pill should keep up with the thumb, not trail it.
+        animationSpec = spring(dampingRatio = 0.9f, stiffness = 1700f),
         label = "searchFabWidth",
     )
 
@@ -129,7 +130,7 @@ fun HomeScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 108.dp),
+            contentPadding = PaddingValues(bottom = 148.dp),
         ) {
             item {
                 Row(
@@ -495,10 +496,8 @@ fun HomeScreen(
             }
         }
 
-        // Search FAB: a labelled pill at rest, a circle once you scroll. Hidden
-        // while the store is empty — there is nothing to search, and it would
-        // sit on top of the empty state.
-        if (state.hasAnyContent) Surface(
+        // Search FAB: a labelled pill at rest, a circle once you scroll.
+        Surface(
             onClick = onSearch,
             shape = RoundedCornerShape(50),
             color = MaterialTheme.colorScheme.primary,

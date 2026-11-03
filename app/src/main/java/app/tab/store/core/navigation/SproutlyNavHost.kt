@@ -45,6 +45,7 @@ import app.tab.store.feature.home.HomeScreen
 import app.tab.store.feature.notifications.NotificationsScreen
 import app.tab.store.feature.orders.OrderDetailScreen
 import app.tab.store.feature.orders.OrderPlacedScreen
+import app.tab.store.feature.offers.OffersScreen
 import app.tab.store.feature.orders.OrdersScreen
 import app.tab.store.feature.product.ProductDetailScreen
 import app.tab.store.feature.profile.ProfileEditScreen
@@ -226,6 +227,9 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     initialCategoryId = "games",
                     onProduct = { go(Routes.product(it)) },
                 )
+            }
+            composable(Routes.OFFERS) {
+                OffersScreen(onProduct = { go(Routes.product(it)) })
             }
             composable(Routes.WISHLIST) {
                 WishlistScreen(

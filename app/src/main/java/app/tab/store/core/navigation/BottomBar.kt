@@ -1,16 +1,10 @@
 package app.tab.store.core.navigation
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -20,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,26 +33,25 @@ data class TabDestination(
     @DrawableRes val icon: Int,
 )
 
-/**
- * Two groups, as sketched: browsing on the left, you on the right.
- *
- *   [ Apps  Games  Studio ]  |  [ Search  Profile ]
- */
-val mainTabs = listOf(
+/** Browsing destinations, in the left pill. */
+val primaryTabs = listOf(
     TabDestination(Routes.HOME, "Apps", TablerIcons.Grid),
     TabDestination(Routes.GAMES, "Games", TablerIcons.Gamepad),
-    TabDestination(Routes.SELLER_DASHBOARD, "Studio", TablerIcons.Edit),
-    TabDestination(Routes.SEARCH, "Search", TablerIcons.Search),
+    TabDestination(Routes.OFFERS, "Offers", TablerIcons.Bag),
+)
+
+/** You, in the right pill. Search is a FAB, not a tab. */
+val utilityTabs = listOf(
     TabDestination(Routes.PROFILE, "Profile", TablerIcons.User),
 )
 
-/** Tabs after this index sit in the second group, behind a divider. */
-const val SECOND_GROUP_FROM = 3
+val mainTabs = primaryTabs + utilityTabs
 
 /**
- * Floating navigation bar: a rounded, elevated pill that hovers over the
- * content. The selected destination expands to show its icon *and* label; the
- * others stay icon-only, so the bar stays narrow but never hides where you are.
+ * Two floating pills, not one bar: browsing on the left, you on the right.
+ *
+ * Keeping them separate means the bar never grows into a strip of five equal
+ * icons, and each group can animate on its own.
  */
 @Composable
 fun SproutlyBottomBar(
@@ -68,41 +59,63 @@ fun SproutlyBottomBar(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Surface(
-            shape = RoundedCornerShape(30.dp),
-            color = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            shadowElevation = 14.dp,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
-            modifier = Modifier.fillMaxWidth(),
+        PillGroup(
+            tabs = primaryTabs,
+            currentRoute = currentRoute,
+            onNavigate = onNavigate,
+            modifier = Modifier.weight(1f, fill = false),
+        )
+        Spacer(Modifier.width(10.dp))
+        PillGroup(
+            tabs = utilityTabs,
+            currentRoute = currentRoute,
+            onNavigate = onNavigate,
+        )
+    }
+}
+
+@Composable
+private fun PillGroup(
+    tabs: List<TabDestination>,
+    currentRoute: String?,
+    onNavigate: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        shadowElevation = 12.dp,
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+        ),
+        modifier = modifier,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                mainTabs.forEachIndexed { index, tab ->
-                    if (index == SECOND_GROUP_FROM) {
-                        Box(
-                            Modifier
-                                .padding(horizontal = 2.dp)
-                                .size(width = 1.dp, height = 24.dp)
-                                .background(MaterialTheme.colorScheme.outlineVariant),
-                        )
-                    }
-                    FloatingTab(
-                        tab = tab,
-                        selected = currentRoute == tab.route,
-                        badgeCount = 0,
-                        onClick = { if (currentRoute != tab.route) onNavigate(tab.route) },
-                        modifier = Modifier.weight(if (currentRoute == tab.route) 1.7f else 1f),
-                    )
-                }
+            tabs.forEach { tab ->
+                val selected = currentRoute == tab.route
+                FloatingTab(
+                    tab = tab,
+                    selected = selected,
+                    onClick = { if (!selected) onNavigate(tab.route) },
+                    modifier = if (tabs.size > 1) {
+                        Modifier.weight(if (selected) 1.6f else 1f)
+                    } else {
+                        Modifier
+                    },
+                )
             }
         }
     }
@@ -112,11 +125,9 @@ fun SproutlyBottomBar(
 private fun FloatingTab(
     tab: TabDestination,
     selected: Boolean,
-    badgeCount: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(24.dp)
     val container by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
         label = "tabContainer",
@@ -126,54 +137,38 @@ private fun FloatingTab(
         else MaterialTheme.colorScheme.onSurfaceVariant,
         label = "tabContent",
     )
+    // Fast and light: the pill should feel like it snaps, not settles.
     val iconSize by animateDpAsState(
         targetValue = if (selected) 21.dp else 23.dp,
-        animationSpec = spring(dampingRatio = 0.7f, stiffness = 900f),
+        animationSpec = spring(dampingRatio = 0.9f, stiffness = 1600f),
         label = "iconSize",
     )
 
     Surface(
         onClick = onClick,
-        shape = shape,
+        shape = RoundedCornerShape(24.dp),
         color = container,
         contentColor = content,
         modifier = modifier,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = if (selected) 12.dp else 10.dp, vertical = 12.dp),
+            modifier = Modifier.padding(
+                horizontal = if (selected) 12.dp else 10.dp,
+                vertical = 12.dp,
+            ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (badgeCount > 0) {
-                BadgedBox(
-                    badge = {
-                        Badge(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ) { Text(badgeCount.coerceAtMost(99).toString()) }
-                    },
-                ) {
-                    TablerIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
-                }
-            } else {
-                TablerIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
-            }
-
-            AnimatedVisibility(
-                visible = selected,
-                enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally(),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = tab.label,
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1,
-                        softWrap = false,
-                        overflow = TextOverflow.Clip,
-                        modifier = Modifier.padding(end = 2.dp),
-                    )
-                }
+            TablerIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
+            if (selected) {
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = tab.label,
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier.padding(end = 2.dp),
+                )
             }
         }
     }

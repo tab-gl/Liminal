@@ -8,6 +8,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -403,7 +408,7 @@ fun EmptyState(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 32.dp),
+            .padding(horizontal = 32.dp, vertical = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (icon != null) {
@@ -576,86 +581,105 @@ fun ProductCard(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val shape = SproutlyRadii.card
-    Column(
-        modifier = modifier
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable(onClick = onClick)
-            .padding(8.dp),
+    // A short press-scale makes the grid feel like it responds to the thumb
+    // rather than waiting for the tap to complete.
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.96f else 1f,
+        animationSpec = spring(dampingRatio = 0.85f, stiffness = 1600f),
+        label = "cardScale",
+    )
+
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.card,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        ),
+        interactionSource = interaction,
+        modifier = modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        },
     ) {
-        Box {
-            SproutlyImage(
-                url = product.primaryImage,
-                contentDescription = product.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-                corner = 20.dp,
-            )
-            if (product.isOutOfStock) {
-                Box(
+        Column(Modifier.padding(8.dp)) {
+            Box {
+                SproutlyImage(
+                    url = product.primaryImage,
+                    contentDescription = product.title,
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp),
-                ) {
-                    SproutlyTag(
-                        text = "UNAVAILABLE",
-                        container = MaterialTheme.colorScheme.surface,
-                        content = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            } else if (product.discountPercent >= 20) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp),
-                ) {
-                    SproutlyTag(text = "${product.discountPercent}% OFF")
-                }
-            }
-        }
-        Spacer(Modifier.height(9.dp))
-        Text(
-            text = product.storeName.ifBlank { product.categoryLabel },
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 4.dp),
-        )
-        Text(
-            text = product.title,
-            style = MaterialTheme.typography.titleSmall,
-            maxLines = if (compact) 1 else 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-        )
-        Spacer(Modifier.height(5.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column {
-                Text(
-                    text = formatPrice(product.price),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.ExtraBold,
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
+                    corner = 18.dp,
                 )
-                if (product.compareAtPrice != null && product.compareAtPrice > product.price) {
+                if (product.isOutOfStock) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp),
+                    ) {
+                        SproutlyTag(
+                            text = "UNAVAILABLE",
+                            container = MaterialTheme.colorScheme.surface,
+                            content = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else if (product.discountPercent >= 20) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp),
+                    ) {
+                        SproutlyTag(text = "${product.discountPercent}% OFF")
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = product.title,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = if (compact) 1 else 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 3.dp),
+            )
+            Text(
+                text = product.storeName.ifBlank { product.categoryLabel },
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 3.dp),
+            )
+            Spacer(Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.padding(horizontal = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = if (product.isFree) "Free" else formatPrice(product.price),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Spacer(Modifier.weight(1f))
+                if (product.rating > 0) {
+                    TablerIcon(
+                        TablerIcons.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.width(3.dp))
                     Text(
-                        text = formatPrice(product.compareAtPrice),
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "%.1f".format(product.rating),
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough,
                     )
                 }
             }
+            Spacer(Modifier.height(2.dp))
         }
-        Spacer(Modifier.height(4.dp))
     }
 }
 
