@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyButton
@@ -119,10 +121,10 @@ fun AdminDashboardScreen(
             Spacer(Modifier.height(20.dp))
             Text("Moderation", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            AdminRow(Icons.Filled.Storefront, "Developers", "Approve, suspend, review", onStores)
-            AdminRow(Icons.Filled.Groups, "Users", "Roles and access", onUsers)
-            AdminRow(Icons.Filled.Inventory2, "Reported apps", "Block or restore apps", onProducts)
-            AdminRow(Icons.Filled.Category, "Categories", "App categories", onCategories)
+            AdminRow(HugeIcons.Store, "Developers", "Approve, suspend, review", onStores)
+            AdminRow(HugeIcons.User, "Users", "Roles and access", onUsers)
+            AdminRow(HugeIcons.Package, "Reported apps", "Block or restore apps", onProducts)
+            AdminRow(HugeIcons.Grid, "Categories", "App categories", onCategories)
 
             if (state.pendingStores.isNotEmpty()) {
                 Spacer(Modifier.height(20.dp))
@@ -237,7 +239,7 @@ private fun AdminRow(icon: ImageVector, title: String, subtitle: String, onClick
                 )
             }
             Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                HugeIcons.ArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -319,7 +321,7 @@ fun AdminStoresScreen(
                                         TextButton(
                                             onClick = { viewModel.setStatus(store, StoreStatus.ACTIVE) },
                                         ) {
-                                            Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                                            HugeIcon(HugeIcons.Tick, contentDescription = null, modifier = Modifier.size(16.dp))
                                             Spacer(Modifier.width(4.dp))
                                             Text("Approve")
                                         }
@@ -453,7 +455,7 @@ fun AdminProductsScreen(
                 EmptyState(
                     title = "Nothing reported",
                     message = "Flagged apps will appear here for review.",
-                    icon = Icons.Filled.Block,
+                    icon = HugeIcons.Verified,
                 )
             } else {
                 LazyColumn(

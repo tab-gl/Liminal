@@ -91,6 +91,9 @@ interface OrderRepository {
 interface SellerRepository {
     fun observeMyStore(): Flow<Store?>
     suspend fun createStore(name: String, tagline: String, city: String): DataResult<String>
+
+    /** Requests developer verification; required before selling paid apps. */
+    suspend fun requestVerification(): DataResult<Unit>
     suspend fun updateStore(store: Store): DataResult<Unit>
     fun observeStoreProducts(storeId: String): Flow<List<Product>>
     suspend fun upsertProduct(product: Product): DataResult<String>

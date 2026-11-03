@@ -27,6 +27,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyTextField
 import app.tab.store.core.designsystem.SproutlyTopBar
@@ -84,7 +86,7 @@ fun RegisterScreen(
                 trailing = {
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
                         Icon(
-                            if (state.passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            if (state.passwordVisible) HugeIcons.NotificationOff else HugeIcons.Notification,
                             contentDescription = "Toggle password visibility",
                         )
                     }

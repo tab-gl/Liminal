@@ -30,6 +30,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -116,6 +117,22 @@ class SellerRepositoryImpl @Inject constructor(
         } catch (t: Throwable) {
             DataResult.Failure(t.toUserMessage(), t)
         }
+    }
+
+    override suspend fun requestVerification(): DataResult<Unit> = try {
+        val store = observeMyStore().first()
+            ?: return DataResult.Failure("Create a developer profile first.")
+        firestore.collection(FirestorePaths.STORES).document(store.id)
+            .update(
+                mapOf(
+                    "verificationStatus" to "PENDING",
+                    "verificationRequestedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+            .await()
+        DataResult.Success(Unit)
+    } catch (t: Throwable) {
+        DataResult.Failure(t.toUserMessage(), t)
     }
 
     override suspend fun updateStore(store: Store): DataResult<Unit> {

@@ -22,6 +22,9 @@ data class Store(
     val status: StoreStatus = StoreStatus.PENDING,
     val rating: Double = 0.0,
     val ratingCount: Int = 0,
+    /** Paid apps require a verified developer account. */
+    val verified: Boolean = false,
+    val verificationStatus: String = "NONE",
     val productCount: Int = 0,
     val createdAt: Long = 0L,
 ) {

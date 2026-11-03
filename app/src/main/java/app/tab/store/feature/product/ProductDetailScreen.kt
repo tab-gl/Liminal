@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.ErrorState
 import app.tab.store.core.designsystem.PriceText
 import app.tab.store.core.designsystem.RatingBadge
@@ -126,7 +128,7 @@ fun ProductDetailScreen(
                             modifier = Modifier.size(40.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                                HugeIcon(HugeIcons.ArrowLeft, contentDescription = "Back")
                             }
                         }
                         Row {
@@ -138,8 +140,8 @@ fun ProductDetailScreen(
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
-                                        if (state.isWishlisted) Icons.Filled.Favorite
-                                        else Icons.Filled.FavoriteBorder,
+                                        if (state.isWishlisted) HugeIcons.Favourite
+                                        else HugeIcons.Favourite,
                                         contentDescription = "Wishlist",
                                         tint = MaterialTheme.colorScheme.primary,
                                     )
@@ -153,7 +155,7 @@ fun ProductDetailScreen(
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Icon(Icons.Filled.Share, contentDescription = "Share")
+                                    HugeIcon(HugeIcons.Share, contentDescription = "Share")
                                 }
                             }
                         }
@@ -240,7 +242,7 @@ fun ProductDetailScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
-                                    Icons.Outlined.Storefront,
+                                    HugeIcons.Store,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(20.dp),

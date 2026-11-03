@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.HugeIcons
@@ -39,10 +40,9 @@ data class TabDestination(
     @DrawableRes val icon: Int,
 )
 
-/** Store · Search · Library · My apps · Profile */
+/** Store · Wishlist · Profile — search lives in a FAB, downloads in the top bar. */
 val mainTabs = listOf(
     TabDestination(Routes.HOME, "Store", HugeIcons.Store),
-    TabDestination(Routes.SEARCH, "Search", HugeIcons.Search),
     TabDestination(Routes.WISHLIST, "Wishlist", HugeIcons.Favourite),
     TabDestination(Routes.PROFILE, "Profile", HugeIcons.User),
 )
@@ -73,7 +73,7 @@ fun SproutlyBottomBar(
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 mainTabs.forEach { tab ->
@@ -82,7 +82,7 @@ fun SproutlyBottomBar(
                         selected = currentRoute == tab.route,
                         badgeCount = 0,
                         onClick = { if (currentRoute != tab.route) onNavigate(tab.route) },
-                        modifier = Modifier.weight(1f, fill = false),
+                        modifier = Modifier.weight(if (currentRoute == tab.route) 1.7f else 1f),
                     )
                 }
             }
@@ -122,7 +122,7 @@ private fun FloatingTab(
         modifier = modifier,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = if (selected) 14.dp else 11.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = if (selected) 12.dp else 10.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (badgeCount > 0) {
@@ -146,8 +146,15 @@ private fun FloatingTab(
                 exit = fadeOut() + shrinkHorizontally(),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(Modifier.width(7.dp))
-                    Text(tab.label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = tab.label,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier.padding(end = 2.dp),
+                    )
                 }
             }
         }

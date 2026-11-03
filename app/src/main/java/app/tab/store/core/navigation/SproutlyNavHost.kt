@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.model.UserRole
+import app.tab.store.feature.profile.AccountSwitcherSheet
 import app.tab.store.feature.profile.ProfileViewModel
 import app.tab.store.feature.profile.Workspace
 import app.tab.store.feature.admin.AdminCategoriesScreen
@@ -85,6 +86,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     val currentRoute = backStackEntry?.destination?.route
     // Held at graph scope so "Add another account" can sign out from anywhere.
     val profileViewModel: ProfileViewModel = hiltViewModel()
+    val profileState by profileViewModel.uiState.collectAsStateWithLifecycle()
+    var showSwitcher by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Background stream failures surface here with the actionable message.
@@ -164,6 +167,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onProfile = { goTab(Routes.PROFILE) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
+                    onOpenSwitcher = { showSwitcher = true },
                 )
             }
             composable(
@@ -355,6 +359,32 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             composable(Routes.ADMIN_CATEGORIES) {
                 AdminCategoriesScreen(onBack = { navController.popBackStack() })
             }
+        }
+
+        // One account switcher for the whole app; the store's avatar and the
+        // profile header both open this one.
+        if (showSwitcher) {
+            AccountSwitcherSheet(
+                user = profileState.user,
+                current = Workspace.SHOPPER,
+                onDismiss = { showSwitcher = false },
+                onSwitch = { workspace ->
+                    showSwitcher = false
+                    when (workspace) {
+                        Workspace.SHOPPER -> goTab(Routes.HOME)
+                        Workspace.DEVELOPER -> go(Routes.SELLER_DASHBOARD)
+                        Workspace.ADMIN -> go(Routes.ADMIN_DASHBOARD)
+                    }
+                },
+                onAddAccount = {
+                    showSwitcher = false
+                    profileViewModel.signOut()
+                },
+                onSignOut = {
+                    showSwitcher = false
+                    profileViewModel.signOut()
+                },
+            )
         }
     }
 }

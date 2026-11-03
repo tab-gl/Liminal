@@ -39,6 +39,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyImage
@@ -79,7 +81,7 @@ fun SellerSetupScreen(
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Icon(
-                        Icons.Filled.Storefront,
+                        HugeIcons.Store,
                         contentDescription = null,
                         tint = SproutlyPalette.OliveDeep,
                         modifier = Modifier.size(30.dp),
@@ -135,7 +137,7 @@ fun SellerSetupScreen(
                 onClick = viewModel::createStore,
                 enabled = state.canSubmit,
                 loading = state.isCreating,
-                icon = Icons.Filled.Add,
+                icon = HugeIcons.Plus,
             )
             Spacer(Modifier.height(12.dp))
             Text(
@@ -175,7 +177,7 @@ fun SellerDashboardScreen(
             EmptyState(
                 title = "No developer profile yet",
                 message = "Open a developer profile to start publishing apps on Sproutly.",
-                icon = Icons.Filled.Storefront,
+                icon = HugeIcons.Store,
                 actionLabel = "Get started",
                 onAction = onSetupStore,
             )
@@ -211,13 +213,13 @@ fun SellerDashboardScreen(
 
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                QuickAction(Icons.Filled.Add, "Publish app", Modifier.weight(1f)) {
+                QuickAction(HugeIcons.Plus, "Publish app", Modifier.weight(1f)) {
                     onProducts()
                 }
-                QuickAction(Icons.Filled.Receipt, "Installs", Modifier.weight(1f)) {
+                QuickAction(HugeIcons.Receipt, "Installs", Modifier.weight(1f)) {
                     onOrders()
                 }
-                QuickAction(Icons.Filled.Analytics, "Analytics", Modifier.weight(1f)) {
+                QuickAction(HugeIcons.Analytics, "Analytics", Modifier.weight(1f)) {
                     onAnalytics()
                 }
             }
@@ -235,7 +237,7 @@ fun SellerDashboardScreen(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
+                        HugeIcon(HugeIcons.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("Edit developer profile", style = MaterialTheme.typography.labelMedium)
                     }

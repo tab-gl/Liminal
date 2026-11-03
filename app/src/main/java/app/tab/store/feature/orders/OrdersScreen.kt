@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.LoadingColumn
 import app.tab.store.core.designsystem.SproutlyImage
@@ -67,7 +69,7 @@ fun OrdersScreen(
                 state.orders.isEmpty() -> EmptyState(
                     title = "No apps yet",
                     message = "Apps you install will show up here, with updates as developers ship them.",
-                    icon = Icons.Outlined.Receipt,
+                    icon = HugeIcons.Receipt,
                     actionLabel = "Browse the store",
                     onAction = onStartShopping,
                 )

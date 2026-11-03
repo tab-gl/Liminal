@@ -51,6 +51,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.ErrorState
 import app.tab.store.core.designsystem.LoadingColumn
@@ -88,7 +90,7 @@ fun SearchScreen(
             Text("Search", style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { showSortSheet = true }) {
-                Icon(Icons.Filled.Tune, contentDescription = "Sort and filter")
+                HugeIcon(HugeIcons.Filter, contentDescription = "Sort and filter")
             }
         }
 
@@ -111,12 +113,12 @@ fun SearchScreen(
                     .focusRequester(focusRequester),
                 placeholder = { Text("Search apps", style = MaterialTheme.typography.bodyMedium) },
                 leadingIcon = {
-                    Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(20.dp))
+                    HugeIcon(HugeIcons.Search, contentDescription = null, modifier = Modifier.size(20.dp))
                 },
                 trailingIcon = {
                     if (state.query.isNotEmpty()) {
                         IconButton(onClick = { viewModel.onQueryChange("") }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Clear")
+                            HugeIcon(HugeIcons.Close, contentDescription = "Clear")
                         }
                     }
                 },
@@ -189,7 +191,7 @@ fun SearchScreen(
                 state.isEmpty -> EmptyState(
                     title = "Nothing matched",
                     message = "Try a different keyword, or widen the filters.",
-                    icon = Icons.Outlined.SearchOff,
+                    icon = HugeIcons.SearchOff,
                     actionLabel = "Clear filters",
                     onAction = {
                         viewModel.setCategory(null, null)

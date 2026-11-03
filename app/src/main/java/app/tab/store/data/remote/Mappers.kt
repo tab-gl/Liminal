@@ -57,6 +57,8 @@ fun DocumentSnapshot.toStore(): Store = Store(
     status = StoreStatus.from(str("status")),
     rating = double("rating"),
     ratingCount = int("ratingCount"),
+        verified = getBoolean("verified") ?: false,
+        verificationStatus = getString("verificationStatus") ?: "NONE",
     productCount = int("productCount"),
     createdAt = long("createdAt"),
 )
@@ -85,6 +87,8 @@ fun DocumentSnapshot.toProduct(): Product {
         status = ProductStatus.from(str("status")),
         rating = double("rating"),
         ratingCount = int("ratingCount"),
+        apkUrl = strOrNull("apkUrl"),
+        apkSizeBytes = (get("apkSizeBytes") as? Number)?.toLong(),
         unitsSold = int("unitsSold"),
         tags = tags,
         createdAt = long("createdAt"),

@@ -31,6 +31,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.ProductCard
 import app.tab.store.core.designsystem.RatingBadge
@@ -109,7 +111,7 @@ fun StoreScreen(
                         .size(40.dp),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        HugeIcon(HugeIcons.ArrowLeft, contentDescription = "Back")
                     }
                 }
             }

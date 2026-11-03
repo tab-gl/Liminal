@@ -143,6 +143,13 @@ service cloud.firestore {
         && request.resource.data.name.size() >= 3
         && request.resource.data.name.size() <= 60;
 
+      // A developer asks for verification (needed to sell paid apps). Only the
+      // request field moves; approval is the admin's branch below.
+      allow update: if (isSeller() && resource.data.ownerId == uid()
+          && unchanged('ownerId')
+          && unchanged('verified')
+          && request.resource.data.verificationStatus == 'PENDING');
+
       allow update: if (isSeller() && resource.data.ownerId == uid()
           && unchanged('ownerId')
           && unchanged('status')
@@ -168,14 +175,17 @@ service cloud.firestore {
           && request.resource.data.title.size() >= 3
           && request.resource.data.title.size() <= 120
           && request.resource.data.price is int
-          && request.resource.data.price > 0
+          && request.resource.data.price >= 0
           && request.resource.data.stock is int
           && request.resource.data.stock >= 0
           && request.resource.data.categoryId is string
           && request.resource.data.categoryId.size() > 0
           && request.resource.data.images is list
           && request.resource.data.images.size() <= 6
-          && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED'];
+          && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED']
+          // Every app points at a build: an uploaded APK or a link.
+          && request.resource.data.apkUrl is string
+          && request.resource.data.apkUrl.size() > 8;
       }
 
       // The only fields a shopper's order transaction may move, and stock may
@@ -201,9 +211,16 @@ service cloud.firestore {
         || (isSeller() && resource.data.storeId == myStoreId())
         || isAdmin();
 
+      function paidNeedsVerification() {
+        return request.resource.data.price == 0
+          || get(/databases/$(database)/documents/stores/$(request.resource.data.storeId))
+               .data.get('verified', false) == true;
+      }
+
       allow create: if isSeller()
         && request.resource.data.storeId == myStoreId()
-        && validProduct();
+        && validProduct()
+        && paidNeedsVerification();
 
       allow update: if isSeller()
         && resource.data.storeId == myStoreId()
@@ -211,7 +228,8 @@ service cloud.firestore {
         && unchanged('unitsSold')
         && unchanged('rating')
         && unchanged('ratingCount')
-        && validProduct();
+        && validProduct()
+        && paidNeedsVerification();
 
       // Buyers decrement stock (and restore it on cancellation) inside the
       // order transaction. Prices and titles stay untouched.

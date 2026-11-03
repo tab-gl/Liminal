@@ -44,8 +44,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.QuantityStepper
 import app.tab.store.core.designsystem.SproutlyButton
@@ -114,7 +128,7 @@ fun SellerProductsScreen(
                 EmptyState(
                     title = "No apps here",
                     message = "Publish your first app and it will appear in the store.",
-                    icon = Icons.Outlined.Inventory2,
+                    icon = HugeIcons.Package,
                     actionLabel = "Publish app",
                     onAction = { onEdit(null) },
                 )
@@ -165,7 +179,7 @@ fun SellerProductsScreen(
                                             )
                                             Spacer(Modifier.width(6.dp))
                                             Text(
-                                                "${product.stock} available",
+                                                "${product.unitsSold} installs",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
@@ -173,33 +187,14 @@ fun SellerProductsScreen(
                                     }
                                     IconButton(onClick = { viewModel.delete(product) }) {
                                         Icon(
-                                            Icons.Filled.Delete,
+                                            HugeIcons.Trash,
                                             contentDescription = "Delete",
                                             tint = MaterialTheme.colorScheme.error,
                                             modifier = Modifier.size(19.dp),
                                         )
                                     }
                                 }
-                                Spacer(Modifier.height(8.dp))
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                Spacer(Modifier.height(8.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    QuantityStepper(
-                                        quantity = product.stock.coerceAtLeast(0),
-                                        onDecrease = {
-                                            viewModel.updateStock(product, (product.stock - 1).coerceAtLeast(0))
-                                        },
-                                        onIncrease = { viewModel.updateStock(product, product.stock + 1) },
-                                        max = 9999,
-                                    )
-                                    Spacer(Modifier.weight(1f))
-                                    TextButton(onClick = { onEdit(product.id) }) { Text("Edit") }
-                                    TextButton(onClick = { viewModel.togglePublished(product) }) {
-                                        Text(
-                                            if (product.status == ProductStatus.ACTIVE) "Unpublish" else "Publish",
-                                        )
-                                    }
-                                }
+
                             }
                         }
                     }
@@ -260,7 +255,7 @@ fun SellerProductEditScreen(
                                 .size(22.dp),
                         ) {
                             Icon(
-                                Icons.Filled.Close,
+                                HugeIcons.Close,
                                 contentDescription = "Remove image",
                                 modifier = Modifier.padding(4.dp),
                             )
@@ -279,7 +274,7 @@ fun SellerProductEditScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            Icon(Icons.Filled.Add, contentDescription = "Add photo")
+                            HugeIcon(HugeIcons.Plus, contentDescription = "Add photo")
                             Text("Photo", style = MaterialTheme.typography.labelSmall)
                         }
                     }
@@ -303,7 +298,7 @@ fun SellerProductEditScreen(
                 label = "Description",
                 singleLine = false,
                 minLines = 4,
-                helperText = "What is it, what size, what is included.",
+                helperText = "What it does, what is included, any requirements.",
             )
 
             Text("Category", style = MaterialTheme.typography.titleSmall)
@@ -319,40 +314,72 @@ fun SellerProductEditScreen(
             }
             Spacer(Modifier.height(18.dp))
 
-            Row {
-                Box(Modifier.weight(1f)) {
-                    SproutlyTextField(
-                        value = state.priceRupees,
-                        onValueChange = viewModel::onPrice,
-                        label = "Price",
-                        prefix = "₹ ",
-                        keyboardType = KeyboardType.Decimal,
-                        isError = state.priceError != null,
-                        errorText = state.priceError,
-                    )
-                }
-                Spacer(Modifier.width(10.dp))
-                Box(Modifier.weight(1f)) {
-                    SproutlyTextField(
-                        value = state.compareAtRupees,
-                        onValueChange = viewModel::onCompareAt,
-                        label = "MRP (optional)",
-                        prefix = "₹ ",
-                        keyboardType = KeyboardType.Decimal,
-                    )
+            // ---------------------------------------------------------- pricing
+            Text("Pricing", style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(8.dp))
+            PricingDropdown(
+                isFree = state.isFree,
+                onChange = viewModel::onFreeChanged,
+            )
+            if (!state.isFree) {
+                Spacer(Modifier.height(10.dp))
+                Row {
+                    Box(Modifier.weight(1f)) {
+                        SproutlyTextField(
+                            value = state.priceRupees,
+                            onValueChange = viewModel::onPrice,
+                            label = "Price",
+                            prefix = "₹ ",
+                            keyboardType = KeyboardType.Decimal,
+                            isError = state.priceError != null,
+                            errorText = state.priceError,
+                        )
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Box(Modifier.weight(1f)) {
+                        SproutlyTextField(
+                            value = state.compareAtRupees,
+                            onValueChange = viewModel::onCompareAt,
+                            label = "MRP (optional)",
+                            prefix = "₹ ",
+                            keyboardType = KeyboardType.Decimal,
+                        )
+                    }
                 }
             }
-            SproutlyTextField(
-                value = state.stock,
-                onValueChange = viewModel::onStock,
-                label = "Stock on hand",
-                keyboardType = KeyboardType.Number,
+            Spacer(Modifier.height(18.dp))
+
+            // ------------------------------------------------------ distribution
+            Text("The build", style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(8.dp))
+            ApkSourcePicker(
+                apkUrl = state.apkUrl,
+                fileName = state.apkFileName,
+                sizeBytes = state.apkSizeBytes,
+                isUploading = state.isUploadingApk,
+                progress = state.uploadProgress,
+                link = state.apkLink,
+                onLinkChange = viewModel::onApkLink,
+                onPicked = viewModel::onApkPicked,
+                onClear = viewModel::clearApk,
             )
+            Spacer(Modifier.height(18.dp))
+
+            // ------------------------------------------------------ verification
+            if (state.needsVerification) {
+                VerificationGate(
+                    status = state.verificationStatus,
+                    isRequesting = state.isRequestingVerification,
+                    onRequest = viewModel::requestVerification,
+                )
+                Spacer(Modifier.height(14.dp))
+            }
+
             SproutlyTextField(
                 value = state.tags,
                 onValueChange = viewModel::onTags,
                 label = "Tags (comma separated)",
-                placeholder = "indoor, air purifying",
+                placeholder = "productivity, notes, offline",
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -395,4 +422,257 @@ fun SellerProductEditScreen(
             Spacer(Modifier.height(32.dp))
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Listing helpers
+// ---------------------------------------------------------------------------
+
+/** Free or paid, as a dropdown rather than two radio buttons. */
+@Composable
+private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Surface(
+            onClick = { expanded = true },
+            shape = SproutlyRadii.card,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                HugeIcon(
+                    icon = if (isFree) HugeIcons.Sparkles else HugeIcons.Bag,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        if (isFree) "Free" else "Paid",
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        if (isFree) "Anyone can install it at no cost"
+                        else "Installs are charged at the price you set",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                HugeIcon(
+                    icon = HugeIcons.ChevronDown,
+                    contentDescription = "Change pricing",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("Free") },
+                onClick = { onChange(true); expanded = false },
+            )
+            DropdownMenuItem(
+                text = { Text("Paid") },
+                onClick = { onChange(false); expanded = false },
+            )
+        }
+    }
+}
+
+/** Upload an APK, or point at a link that already hosts the build. */
+@Composable
+private fun ApkSourcePicker(
+    apkUrl: String?,
+    fileName: String,
+    sizeBytes: Long?,
+    isUploading: Boolean,
+    progress: Float,
+    link: String,
+    onLinkChange: (String) -> Unit,
+    onPicked: (ByteArray, String) -> Unit,
+    onClear: () -> Unit,
+) {
+    var mode by remember { mutableStateOf(if (apkUrl != null && link.isBlank()) 0 else if (link.isNotBlank()) 1 else 0) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val picker = rememberApkPicker { uri ->
+        if (uri != null) {
+            scope.launch {
+                val bytes = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                }
+                if (bytes != null) {
+                    val name = uri.lastPathSegment?.substringAfterLast('/') ?: "app.apk"
+                    onPicked(bytes, name)
+                }
+            }
+        }
+    }
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        SproutlyChip(
+            text = "Upload APK",
+            selected = mode == 0,
+            onClick = { mode = 0 },
+        )
+        SproutlyChip(
+            text = "Paste link",
+            selected = mode == 1,
+            onClick = { mode = 1 },
+        )
+    }
+    Spacer(Modifier.height(12.dp))
+
+    if (mode == 0) {
+        when {
+            isUploading -> {
+                Surface(
+                    shape = SproutlyRadii.card,
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("Uploading build…", style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(8.dp))
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
+            apkUrl != null -> {
+                Surface(
+                    shape = SproutlyRadii.card,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        HugeIcon(
+                            icon = HugeIcons.Verified,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                fileName.ifBlank { "Build attached" },
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                maxLines = 1,
+                            )
+                            if (sizeBytes != null) {
+                                Text(
+                                    formatBytes(sizeBytes),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            }
+                        }
+                        Surface(
+                            onClick = onClear,
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.size(28.dp),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                HugeIcon(
+                                    icon = HugeIcons.Close,
+                                    contentDescription = "Remove build",
+                                    modifier = Modifier.size(14.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            else -> {
+                SproutlyButton(
+                    text = "Choose APK",
+                    icon = HugeIcons.Upload,
+                    onClick = { picker.launch(APK_MIME_TYPES) },
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "The build is uploaded to your Cloudinary account and linked to this listing.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    } else {
+        SproutlyTextField(
+            value = link,
+            onValueChange = onLinkChange,
+            label = "Build link",
+            placeholder = "https://example.com/app-release.apk",
+            keyboardType = KeyboardType.Uri,
+            helperText = "A direct link you control. Keep it live — installs use it.",
+        )
+    }
+}
+
+/** Paid listings need a verified developer account. */
+@Composable
+private fun VerificationGate(
+    status: String,
+    isRequesting: Boolean,
+    onRequest: () -> Unit,
+) {
+    Surface(
+        shape = SproutlyRadii.card,
+        color = MaterialTheme.colorScheme.errorContainer,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                HugeIcon(
+                    icon = HugeIcons.Verified,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Verification needed for paid apps",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+            Spacer(Modifier.height(6.dp))
+            Text(
+                if (status == "PENDING") {
+                    "Your request is with our team. You can publish this app for free in the meantime."
+                } else {
+                    "Paid apps can only be published by verified developers, so buyers know who they are paying. Free apps need no verification."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            if (status != "PENDING") {
+                Spacer(Modifier.height(12.dp))
+                SproutlyButton(
+                    text = "Request verification",
+                    onClick = onRequest,
+                    loading = isRequesting,
+                )
+            }
+        }
+    }
+}
+
+private fun formatBytes(bytes: Long): String = when {
+    bytes >= 1024L * 1024L -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
+    bytes >= 1024L -> "%.0f KB".format(bytes / 1024.0)
+    else -> "$bytes B"
 }

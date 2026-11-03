@@ -26,13 +26,17 @@ data class Product(
     val rating: Double = 0.0,
     val ratingCount: Int = 0,
     val unitsSold: Int = 0,
+    /** Where the build lives: an uploaded APK or a link the developer owns. */
+    val apkUrl: String? = null,
+    val apkSizeBytes: Long? = null,
     val tags: List<String> = emptyList(),
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
 ) {
     val primaryImage: String? get() = images.firstOrNull()?.url
+    val isFree: Boolean get() = price <= 0L
     val isOutOfStock: Boolean get() = stock <= 0
-    val isPurchasable: Boolean get() = status == ProductStatus.ACTIVE && stock > 0
+    val isPurchasable: Boolean get() = status == ProductStatus.ACTIVE
     val discountPercent: Int
         get() {
             val compare = compareAtPrice ?: return 0

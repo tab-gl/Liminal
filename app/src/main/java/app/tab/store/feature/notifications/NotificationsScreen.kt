@@ -36,6 +36,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTopBar
@@ -110,7 +112,7 @@ fun NotificationsScreen(
             EmptyState(
                 title = "You are all caught up",
                 message = "Order updates and store news will land here.",
-                icon = Icons.Filled.NotificationsNone,
+                icon = HugeIcons.NotificationNone,
             )
         } else {
             LazyColumn(
@@ -138,10 +140,10 @@ fun NotificationsScreen(
 @Composable
 private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
     val icon: ImageVector = when (item.type) {
-        NotificationType.ORDER -> Icons.Outlined.Receipt
-        NotificationType.STORE -> Icons.Filled.Storefront
-        NotificationType.PROMO -> Icons.Filled.Campaign
-        NotificationType.SYSTEM -> Icons.Filled.NotificationsNone
+        NotificationType.ORDER -> HugeIcons.Receipt
+        NotificationType.STORE -> HugeIcons.Store
+        NotificationType.PROMO -> HugeIcons.Notification
+        NotificationType.SYSTEM -> HugeIcons.NotificationNone
     }
     Surface(
         onClick = onClick,

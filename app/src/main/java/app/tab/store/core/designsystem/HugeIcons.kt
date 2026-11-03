@@ -50,6 +50,14 @@ object HugeIcons {
     @DrawableRes val Sparkles = R.drawable.ic_hg_sparkles
     @DrawableRes val Upload = R.drawable.ic_hg_upload
     @DrawableRes val Analytics = R.drawable.ic_hg_analytics
+    @DrawableRes val ChevronDown = R.drawable.ic_hg_chevron_down
+    @DrawableRes val Link = R.drawable.ic_hg_link
+    @DrawableRes val Verified = R.drawable.ic_hg_verified
+    @DrawableRes val Receipt = R.drawable.ic_hg_receipt
+    @DrawableRes val Edit = R.drawable.ic_hg_edit
+    @DrawableRes val Trash = R.drawable.ic_hg_trash
+    @DrawableRes val Image = R.drawable.ic_hg_image
+    @DrawableRes val SearchOff = R.drawable.ic_hg_search_off
 }
 
 /** Renders a Hugeicon, tinted like any Material icon. */

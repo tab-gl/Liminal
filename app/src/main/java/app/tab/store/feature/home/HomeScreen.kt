@@ -15,6 +15,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlin.math.abs
+
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -86,6 +101,7 @@ fun HomeScreen(
     onProfile: () -> Unit,
     onNotifications: () -> Unit,
     onBecomeDeveloper: () -> Unit,
+    onOpenSwitcher: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -98,10 +114,23 @@ fun HomeScreen(
         }
     }
 
+    val listState = rememberLazyListState()
+    // The search FAB starts as a labelled pill and shrinks to a bare circle once
+    // the list is scrolled, so it stops covering content but stays reachable.
+    val collapsed by remember {
+        derivedStateOf { listState.firstVisibleItemScrollOffset > 40 || listState.firstVisibleItemIndex > 0 }
+    }
+    val fabWidth by animateDpAsState(
+        targetValue = if (collapsed) 56.dp else 132.dp,
+        animationSpec = spring(dampingRatio = 0.8f, stiffness = 700f),
+        label = "searchFabWidth",
+    )
+
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 28.dp),
+            contentPadding = PaddingValues(bottom = 108.dp),
         ) {
             item {
                 Row(
@@ -114,7 +143,7 @@ fun HomeScreen(
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = onNotifications) {
                         BadgedBox(badge = {}) {
-                            Icon(Icons.Filled.Notifications, contentDescription = "Notifications")
+                            HugeIcon(HugeIcons.Notification, contentDescription = "Notifications")
                         }
                     }
                     // Downloads (the library of installed apps) lives in the top
@@ -128,12 +157,27 @@ fun HomeScreen(
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
+                    // Swipe the avatar up or down to switch accounts, the way
+                    // Google's apps do; a plain tap still opens the profile.
+                    var dragged by remember { mutableStateOf(0f) }
                     Avatar(
                         url = state.user?.photoUrl,
                         name = state.user?.displayName.orEmpty(),
                         size = 36.dp,
                         modifier = Modifier
                             .padding(start = 4.dp)
+                            .pointerInput(Unit) {
+                                detectVerticalDragGestures(
+                                    onDragStart = { dragged = 0f },
+                                    onDragEnd = {
+                                        if (abs(dragged) > 40f) onOpenSwitcher()
+                                        dragged = 0f
+                                    },
+                                    onDragCancel = { dragged = 0f },
+                                ) { _, amount ->
+                                    dragged += amount
+                                }
+                            }
                             .clickable(onClick = onProfile),
                     )
                 }
@@ -168,7 +212,7 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
-                                Icons.Filled.Search,
+                                HugeIcons.Search,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp),
@@ -453,6 +497,47 @@ fun HomeScreen(
                 }
 
                 item { Spacer(Modifier.height(20.dp)) }
+            }
+        }
+
+        // Search FAB: a labelled pill at rest, a circle once you scroll.
+        Surface(
+            onClick = onSearch,
+            shape = RoundedCornerShape(50),
+            color = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shadowElevation = 8.dp,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 96.dp)
+                .height(56.dp)
+                .width(fabWidth),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                HugeIcon(
+                    icon = HugeIcons.Search,
+                    contentDescription = "Search apps",
+                    modifier = Modifier.size(22.dp),
+                )
+                AnimatedVisibility(
+                    visible = !collapsed,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Search",
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    }
+                }
             }
         }
 

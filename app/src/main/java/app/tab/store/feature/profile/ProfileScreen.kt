@@ -43,6 +43,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.HugeIcons
+import app.tab.store.core.designsystem.HugeIcon
 import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
@@ -116,7 +118,7 @@ fun ProfileScreen(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            Icons.Filled.Edit,
+                            HugeIcons.Edit,
                             contentDescription = "Edit profile",
                             tint = SproutlyPalette.Lime,
                             modifier = Modifier.size(18.dp),
@@ -139,15 +141,15 @@ fun ProfileScreen(
         Column(Modifier.padding(horizontal = 20.dp)) {
             Text("Account", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            ProfileRow(Icons.Filled.Receipt, "My apps", "Installed and updates", onOrders)
-            ProfileRow(Icons.Filled.FavoriteBorder, "Wishlist", "Saved for later", onWishlist)
-            ProfileRow(Icons.Filled.Notifications, "Notifications", "Updates and offers", onNotifications)
+            ProfileRow(HugeIcons.Receipt, "My apps", "Installed and updates", onOrders)
+            ProfileRow(HugeIcons.Favourite, "Wishlist", "Saved for later", onWishlist)
+            ProfileRow(HugeIcons.Notification, "Notifications", "Updates and offers", onNotifications)
 
             Spacer(Modifier.height(18.dp))
             Text("Publishing", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             ProfileRow(
-                Icons.Filled.Storefront,
+                HugeIcons.Store,
                 if (user?.isSeller == true) "Developer hub" else "Publish an app",
                 if (user?.isSeller == true) "Manage your apps" else "Open a developer profile",
                 onClick = {
@@ -157,7 +159,7 @@ fun ProfileScreen(
             )
             if (user?.isAdmin == true) {
                 ProfileRow(
-                    Icons.Filled.AdminPanelSettings,
+                    HugeIcons.Settings,
                     "Admin console",
                     "Moderate the store",
                     onAdmin,
@@ -167,7 +169,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(18.dp))
             Text("Preferences", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            ProfileRow(Icons.Filled.Settings, "Settings", "App preferences", onSettings)
+            ProfileRow(HugeIcons.Settings, "Settings", "App preferences", onSettings)
 
             Spacer(Modifier.height(18.dp))
             Surface(
@@ -181,7 +183,7 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ExitToApp,
+                        HugeIcons.ArrowRight,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                     )
@@ -291,7 +293,7 @@ private fun ProfileRow(icon: ImageVector, title: String, subtitle: String, onCli
                 )
             }
             Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                HugeIcons.ArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )

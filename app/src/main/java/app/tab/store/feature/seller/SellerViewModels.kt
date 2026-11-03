@@ -218,8 +218,20 @@ data class ProductEditorUiState(
     val description: String = "",
     val categoryId: String = "",
     val categoryLabel: String = "",
+    /** Free or paid decides whether the price fields are even shown. */
+    val isFree: Boolean = false,
     val priceRupees: String = "",
     val compareAtRupees: String = "",
+    /** Where the build comes from: uploaded APK or an existing link. */
+    val apkUrl: String? = null,
+    val apkLink: String = "",
+    val apkFileName: String = "",
+    val apkSizeBytes: Long? = null,
+    val isUploadingApk: Boolean = false,
+    /** Paid apps need a verified developer account. */
+    val storeVerified: Boolean = false,
+    val verificationStatus: String = "NONE",
+    val isRequestingVerification: Boolean = false,
     val stock: String = "0",
     val images: List<ProductImage> = emptyList(),
     val tags: String = "",
@@ -229,18 +241,30 @@ data class ProductEditorUiState(
     val uploadProgress: Float = 0f,
     val isSaving: Boolean = false,
     val error: String? = null,
+    val message: String? = null,
     val saved: Boolean = false,
     val loaded: Boolean = false,
 ) {
+    val effectivePrice: Long
+        get() = if (isFree) 0L else Money.toPaise(priceRupees) ?: 0L
+
+    val hasBuild: Boolean
+        get() = !apkUrl.isNullOrBlank() || apkLink.trim().length > 8
+
+    val needsVerification: Boolean
+        get() = !isFree && !storeVerified
+
     val canSave: Boolean
         get() = title.trim().length >= 3 &&
             categoryId.isNotBlank() &&
-            (Money.toPaise(priceRupees) ?: 0L) > 0 &&
-            !isSaving && !isUploading
+            hasBuild &&
+            !needsVerification &&
+            (isFree || effectivePrice > 0) &&
+            !isSaving && !isUploading && !isUploadingApk
 
     val priceError: String?
-        get() = if (priceRupees.isNotBlank() && (Money.toPaise(priceRupees) ?: 0L) <= 0) {
-            "Enter a price greater than zero."
+        get() = if (!isFree && priceRupees.isNotBlank() && (Money.toPaise(priceRupees) ?: 0L) <= 0) {
+            "Enter a price greater than zero, or make the app free."
         } else null
 }
 
@@ -265,6 +289,16 @@ class SellerProductEditViewModel @Inject constructor(
                 _uiState.update { it.copy(categories = categories) }
             }
         }
+        viewModelScope.launch {
+            sellerRepository.observeMyStore().collect { store ->
+                _uiState.update {
+                    it.copy(
+                        storeVerified = store?.verified == true,
+                        verificationStatus = store?.verificationStatus ?: "NONE",
+                    )
+                }
+            }
+        }
         if (productId != null) {
             viewModelScope.launch {
                 sellerRepository.observeMyStore().collect { store ->
@@ -278,7 +312,11 @@ class SellerProductEditViewModel @Inject constructor(
                                     description = product.description,
                                     categoryId = product.categoryId,
                                     categoryLabel = product.categoryLabel,
+                                    isFree = product.price <= 0L,
                                     priceRupees = Money.toRupeeString(product.price),
+                                    apkUrl = product.apkUrl,
+                                    apkLink = product.apkUrl.orEmpty(),
+                                    apkSizeBytes = product.apkSizeBytes,
                                     compareAtRupees = product.compareAtPrice
                                         ?.let { c -> Money.toRupeeString(c) }.orEmpty(),
                                     stock = product.stock.toString(),
@@ -303,6 +341,60 @@ class SellerProductEditViewModel @Inject constructor(
         it.copy(stock = v.filter { c -> c.isDigit() }.take(6))
     }
     fun onTags(v: String) = _uiState.update { it.copy(tags = v) }
+
+    fun onFreeChanged(free: Boolean) = _uiState.update {
+        it.copy(isFree = free, priceRupees = if (free) "" else it.priceRupees, error = null)
+    }
+
+    fun onApkLink(v: String) = _uiState.update { it.copy(apkLink = v, error = null) }
+
+    fun onApkPicked(bytes: ByteArray, fileName: String) {
+        if (bytes.isEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUploadingApk = true, error = null) }
+            when (
+                val res = mediaRepository.upload(bytes, fileName, "apks") { progress ->
+                    _uiState.update { it.copy(uploadProgress = progress) }
+                }
+            ) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isUploadingApk = false, error = res.message)
+                }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        isUploadingApk = false,
+                        uploadProgress = 0f,
+                        apkUrl = res.value.url,
+                        apkFileName = fileName,
+                        apkSizeBytes = bytes.size.toLong(),
+                    )
+                }
+            }
+        }
+    }
+
+    fun clearApk() = _uiState.update {
+        it.copy(apkUrl = null, apkFileName = "", apkSizeBytes = null)
+    }
+
+    /** Asks an admin to verify the developer account, which unlocks paid apps. */
+    fun requestVerification() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRequestingVerification = true, error = null) }
+            when (val res = sellerRepository.requestVerification()) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isRequestingVerification = false, error = res.message)
+                }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        isRequestingVerification = false,
+                        verificationStatus = "PENDING",
+                        message = "Verification requested. An admin will review it.",
+                    )
+                }
+            }
+        }
+    }
 
     fun onCategory(category: Category) = _uiState.update {
         it.copy(categoryId = category.id, categoryLabel = category.name)
@@ -372,9 +464,11 @@ class SellerProductEditViewModel @Inject constructor(
                 categoryId = state.categoryId,
                 categoryLabel = state.categoryLabel,
                 images = state.images,
-                price = Money.toPaise(state.priceRupees) ?: 0L,
-                compareAtPrice = Money.toPaise(state.compareAtRupees),
+                price = state.effectivePrice,
+                compareAtPrice = if (state.isFree) null else Money.toPaise(state.compareAtRupees),
                 stock = state.stock.toIntOrNull() ?: 0,
+                apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
+                apkSizeBytes = state.apkSizeBytes,
                 status = state.status,
                 tags = state.tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
             )
