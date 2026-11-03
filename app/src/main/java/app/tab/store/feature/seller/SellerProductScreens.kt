@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -358,7 +359,7 @@ fun SellerProductEditScreen(
                 }
                 item {
                     Surface(
-                        onClick = { screenshotPicker.launch(null) },
+                        onClick = { screenshotPicker.launch(pickImageRequest()) },
                         shape = SproutlyRadii.card,
                         color = MaterialTheme.colorScheme.surfaceContainerLow,
                         modifier = Modifier.size(width = 108.dp, height = 190.dp),

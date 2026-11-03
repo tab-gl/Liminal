@@ -383,6 +383,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 currentWorkspace = Workspace.SHOPPER,
                 isSeller = profileState.user?.isSeller == true,
                 isAdmin = profileState.user?.isAdmin == true,
+                onDismiss = { showSwitcher = false },
                 onSelectAccount = { uid ->
                     showSwitcher = false
                     switcherViewModel.selectAccount(uid)

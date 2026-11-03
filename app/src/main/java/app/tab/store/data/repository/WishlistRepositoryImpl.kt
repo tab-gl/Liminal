@@ -58,9 +58,13 @@ class WishlistRepositoryImpl @Inject constructor(
     }
 
     override fun observeWishlistIds(): Flow<Set<String>> = auth.uidFlow().flatMapLatest { uid ->
-        if (uid == null) return@flatMapLatest flowOf(emptySet())
-        val ref = items(uid)
-        return ref.snapshotFlow().map { snap -> snap.documents.mapNotNull { it.id }.toSet() }.orFallback(emptySet())
+        if (uid == null) {
+            flowOf(emptySet())
+        } else {
+            items(uid).snapshotFlow()
+                .map { snap -> snap.documents.mapNotNull { it.id }.toSet() }
+                .orFallback(emptySet())
+        }
     }
 
     override suspend fun toggle(product: Product): DataResult<Boolean> {
