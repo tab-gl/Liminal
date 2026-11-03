@@ -97,6 +97,17 @@ service cloud.firestore {
             && getAfter(
                  /databases/$(database)/documents/stores/$(request.resource.data.storeId)
                ).data.ownerId == uid())
+          // A developer or admin opening another profile keeps their role and
+          // only gains a storeId. Without this an admin could never become a
+          // developer, because the branch above only accepts CUSTOMER.
+          || (isSeller()
+            && unchanged('role')
+            && request.resource.data.storeId is string
+            && existsAfter(
+                 /databases/$(database)/documents/stores/$(request.resource.data.storeId))
+            && getAfter(
+                 /databases/$(database)/documents/stores/$(request.resource.data.storeId)
+               ).data.ownerId == uid())
         );
 
       // Admins may change only role and store linkage. SELLER is valid only

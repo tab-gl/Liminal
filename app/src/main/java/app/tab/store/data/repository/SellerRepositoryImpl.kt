@@ -77,6 +77,12 @@ class SellerRepositoryImpl @Inject constructor(
         val uid = auth.currentUser?.uid ?: return DataResult.Failure("You are signed out.")
         val storeRef = firestore.collection(FirestorePaths.STORES).document()
         return try {
+            val userRef = firestore.collection(FirestorePaths.USERS).document(uid)
+            // An admin (or an existing developer opening a second profile) must
+            // not be demoted to SELLER: only a shopper is promoted.
+            val currentRole = userRef.get().await().getString("role")
+            val promote = currentRole == null || currentRole.equals("CUSTOMER", ignoreCase = true)
+
             val batch = firestore.batch()
             batch.set(
                 storeRef,
@@ -99,15 +105,12 @@ class SellerRepositoryImpl @Inject constructor(
                     "updatedAt" to FieldValue.serverTimestamp(),
                 ),
             )
-            batch.set(
-                firestore.collection(FirestorePaths.USERS).document(uid),
-                mapOf(
-                    "role" to "SELLER",
-                    "storeId" to storeRef.id,
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                ),
-                SetOptions.merge(),
+            val userFields = mutableMapOf<String, Any?>(
+                "storeId" to storeRef.id,
+                "updatedAt" to FieldValue.serverTimestamp(),
             )
+            if (promote) userFields["role"] = "SELLER"
+            batch.set(userRef, userFields, SetOptions.merge())
             batch.commit().await()
             DataResult.Success(storeRef.id)
         } catch (t: Throwable) {
