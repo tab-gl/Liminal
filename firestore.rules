@@ -312,6 +312,26 @@ service cloud.firestore {
           && product.status == 'ACTIVE';
       }
 
+      function lineTotal(index) {
+        let item = request.resource.data.items[index];
+        return item.unitPrice * item.quantity;
+      }
+
+      // The subtotal must be the sum of the lines. Without this a client could
+      // declare any subtotal it liked and the totals would still "add up".
+      function subtotalMatches() {
+        let items = request.resource.data.items;
+        let sum = lineTotal(0)
+          + (items.size() > 1 ? lineTotal(1) : 0)
+          + (items.size() > 2 ? lineTotal(2) : 0)
+          + (items.size() > 3 ? lineTotal(3) : 0)
+          + (items.size() > 4 ? lineTotal(4) : 0)
+          + (items.size() > 5 ? lineTotal(5) : 0)
+          + (items.size() > 6 ? lineTotal(6) : 0)
+          + (items.size() > 7 ? lineTotal(7) : 0);
+        return request.resource.data.subtotal == sum;
+      }
+
       function totalsConsistent() {
         let shipping = request.resource.data.shipping;
         return request.resource.data.total == request.resource.data.subtotal + shipping
@@ -365,6 +385,7 @@ service cloud.firestore {
         && request.resource.data.items.size() <= 8
         && request.resource.data.storeIds is list
         && request.resource.data.storeIds.size() > 0
+        && subtotalMatches()
         && totalsConsistent()
         && itemValid(0)
         && (request.resource.data.items.size() < 2 || itemValid(1))
