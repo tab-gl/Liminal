@@ -126,7 +126,7 @@ fun LoginScreen(
                 trailing = {
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
                         Icon(
-                            if (state.passwordVisible) HugeIcons.NotificationOff
+                            if (state.passwordVisible) HugeIcons.Notification
                             else HugeIcons.Notification,
                             contentDescription = "Toggle password visibility",
                         )

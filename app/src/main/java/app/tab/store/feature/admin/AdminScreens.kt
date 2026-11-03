@@ -1,5 +1,7 @@
 package app.tab.store.feature.admin
 
+import androidx.annotation.DrawableRes
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -202,7 +204,7 @@ private fun MetricBox(
 }
 
 @Composable
-private fun AdminRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+private fun AdminRow(@DrawableRes icon: Int, title: String, subtitle: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
@@ -238,7 +240,7 @@ private fun AdminRow(icon: ImageVector, title: String, subtitle: String, onClick
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Icon(
+            HugeIcon(
                 HugeIcons.ArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -112,7 +112,7 @@ fun NotificationsScreen(
             EmptyState(
                 title = "You are all caught up",
                 message = "Order updates and store news will land here.",
-                icon = HugeIcons.NotificationNone,
+                icon = HugeIcons.Notification,
             )
         } else {
             LazyColumn(
@@ -143,7 +143,7 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
         NotificationType.ORDER -> HugeIcons.Receipt
         NotificationType.STORE -> HugeIcons.Store
         NotificationType.PROMO -> HugeIcons.Notification
-        NotificationType.SYSTEM -> HugeIcons.NotificationNone
+        NotificationType.SYSTEM -> HugeIcons.Notification
     }
     Surface(
         onClick = onClick,

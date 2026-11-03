@@ -86,7 +86,7 @@ fun RegisterScreen(
                 trailing = {
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
                         Icon(
-                            if (state.passwordVisible) HugeIcons.NotificationOff else HugeIcons.Notification,
+                            if (state.passwordVisible) HugeIcons.Notification else HugeIcons.Notification,
                             contentDescription = "Toggle password visibility",
                         )
                     }

@@ -1,5 +1,7 @@
 package app.tab.store.core.designsystem
 
+import androidx.annotation.DrawableRes
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -136,7 +138,7 @@ fun SproutlyButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     loading: Boolean = false,
-    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    @DrawableRes icon: Int? = null,
 ) {
     Surface(
         onClick = { if (enabled && !loading) onClick() },
@@ -163,7 +165,7 @@ fun SproutlyButton(
                 )
             } else {
                 if (icon != null) {
-                    Icon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
+                    HugeIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(text, style = MaterialTheme.typography.labelLarge)
@@ -178,7 +180,7 @@ fun SproutlySecondaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    @DrawableRes icon: Int? = null,
 ) {
     Surface(
         onClick = onClick,
@@ -196,7 +198,7 @@ fun SproutlySecondaryButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
+                HugeIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                 Spacer(Modifier.width(8.dp))
             }
             Text(text, style = MaterialTheme.typography.labelLarge)
@@ -254,8 +256,7 @@ fun SproutlyChip(
 @Composable
 fun RatingBadge(rating: Double, count: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            HugeIcons.Star,
+        HugeIcon(HugeIcons.Star,
             contentDescription = null,
             modifier = Modifier.size(13.dp),
             tint = LocalSproutlyExtra.current.ratingGold,
@@ -330,8 +331,7 @@ fun SproutlyImage(
     ) {
         if (url.isNullOrBlank()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Icon(
-                    HugeIcons.Image,
+                HugeIcon(HugeIcons.Image,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(26.dp),
@@ -346,8 +346,7 @@ fun SproutlyImage(
                 loading = { ShimmerBox(Modifier.fillMaxSize(), corner = corner) },
                 error = {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(
-                            HugeIcons.Image,
+                        HugeIcon(HugeIcons.Image,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -399,7 +398,7 @@ fun EmptyState(
     modifier: Modifier = Modifier,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
-    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    @DrawableRes icon: Int? = null,
 ) {
     Column(
         modifier = modifier
@@ -415,8 +414,8 @@ fun EmptyState(
             contentAlignment = Alignment.Center,
         ) {
             if (icon != null) {
-                Icon(
-                    icon,
+                HugeIcon(
+            icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(34.dp),
@@ -816,8 +815,7 @@ fun SuccessCheck(modifier: Modifier = Modifier, size: Dp = 64.dp) {
             .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            HugeIcons.Tick,
+        HugeIcon(HugeIcons.Tick,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.size(size / 2),
