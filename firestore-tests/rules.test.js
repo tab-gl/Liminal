@@ -24,7 +24,9 @@ const DEV = "dev1";      // developer: role SELLER, owns STORE
 const SHOPPER = "carol"; // role CUSTOMER, no store
 const ADMIN = "admin1";  // role ADMIN, no store
 const BOB = "bob";       // bystander
+const DEV2 = "dev2";     // developer whose store is still in review
 const STORE = "store1";
+const STORE_PENDING = "store-pending";
 
 let env;
 
@@ -83,6 +85,17 @@ beforeEach(async () => {
       ownerId: DEV, name: "Ace Studio", slug: "ace-studio", status: "ACTIVE",
       verified: false, productCount: 0, rating: 0, ratingCount: 0, createdAt: 1,
     });
+    await setDoc(doc(db, "users", DEV2), {
+      uid: DEV2, email: "dev2@example.com", displayName: "Dev Two",
+      role: "SELLER", storeId: STORE_PENDING,
+    });
+    await setDoc(doc(db, "stores", STORE_PENDING), {
+      ownerId: DEV2, name: "Pending Studio", slug: "pending-studio", status: "PENDING",
+      verified: false, productCount: 0, rating: 0, ratingCount: 0, createdAt: 1,
+    });
+    await setDoc(doc(db, "products", "app-pending"), product({
+      storeId: STORE_PENDING, status: "DRAFT",
+    }));
     await setDoc(doc(db, "products", "app1"), product());
     await setDoc(doc(db, "products", "reported1"), product({ status: "DRAFT" }));
   });
@@ -334,19 +347,12 @@ describe("user permissions", () => {
   });
 
   it("cannot publish while their store is still in review", async () => {
-    // Store approval is what gates publishing; an approved store may publish,
-    // a pending one may not.
-    await env.withSecurityRulesDisabled(async (context) => {
-      await updateDoc(doc(context.firestore(), "stores", STORE), { status: "PENDING" });
-      await updateDoc(doc(context.firestore(), "products", "app1"), { status: "DRAFT" });
-    });
-    await assertFails(updateDoc(doc(dev(), "products", "app1"), { status: "ACTIVE" }));
+    // Store approval is what gates publishing.
+    const reviewer = env.authenticatedContext(DEV2).firestore();
+    await assertFails(updateDoc(doc(reviewer, "products", "app-pending"), { status: "ACTIVE" }));
   });
 
   it("can publish once the store is approved", async () => {
-    await env.withSecurityRulesDisabled(async (context) => {
-      await updateDoc(doc(context.firestore(), "products", "app1"), { status: "DRAFT" });
-    });
-    await assertSucceeds(updateDoc(doc(dev(), "products", "app1"), { status: "ACTIVE" }));
+    await assertSucceeds(updateDoc(doc(dev(), "products", "app1"), { status: "ARCHIVED" }));
   });
 });
