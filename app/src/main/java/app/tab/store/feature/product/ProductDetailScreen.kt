@@ -3,6 +3,8 @@ package app.tab.store.feature.product
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -292,6 +294,22 @@ fun ProductDetailScreen(
                         enabled = state.canInstall,
                         loading = state.isInstalling,
                     )
+            if (product.screenshots.isNotEmpty()) {
+                Spacer(Modifier.height(22.dp))
+                Text("Screenshots", style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.height(10.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(product.screenshots) { shot ->
+                        SproutlyImage(
+                            url = shot.url,
+                            contentDescription = null,
+                            modifier = Modifier.size(width = 150.dp, height = 266.dp),
+                            corner = 18.dp,
+                        )
+                    }
+                }
+            }
+
                     Spacer(Modifier.height(28.dp))
                 }
             }
