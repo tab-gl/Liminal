@@ -7,6 +7,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -95,12 +97,15 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     var showSwitcher by remember { mutableStateOf(false) }
     val switcherViewModel: AccountSwitcherViewModel = hiltViewModel()
     val switcherState by switcherViewModel.uiState.collectAsStateWithLifecycle()
+
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val launchGoogle = rememberGoogleSignIn(
         onToken = { token -> switcherViewModel.switchWithGoogle(token) },
-        onError = { message -> snackbarHostState.showSnackbar(message) },
+        onError = { message ->
+            scope.launch { snackbarHostState.showSnackbar(message) }
+        },
     )
-
-    val snackbarHostState = remember { SnackbarHostState() }
 
     // Background stream failures surface here with the actionable message.
     LaunchedEffect(Unit) {
