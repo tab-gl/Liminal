@@ -264,15 +264,6 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             composable(Routes.PROFILE_EDIT) {
                 ProfileEditScreen(onBack = { navController.popBackStack() })
             }
-
-,
-                ),
-            ) { entry ->
-                AddressEditScreen(
-                    addressId = entry.arguments?.getString("addressId"),
-                    onBack = { navController.popBackStack() },
-                )
-            }
             composable(Routes.NOTIFICATIONS) {
                 NotificationsScreen(
                     onBack = { navController.popBackStack() },

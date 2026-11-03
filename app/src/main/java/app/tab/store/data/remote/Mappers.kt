@@ -102,19 +102,6 @@ fun DocumentSnapshot.toCategory(): Category = Category(
     imageUrl = strOrNull("imageUrl"),
 )
 
-: Address = Address(
-    id = id,
-    label = getString("label") ?: "Home",
-    fullName = str("fullName"),
-    phone = str("phone"),
-    line1 = str("line1"),
-    line2 = str("line2"),
-    city = str("city"),
-    state = str("state"),
-    pincode = str("pincode"),
-    isDefault = getBoolean("isDefault") ?: false,
-)
-
 @Suppress("UNCHECKED_CAST")
 fun DocumentSnapshot.toOrder(): Order {
     val rawItems = get("items") as? List<Map<String, Any?>> ?: emptyList()

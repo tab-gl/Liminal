@@ -56,7 +56,7 @@ fun ProductDetailScreen(
     productId: String,
     onBack: () -> Unit,
     onStore: (String) -> Unit,
-    onCart: () -> Unit,
+    onDownloads: () -> Unit,
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -71,7 +71,7 @@ fun ProductDetailScreen(
     LaunchedEffect(state.navigateToLibrary) {
         if (state.navigateToLibrary) {
             viewModel.consumeNavigation()
-            onCart()
+            onDownloads()
         }
     }
 
