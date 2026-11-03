@@ -582,6 +582,8 @@ fun ProductCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    /** Position on a chart; null when the card is not part of a ranking. */
+    rank: Int? = null,
 ) {
     // A short press-scale makes the grid feel like it responds to the thumb
     // rather than waiting for the tap to complete.
@@ -628,6 +630,14 @@ fun ProductCard(
                             container = MaterialTheme.colorScheme.surface,
                             content = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                } else if (rank != null) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp),
+                    ) {
+                        SproutlyTag(text = "#$rank")
                     }
                 } else if (product.discountPercent >= 20) {
                     Box(

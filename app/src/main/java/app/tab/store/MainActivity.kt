@@ -25,6 +25,9 @@ class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
 
+    @javax.inject.Inject
+    lateinit var themePreference: app.tab.store.core.theme.ThemePreference
+
     @Inject lateinit var deviceTokenRegistrar: DeviceTokenRegistrar
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +39,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val state by authViewModel.uiState.collectAsState()
-            SproutlyTheme {
+            val themeMode by themePreference.mode.collectAsState()
+            SproutlyTheme(mode = themeMode) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     SproutlyNavHost(
                         isSignedIn = state.user != null,

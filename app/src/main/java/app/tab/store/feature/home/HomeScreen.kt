@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -107,6 +108,7 @@ fun HomeScreen(
     onNotifications: () -> Unit,
     onBecomeDeveloper: () -> Unit,
     onOpenSwitcher: () -> Unit,
+    onRankings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -364,13 +366,13 @@ fun HomeScreen(
                 if (state.trending.isNotEmpty()) {
                     item {
                         SectionHeader(
-                            title = "Hot",
+                            title = "Top charts",
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                             actionLabel = "See all",
-                            onAction = onSeeAll,
+                            onAction = onRankings,
                         )
                     }
-                    items(state.trending.chunked(2)) { row ->
+                    itemsIndexed(state.trending.chunked(2)) { rowIndex, row ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -382,6 +384,7 @@ fun HomeScreen(
                                     product = product,
                                     onClick = { onProduct(product.id) },
                                     modifier = Modifier.weight(1f),
+                                    rank = rowIndex * 2 + row.indexOf(product) + 1,
                                 )
                             }
                             if (row.size == 1) Spacer(Modifier.weight(1f))
@@ -511,7 +514,7 @@ fun HomeScreen(
             exit = fadeOut(tween(120)) + scaleOut(tween(120), targetScale = 0.85f),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 92.dp),
+                .padding(end = 20.dp, bottom = 76.dp),
         ) {
             Column(horizontalAlignment = Alignment.End) {
                 SmallFab(

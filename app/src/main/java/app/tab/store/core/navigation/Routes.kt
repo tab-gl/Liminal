@@ -12,6 +12,7 @@ object Routes {
     const val SEARCH = "search"
     const val GAMES = "games"
     const val OFFERS = "offers"
+    const val RANKINGS = "rankings"
     const val ORDERS = "orders"
     const val PROFILE = "profile"
 

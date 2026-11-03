@@ -5,6 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import android.os.Build
 import androidx.compose.ui.platform.LocalContext
+import app.tab.store.core.theme.ThemeMode
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -119,9 +120,16 @@ val LocalSproutlyExtra = staticCompositionLocalOf {
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SproutlyTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    /** Null means "follow the device"; set by the Settings sheet. */
+    mode: ThemeMode? = null,
     content: @Composable () -> Unit,
 ) {
+    val systemDark = isSystemInDarkTheme()
+    val darkTheme = when (mode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        else -> systemDark
+    }
     val colors = if (darkTheme) DarkColors else LightColors
     val extra = if (darkTheme) {
         SproutlyExtra(

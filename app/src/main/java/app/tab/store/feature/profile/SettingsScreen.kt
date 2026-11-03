@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.theme.ThemeMode
 import app.tab.store.core.designsystem.BrandMark
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
@@ -30,6 +31,8 @@ fun SettingsScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val themeViewModel: ThemeViewModel = hiltViewModel()
+    val themeMode by themeViewModel.mode.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -37,7 +40,7 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         SproutlyTopBar(title = "Settings", onBack = onBack)
-        SettingsContent(state)
+        SettingsContent(state, themeMode, themeViewModel::set)
     }
 }
 
@@ -52,6 +55,8 @@ fun SettingsSheet(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val themeViewModel: ThemeViewModel = hiltViewModel()
+    val themeMode by themeViewModel.mode.collectAsStateWithLifecycle()
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
@@ -67,13 +72,17 @@ fun SettingsSheet(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
             )
-            SettingsContent(state)
+            SettingsContent(state, themeMode, themeViewModel::set)
         }
     }
 }
 
 @Composable
-private fun SettingsContent(state: ProfileUiState) {
+private fun SettingsContent(
+    state: ProfileUiState,
+    themeMode: ThemeMode,
+    onTheme: (ThemeMode) -> Unit,
+) {
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
                 shape = SproutlyRadii.card,
@@ -81,7 +90,17 @@ private fun SettingsContent(state: ProfileUiState) {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    SettingRow("Theme", "Follows your device dark mode")
+                    Text("Theme", style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ThemeMode.entries.forEach { option ->
+                            SproutlyChip(
+                                text = option.label,
+                                selected = themeMode == option,
+                                onClick = { onTheme(option) },
+                            )
+                        }
+                    }
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = MaterialTheme.colorScheme.outlineVariant,

@@ -50,6 +50,7 @@ import app.tab.store.feature.orders.OrderDetailScreen
 import app.tab.store.feature.orders.OrderPlacedScreen
 import app.tab.store.feature.offers.OffersScreen
 import app.tab.store.feature.orders.OrdersScreen
+import app.tab.store.feature.rankings.RankingsScreen
 import app.tab.store.feature.product.ProductDetailScreen
 import app.tab.store.feature.profile.ProfileEditScreen
 import app.tab.store.feature.profile.ProfileScreen
@@ -194,6 +195,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
                     onOpenSwitcher = { showSwitcher = true },
+                    onRankings = { go(Routes.RANKINGS) },
                 )
             }
             composable(
@@ -239,6 +241,9 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     initialCategoryId = "games",
                     onProduct = { go(Routes.product(it)) },
                 )
+            }
+            composable(Routes.RANKINGS) {
+                RankingsScreen(onProduct = { go(Routes.product(it)) })
             }
             composable(Routes.OFFERS) {
                 OffersScreen(onProduct = { go(Routes.product(it)) })
@@ -290,6 +295,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onSellerHub = { go(Routes.SELLER_DASHBOARD) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
                     onOpenSwitcher = { showSwitcher = true },
+                    onRankings = { go(Routes.RANKINGS) },
                     onAdmin = { go(Routes.ADMIN_DASHBOARD) },
                     onSettings = { go(Routes.SETTINGS) },
                 )
