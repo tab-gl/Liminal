@@ -319,6 +319,41 @@ fun ProductDetailScreen(
                         }
                     }
 
+                    if (!product.apkUrl.isNullOrBlank()) {
+                        Spacer(Modifier.height(10.dp))
+                        Surface(
+                            onClick = {
+                                context.startActivity(
+                                    android.content.Intent(
+                                        android.content.Intent.ACTION_VIEW,
+                                        android.net.Uri.parse(product.apkUrl),
+                                    ),
+                                )
+                            },
+                            shape = SproutlyRadii.card,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                TablerIcon(
+                                    TablerIcons.Download,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    "Download the build",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(Modifier.height(10.dp))
                     Surface(
                         onClick = { showReportDialog = true },

@@ -230,6 +230,9 @@ data class ProductEditorUiState(
     val releaseNotes: String = "",
     /** Where the build comes from: uploaded APK or an existing link. */
     val apkUrl: String? = null,
+    /** Storage path, so a replaced build can be cleaned up later. */
+    val apkPath: String? = null,
+    val storeId: String = "",
     val apkLink: String = "",
     val apkFileName: String = "",
     val apkSizeBytes: Long? = null,
@@ -284,6 +287,7 @@ class SellerProductEditViewModel @Inject constructor(
     private val catalogRepository: CatalogRepository,
     private val mediaRepository: MediaRepository,
     private val uploader: CloudinaryUploader,
+    private val apkStorage: app.tab.store.core.media.ApkStorage,
 ) : ViewModel() {
 
     private val productId: String? =
@@ -304,6 +308,7 @@ class SellerProductEditViewModel @Inject constructor(
                     it.copy(
                         storeVerified = store?.verified == true,
                         verificationStatus = store?.verificationStatus ?: "NONE",
+                        storeId = store?.id.orEmpty(),
                     )
                 }
             }
@@ -378,27 +383,47 @@ class SellerProductEditViewModel @Inject constructor(
 
     fun onApkLink(v: String) = _uiState.update { it.copy(apkLink = v, error = null) }
 
+    /**
+     * Builds go to Firebase Storage: Cloudinary's unsigned preset rejects ZIP
+     * content and caps at 10 MB, which no real APK fits inside.
+     */
     fun onApkPicked(bytes: ByteArray, fileName: String) {
         if (bytes.isEmpty()) return
         viewModelScope.launch {
-            _uiState.update { it.copy(isUploadingApk = true, error = null) }
-            when (
-                val res = mediaRepository.upload(bytes, fileName, "apks") { progress ->
-                    _uiState.update { it.copy(uploadProgress = progress) }
+            _uiState.update { it.copy(isUploadingApk = true, error = null, uploadProgress = 0f) }
+            val storeId = _uiState.value.storeId
+            if (storeId.isBlank()) {
+                _uiState.update {
+                    it.copy(isUploadingApk = false, error = "Open a developer profile first.")
                 }
-            ) {
-                is DataResult.Failure -> _uiState.update {
-                    it.copy(isUploadingApk = false, error = res.message)
-                }
-                is DataResult.Success -> _uiState.update {
-                    it.copy(
-                        isUploadingApk = false,
-                        uploadProgress = 0f,
-                        apkUrl = res.value.url,
-                        apkFileName = fileName,
-                        apkSizeBytes = bytes.size.toLong(),
-                    )
-                }
+                return@launch
+            }
+            apkStorage.upload(bytes, fileName, storeId) { progress ->
+                _uiState.update { it.copy(uploadProgress = progress) }
+            }.collect { result ->
+                result.fold(
+                    onSuccess = { uploaded ->
+                        _uiState.update {
+                            it.copy(
+                                isUploadingApk = false,
+                                uploadProgress = 0f,
+                                apkUrl = uploaded.url,
+                                apkPath = uploaded.path,
+                                apkFileName = fileName,
+                                apkSizeBytes = uploaded.sizeBytes,
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(
+                                isUploadingApk = false,
+                                uploadProgress = 0f,
+                                error = error.message ?: "The upload failed.",
+                            )
+                        }
+                    },
+                )
             }
         }
     }
@@ -670,6 +695,7 @@ class SellerStoreEditViewModel @Inject constructor(
     private val sellerRepository: SellerRepository,
     private val mediaRepository: MediaRepository,
     private val uploader: CloudinaryUploader,
+    private val apkStorage: app.tab.store.core.media.ApkStorage,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StoreEditorUiState())

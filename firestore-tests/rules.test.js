@@ -383,3 +383,23 @@ describe("coverage", () => {
     );
   });
 });
+
+describe("build link", () => {
+  it("accepts a storage or https link", async () => {
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "with-apk"), product({
+        status: "DRAFT",
+        apkUrl: "https://firebasestorage.googleapis.com/v0/b/x/o/app.apk",
+      })),
+    );
+  });
+
+  it("refuses a listing whose build link is not a URL", async () => {
+    await assertFails(
+      setDoc(doc(dev(), "products", "bad-apk"), product({
+        status: "DRAFT",
+        apkUrl: "just-some-text-that-is-long",
+      })),
+    );
+  });
+});

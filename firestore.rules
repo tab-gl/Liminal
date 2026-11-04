@@ -218,7 +218,11 @@ service cloud.firestore {
           && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED']
           // Every app points at a build: an uploaded APK or a link.
           && request.resource.data.apkUrl is string
-          && request.resource.data.apkUrl.size() > 8;
+          && request.resource.data.apkUrl.size() > 8
+          // A build is either a Firebase Storage URL or a link the developer
+          // controls; nothing else should end up in the field.
+          && (request.resource.data.apkUrl.matches('https://.*')
+              || request.resource.data.apkUrl.matches('gs://.*'));
       }
 
       // The only fields a shopper's order transaction may move, and stock may

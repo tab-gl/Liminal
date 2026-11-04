@@ -45,7 +45,7 @@ git pull                                  # 1. get the latest branch
 git log -1 --oneline                      #    confirm the commit you expect
 
 firebase use tab-gl                       # 2. point at the project
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules,firestore:indexes,storage
 
 cd tools/seed && npm ci                   # 3. categories (upsert, safe to re-run)
 # no lockfile in an older clone? use: npm install
@@ -97,7 +97,7 @@ the default deny-all rules.
 npm install -g firebase-tools
 firebase login
 firebase use tab-gl
-firebase deploy --only firestore:rules,firestore:indexes
+firebase deploy --only firestore:rules,firestore:indexes,storage
 ```
 
 Verify: Firebase Console → Firestore → **Rules** shows your rules with a recent

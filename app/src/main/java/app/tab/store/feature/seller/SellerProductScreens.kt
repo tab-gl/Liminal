@@ -770,7 +770,7 @@ private fun ApkSourcePicker(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "The build is uploaded to your Cloudinary account and linked to this listing.",
+                    "Uploaded to Sproutly storage (Firebase), up to 100 MB. An APK is a ZIP, which Cloudinary refused.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
