@@ -196,6 +196,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
 
+    // The payload test reflects over the model to catch a forgotten field.
+    testImplementation(kotlin("reflect"))
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
