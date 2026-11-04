@@ -18,6 +18,15 @@ data class OffersUiState(
     val isLoading: Boolean = true,
 ) {
     val hasOffers: Boolean get() = offers.isNotEmpty()
+
+    /**
+     * The offer to lead with: a developer wrote a banner for it, so it gets the
+     * width of the screen instead of a row in the list.
+     */
+    val banner: Product?
+        get() = offers.firstOrNull {
+            it.hasActiveOffer && (!it.promoHeadline.isBlank() || !it.promoImageUrl.isNullOrBlank())
+        }
 }
 
 /**

@@ -471,6 +471,83 @@ fun SellerProductEditScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // ------------------------------------------------------ offer banner
+            BentoTile(
+                title = "Offer banner",
+                hint = "Shown in the store while your offer runs. Tap it to open the app.",
+            ) {
+                val promoPicker = rememberLauncherForActivityResult(
+                    ActivityResultContracts.PickVisualMedia(),
+                ) { uri ->
+                    uri?.let {
+                        picker.readBytes(it)?.let { bytes ->
+                            viewModel.uploadPromoImage(bytes, "promo.jpg")
+                        }
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        onClick = {
+                            promoPicker.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                            )
+                        },
+                        shape = SproutlyRadii.card,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        modifier = Modifier.size(88.dp),
+                    ) {
+                        if (state.promoImageUrl != null) {
+                            SproutlyImage(
+                                url = state.promoImageUrl,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                corner = 16.dp,
+                            )
+                        } else {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                TablerIcon(TablerIcons.Image, contentDescription = "Add banner")
+                                Text("Banner", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            if (state.promoImageUrl == null) "No banner yet"
+                            else "Banner ready",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (state.promoImageUrl != null) {
+                            TextButton(onClick = viewModel::clearPromoImage) {
+                                Text("Remove")
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                SproutlyTextField(
+                    value = state.promoHeadline,
+                    onValueChange = viewModel::onPromoHeadline,
+                    label = "Headline",
+                    placeholder = "50% off this week",
+                )
+                SproutlyTextField(
+                    value = state.promoBody,
+                    onValueChange = viewModel::onPromoBody,
+                    label = "Line under it",
+                    placeholder = "One line that says why it is worth a look.",
+                    singleLine = false,
+                    minLines = 2,
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
             // ------------------------------------------------------ distribution
             BentoTile(
                 title = "The build",

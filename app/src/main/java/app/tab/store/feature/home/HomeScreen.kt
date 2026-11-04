@@ -282,6 +282,16 @@ fun HomeScreen(
                 }
             }
 
+            // A developer's own offer banner, right under the hero — the thing
+            // Play Store puts in front of you and that opens the app.
+            val promoApp = (state.featured + state.trending)
+                .firstOrNull { it.hasActiveOffer && (it.promoHeadline.isNotBlank() || it.promoImageUrl != null) }
+            if (promoApp != null) {
+                item {
+                    PromoBanner(product = promoApp, onClick = { onProduct(promoApp.id) })
+                }
+            }
+
             // Promotional banners
             item {
                 val slides = heroSlides(state, onProduct, onSeeAll, onOffers, onBecomeDeveloper)
@@ -687,6 +697,53 @@ private fun SmallFab(
                     .graphicsLayer { rotationZ = rotate },
                 tint = content,
             )
+        }
+    }
+}
+
+/** The developer's offer artwork, tappable through to the listing. */
+@Composable
+private fun PromoBanner(product: Product, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.hero,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (!product.promoImageUrl.isNullOrBlank()) {
+                SproutlyImage(
+                    url = product.promoImageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.size(84.dp),
+                    corner = 0.dp,
+                )
+            }
+            Column(Modifier.padding(14.dp)) {
+                Text(
+                    product.promoHeadline.ifBlank { "${product.discountPercent}% off ${product.title}" },
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                if (product.promoBody.isNotBlank()) {
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        product.promoBody,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Open",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
     }
 }

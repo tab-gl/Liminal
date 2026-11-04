@@ -224,6 +224,10 @@ data class ProductEditorUiState(
     val compareAtRupees: String = "",
     /** Days until a declared offer ends; blank means no end date. */
     val offerDays: String = "",
+    /** The offer banner the store shows while the offer runs. */
+    val promoHeadline: String = "",
+    val promoBody: String = "",
+    val promoImageUrl: String? = null,
     /** Release identity: what makes this an update rather than a new app. */
     val versionName: String = "",
     val versionCode: String = "",
@@ -346,7 +350,10 @@ class SellerProductEditViewModel @Inject constructor(
                                     versionName = product.versionName,
                                     versionCode = product.versionCode.takeIf { it > 0 }?.toString().orEmpty(),
                                     releaseNotes = product.releaseNotes,
-                                    offerDays = product.offerEndsAt
+                                    offerDays = product.offerEndsAt,
+                                    promoHeadline = product.promoHeadline,
+                                    promoBody = product.promoBody,
+                                    promoImageUrl = product.promoImageUrl,
                                         ?.let { ends ->
                                             val days = ((ends - System.currentTimeMillis()) / 86_400_000L)
                                             if (days > 0) days.toString() else ""
@@ -374,6 +381,32 @@ class SellerProductEditViewModel @Inject constructor(
     fun onOfferDays(v: String) = _uiState.update {
         it.copy(offerDays = v.filter { c -> c.isDigit() }.take(3))
     }
+
+    fun onPromoHeadline(v: String) = _uiState.update { it.copy(promoHeadline = v.take(60)) }
+
+    fun onPromoBody(v: String) = _uiState.update { it.copy(promoBody = v.take(120)) }
+
+    fun uploadPromoImage(bytes: ByteArray, fileName: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUploading = true, error = null) }
+            when (val res = uploader.upload(bytes, fileName, "promos") { progress ->
+                _uiState.update { it.copy(uploadProgress = progress) }
+            }) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isUploading = false, error = res.message)
+                }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        isUploading = false,
+                        uploadProgress = 0f,
+                        promoImageUrl = res.value.url,
+                    )
+                }
+            }
+        }
+    }
+
+    fun clearPromoImage() = _uiState.update { it.copy(promoImageUrl = null) }
 
     fun onVersionName(v: String) = _uiState.update { it.copy(versionName = v.take(20)) }
 
@@ -576,6 +609,9 @@ class SellerProductEditViewModel @Inject constructor(
                 stock = state.stock.toIntOrNull() ?: 0,
                 apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
                 apkSizeBytes = state.apkSizeBytes,
+                promoHeadline = state.promoHeadline.trim(),
+                promoBody = state.promoBody.trim(),
+                promoImageUrl = state.promoImageUrl,
                 versionName = state.versionName.trim().ifBlank { "1.0" },
                 versionCode = state.versionCode.toIntOrNull() ?: 1,
                 releaseNotes = state.releaseNotes.trim(),

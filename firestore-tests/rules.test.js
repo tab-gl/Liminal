@@ -414,3 +414,26 @@ describe("build link", () => {
     );
   });
 });
+
+describe("offers", () => {
+  it("lets a developer write an offer banner on their own listing", async () => {
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "promo1"), product({
+        status: "DRAFT",
+        compareAtPrice: 19900,
+        price: 9900,
+        offerEndsAt: 2_000_000_000_000,
+        promoHeadline: "Half price this week",
+        promoBody: "One line about why it is worth a look.",
+        promoImageUrl: "https://res.cloudinary.com/demo/banner.jpg",
+      })),
+    );
+  });
+
+  it("keeps the banner off another developer's listing", async () => {
+    const reviewer = env.authenticatedContext(DEV2).firestore();
+    await assertFails(
+      updateDoc(doc(reviewer, "products", "app1"), { promoHeadline: "Mine now" }),
+    );
+  });
+});

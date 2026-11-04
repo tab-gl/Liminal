@@ -62,6 +62,7 @@ ICONS = {
     "Apps": "apps",
     "Dice": "dice",
     "Discount": "discount",
+    "Gift": "gift",
     "Gamepad": "device-gamepad-2",
     "Eye": "eye",
     "EyeOff": "eye-off",
@@ -77,7 +78,7 @@ ICONS = {
 FILLED = {
     "Apps": "apps",
     "Games": "dice",
-    "Offers": "discount",
+    "Offers": "gift",
     "User": "user",
     "Favourite": "heart",
 }
@@ -122,30 +123,37 @@ def rect_to_path(x, y, w, h, rx):
 
 
 def element_to_path(tag, attrs):
-    """Turns one SVG element into pathData, or None when it carries no stroke."""
-    if attrs.get("fill", "none") not in ("none", "", "transparent"):
-        return None  # Tabler outline icons are stroke-only; skip solid fills
+    """Turns one SVG element into (pathData, is_filled).
+
+    Outline icons are mostly strokes, but not entirely: the pips on a dice or the
+    dot on an 'i' are solid circles. Skipping those turned the dice into an empty
+    square, so a solid element is now emitted as a filled path instead of being
+    dropped.
+    """
+    filled = attrs.get("fill", "none") not in ("none", "", "transparent")
     if tag == "path":
-        return attrs.get("d")
-    if tag == "circle":
-        return circle_to_path(float(attrs["cx"]), float(attrs["cy"]), float(attrs["r"]))
-    if tag == "line":
-        return f"M {attrs['x1']} {attrs['y1']} L {attrs['x2']} {attrs['y2']}"
-    if tag == "polyline":
+        d = attrs.get("d")
+    elif tag == "circle":
+        d = circle_to_path(float(attrs["cx"]), float(attrs["cy"]), float(attrs["r"]))
+    elif tag == "line":
+        d = f"M {attrs['x1']} {attrs['y1']} L {attrs['x2']} {attrs['y2']}"
+    elif tag == "polyline":
         points = attrs["points"].split()
-        return "M " + " L ".join(points)
-    if tag == "polygon":
+        d = "M " + " L ".join(points)
+    elif tag == "polygon":
         points = attrs["points"].split()
-        return "M " + " L ".join(points) + " Z"
-    if tag == "rect":
-        return rect_to_path(
+        d = "M " + " L ".join(points) + " Z"
+    elif tag == "rect":
+        d = rect_to_path(
             float(attrs.get("x", 0)),
             float(attrs.get("y", 0)),
             float(attrs["width"]),
             float(attrs["height"]),
             float(attrs.get("rx", 0) or 0),
         )
-    return None
+    else:
+        d = None
+    return (d, filled) if d else None
 
 
 def convert(svg: str) -> str:
@@ -155,11 +163,15 @@ def convert(svg: str) -> str:
         if tag in ("svg", "g", "defs", "title"):
             continue
         attrs = dict(re.findall(r'([\w:-]+)="([^"]*)"', raw))
-        d = element_to_path(tag, attrs)
+        converted = element_to_path(tag, attrs)
         # Tabler SVGs carry a 24x24 no-op box; stroked, it would draw a border.
-        if d and d.replace(" ", "").lower() not in ("m00h24v24h0z",):
-            if d:
-                body.append(PATH.format(d=d.strip(), fill="@android:color/transparent"))
+        if converted and converted[0].replace(" ", "").lower() not in ("m00h24v24h0z",):
+            d, filled = converted
+            body.append(
+                FILLED_PATH.format(d=d.strip())
+                if filled
+                else PATH.format(d=d.strip(), fill="@android:color/transparent")
+            )
     if not body:
         raise ValueError("no drawable elements found")
     return HEADER.format(version=VERSION) + "".join(body) + FOOTER

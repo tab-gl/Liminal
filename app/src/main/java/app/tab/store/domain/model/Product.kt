@@ -24,6 +24,10 @@ data class Product(
     val compareAtPrice: Long? = null,
     /** When a declared offer ends; null means the price is simply the price. */
     val offerEndsAt: Long? = null,
+    /** The offer banner: what the store shows while the offer runs. */
+    val promoHeadline: String = "",
+    val promoBody: String = "",
+    val promoImageUrl: String? = null,
     val currency: String = "INR",
     val stock: Int = 0,
     val status: ProductStatus = ProductStatus.DRAFT,

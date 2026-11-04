@@ -54,6 +54,7 @@ object TablerIcons {
     @DrawableRes val Apps = R.drawable.ic_tb_apps
     @DrawableRes val Dice = R.drawable.ic_tb_dice
     @DrawableRes val Discount = R.drawable.ic_tb_discount
+    @DrawableRes val Gift = R.drawable.ic_tb_gift
     @DrawableRes val AppsFilled = R.drawable.ic_tb_apps_filled
     @DrawableRes val GamesFilled = R.drawable.ic_tb_games_filled
     @DrawableRes val OffersFilled = R.drawable.ic_tb_offers_filled

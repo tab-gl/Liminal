@@ -51,7 +51,7 @@ data class TabDestination(
 val primaryTabs = listOf(
     TabDestination(Routes.HOME, "Apps", TablerIcons.Apps, TablerIcons.AppsFilled),
     TabDestination(Routes.GAMES, "Games", TablerIcons.Dice, TablerIcons.GamesFilled),
-    TabDestination(Routes.OFFERS, "Offers", TablerIcons.Discount, TablerIcons.OffersFilled),
+    TabDestination(Routes.OFFERS, "Offers", TablerIcons.Gift, TablerIcons.OffersFilled),
 )
 
 /** You, in the right pill. Search is a FAB, not a tab. */

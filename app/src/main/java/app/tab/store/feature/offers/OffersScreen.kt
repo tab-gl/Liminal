@@ -45,6 +45,12 @@ fun OffersScreen(
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        state.banner?.let { banner ->
+            item {
+                OfferBanner(product = banner, onClick = { onProduct(banner.id) })
+            }
+        }
+
         item {
             Column {
                 Text("Offers", style = MaterialTheme.typography.headlineMedium)
@@ -131,6 +137,73 @@ private fun OfferRow(
                     text = "-${product.discountPercent}%",
                     container = MaterialTheme.colorScheme.primary,
                     content = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The developer's own offer artwork and words, shown as a banner that opens the
+ * app. This is the one place the developer controls the picture, so it is given
+ * the width of the screen rather than a card in a list.
+ */
+@Composable
+private fun OfferBanner(product: Product, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.hero,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column {
+            if (!product.promoImageUrl.isNullOrBlank()) {
+                SproutlyImage(
+                    url = product.promoImageUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    corner = 0.dp,
+                )
+            }
+            Column(Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (product.hasActiveOffer) {
+                        SproutlyTag("${product.discountPercent}% off")
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text(
+                        product.title,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+                if (product.promoHeadline.isNotBlank()) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        product.promoHeadline,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+                if (product.promoBody.isNotBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        product.promoBody,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    if (product.hasActiveOffer) {
+                        "${formatPrice(product.price)} · was ${formatPrice(product.compareAtPrice ?: product.price)}"
+                    } else {
+                        formatPrice(product.price)
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
