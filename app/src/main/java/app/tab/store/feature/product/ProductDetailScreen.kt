@@ -42,6 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.platform.LocalContext
+import app.tab.store.core.navigation.Routes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,6 +73,21 @@ fun ProductDetailScreen(
     val snackbar = remember { SnackbarHostState() }
     var showDeveloperSheet by remember { mutableStateOf(false) }
     var showReportDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    fun shareProduct() {
+        val product = state.product ?: return
+        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(
+                android.content.Intent.EXTRA_TEXT,
+                "${product.title} on Sproutly — ${Routes.shareLink(product.id)}",
+            )
+        }
+        context.startActivity(
+            android.content.Intent.createChooser(intent, "Share this app"),
+        )
+    }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -277,6 +294,32 @@ fun ProductDetailScreen(
                     }
 
                     Spacer(Modifier.height(14.dp))
+                    Surface(
+                        onClick = { shareProduct() },
+                        shape = SproutlyRadii.card,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TablerIcon(
+                                TablerIcons.Share,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "Share this app",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
                     Surface(
                         onClick = { showReportDialog = true },
                         shape = SproutlyRadii.card,

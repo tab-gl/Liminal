@@ -206,8 +206,8 @@ fun SellerDashboardScreen(
                     Spacer(Modifier.height(14.dp))
                     Row {
                         DashStat("Installs", state.stats.orderCount.toString(), Modifier.weight(1f))
-                        DashStat("Units", state.stats.unitsSold.toString(), Modifier.weight(1f))
-                        DashStat("Avg sale", formatPrice(state.stats.averageOrderValue), Modifier.weight(1f))
+                        DashStat("Installs", state.stats.unitsSold.toString(), Modifier.weight(1f))
+                        DashStat("Avg order", formatPrice(state.stats.averageOrderValue), Modifier.weight(1f))
                     }
                 }
             }

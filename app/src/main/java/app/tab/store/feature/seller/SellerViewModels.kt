@@ -142,11 +142,11 @@ data class SellerProductsUiState(
             ProductFilter.ALL -> products
             ProductFilter.LIVE -> products.filter { it.status == ProductStatus.ACTIVE }
             ProductFilter.DRAFT -> products.filter { it.status == ProductStatus.DRAFT }
-            ProductFilter.OUT_OF_STOCK -> products.filter { it.stock <= 0 }
+            ProductFilter.HIDDEN -> products.filter { it.status == ProductStatus.DRAFT }
         }
 }
 
-enum class ProductFilter { ALL, LIVE, DRAFT, OUT_OF_STOCK }
+enum class ProductFilter { ALL, LIVE, DRAFT, HIDDEN }
 
 @HiltViewModel
 class SellerProductsViewModel @Inject constructor(

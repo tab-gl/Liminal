@@ -51,4 +51,9 @@ object Routes {
     fun orderPlaced(id: String) = "order-placed/$id"
     fun sellerProductEdit(id: String?) = "seller/product-edit?productId=${id ?: ""}"
     fun searchInCategory(categoryId: String) = "search?categoryId=$categoryId"
+
+    /** Public link for an app; the manifest claims the same pattern. */
+    const val productLink = "https://sproutly.app/app/{productId}"
+
+    fun shareLink(productId: String) = "https://sproutly.app/app/$productId"
 }

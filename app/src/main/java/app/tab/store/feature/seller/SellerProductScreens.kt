@@ -8,6 +8,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -147,7 +148,7 @@ fun SellerProductsScreen(
                             ProductFilter.ALL -> "All"
                             ProductFilter.LIVE -> "Live"
                             ProductFilter.DRAFT -> "Drafts"
-                            ProductFilter.OUT_OF_STOCK -> "Out of stock"
+                            ProductFilter.HIDDEN -> "Not live"
                         },
                         selected = state.filter == filter,
                         onClick = { viewModel.setFilter(filter) },
@@ -268,7 +269,8 @@ fun SellerProductEditScreen(
             onBack = onBack,
         )
         Column(Modifier.padding(horizontal = 20.dp)) {
-            // Images
+            // Images — the icon tile sits first, as the anchor of the grid.
+            BentoTile(title = "Icon", hint = "What people see in the store.") {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(state.images) { image ->
                     Box {
@@ -316,13 +318,15 @@ fun SellerProductEditScreen(
                 Spacer(Modifier.height(10.dp))
                 UploadProgressBar(state.uploadProgress)
             }
-            Spacer(Modifier.height(16.dp))
+            }
 
+            Spacer(Modifier.height(12.dp))
+            BentoTile(title = "The listing", hint = "Name and description as people will read them.") {
             SproutlyTextField(
                 value = state.title,
                 onValueChange = viewModel::onTitle,
                 label = "App name",
-                placeholder = "Monstera deliciosa, 6 inch pot",
+                placeholder = "Notes, Focus, Weather…",
             )
             SproutlyTextField(
                 value = state.description,
@@ -333,8 +337,9 @@ fun SellerProductEditScreen(
                 helperText = "What it does, what is included, any requirements.",
             )
 
-            Text("Category", style = MaterialTheme.typography.titleSmall)
-            Spacer(Modifier.height(8.dp))
+            }
+            Spacer(Modifier.height(12.dp))
+            BentoTile(title = "Category", hint = "Where people will find it.") {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(state.categories) { category ->
                     SproutlyChip(
@@ -344,18 +349,15 @@ fun SellerProductEditScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(18.dp))
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             // -------------------------------------------------------- screenshots
-            Spacer(Modifier.height(18.dp))
-            Text("Screenshots", style = MaterialTheme.typography.titleSmall)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Up to 8. These are what people see before installing.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(10.dp))
+            BentoTile(
+                title = "Screenshots",
+                hint = "Up to 8. These are what people see before installing.",
+            ) {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(state.screenshots) { shot ->
                     Box {
@@ -414,10 +416,14 @@ fun SellerProductEditScreen(
                     }
                 }
             }
+            }
+
 
             // ---------------------------------------------------------- pricing
-            Text("Pricing", style = MaterialTheme.typography.titleSmall)
-            Spacer(Modifier.height(8.dp))
+            BentoTile(
+                title = "Pricing",
+                hint = "Free apps install straight away; paid apps need a verified account.",
+            ) {
             PricingDropdown(
                 isFree = state.isFree,
                 onChange = viewModel::onFreeChanged,
@@ -461,11 +467,15 @@ fun SellerProductEditScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(18.dp))
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             // ------------------------------------------------------ distribution
-            Text("The build", style = MaterialTheme.typography.titleSmall)
-            Spacer(Modifier.height(8.dp))
+            BentoTile(
+                title = "The build",
+                hint = "Upload the APK or point at a link you control.",
+            ) {
             ApkSourcePicker(
                 apkUrl = state.apkUrl,
                 fileName = state.apkFileName,
@@ -477,7 +487,9 @@ fun SellerProductEditScreen(
                 onPicked = viewModel::onApkPicked,
                 onClear = viewModel::clearApk,
             )
-            Spacer(Modifier.height(18.dp))
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             // ---------------------------------------------------------- release
             Text("Release", style = MaterialTheme.typography.titleSmall)
@@ -829,4 +841,40 @@ private fun formatBytes(bytes: Long): String = when {
     bytes >= 1024L * 1024L -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
     bytes >= 1024L -> "%.0f KB".format(bytes / 1024.0)
     else -> "$bytes B"
+}
+
+/**
+ * One tile of the publication bento.
+ *
+ * The form is a grid of cards rather than a column of fields: identity and build
+ * are wide, pricing and release sit side by side. A tile is just a surface with
+ * a label, so the same block can be dropped anywhere in the grid.
+ */
+@Composable
+private fun BentoTile(
+    title: String? = null,
+    hint: String? = null,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Surface(
+        shape = SproutlyRadii.card,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            if (title != null) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                if (hint != null) {
+                    Text(
+                        hint,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+            content()
+        }
+    }
 }

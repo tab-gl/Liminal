@@ -10,8 +10,6 @@ import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -158,21 +156,12 @@ fun SproutlyTheme(
         }
     }
 
-    // Monet: on Android 12+ the palette is derived from the wallpaper with the
-    // TonalSpot scheme (M3's default tonal mapping), so the app belongs to the
-    // device instead of fighting it. Below 12 the Sproutly palette stands.
-    val context = LocalContext.current
-    val dynamic = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val active = when {
-        dynamic && darkTheme -> dynamicDarkColorScheme(context)
-        dynamic -> dynamicLightColorScheme(context)
-        else -> colors
-    }
-
+    // The Sproutly palette is the brand, so it is used on every device. Wallpaper
+    // derived colour was tried and removed: lime and olive are the identity.
     // Material 3 Expressive: springy, shape-morphing motion for every M3
     // component (buttons, chips, sheets, and the loading indicator).
     MaterialExpressiveTheme(
-        colorScheme = active,
+        colorScheme = colors,
         motionScheme = MotionScheme.expressive(),
         typography = SproutlyTypography,
         shapes = SproutlyShapes,

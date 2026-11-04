@@ -34,6 +34,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import app.tab.store.core.utils.AppErrors
 import app.tab.store.domain.model.UserRole
 import app.tab.store.feature.auth.rememberGoogleSignIn
@@ -215,6 +216,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             composable(
                 route = Routes.PRODUCT,
                 arguments = listOf(navArgument("productId") { type = NavType.StringType }),
+                // A shared link resolves here, so the app opens on the app.
+                deepLinks = listOf(navDeepLink { uriPattern = Routes.productLink }),
             ) { entry ->
                 ProductDetailScreen(
                     productId = entry.arguments?.getString("productId").orEmpty(),

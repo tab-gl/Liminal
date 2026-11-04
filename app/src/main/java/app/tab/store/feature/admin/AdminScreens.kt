@@ -89,7 +89,7 @@ fun AdminDashboardScreen(
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Text(
-                        "TOTAL APP REVENUE",
+                        "TOTAL APP SALES",
                         style = MaterialTheme.typography.labelSmall,
                         color = SproutlyPalette.LimeSoft,
                     )

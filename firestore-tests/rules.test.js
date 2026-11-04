@@ -356,3 +356,30 @@ describe("user permissions", () => {
     await assertSucceeds(updateDoc(doc(dev(), "products", "app1"), { status: "ARCHIVED" }));
   });
 });
+
+describe("coverage", () => {
+  it("denies any collection that has no rule", async () => {
+    // The catch-all must stay a deny: a new collection added to the client
+    // should fail loudly here rather than be silently world-readable.
+    await assertFails(getDoc(doc(guest(), "something_new", "x")));
+    await assertFails(getDoc(doc(alice(), "something_new", "x")));
+  });
+
+  it("denies writes to the platform config from a normal user", async () => {
+    await assertFails(
+      setDoc(doc(shopper(), "platform", "stats"), { installs: 1 }),
+    );
+  });
+
+  it("denies an unauthenticated install write", async () => {
+    await assertFails(
+      setDoc(doc(guest(), "orders", "o9"), { buyerId: "x", items: [], subtotal: 0, total: 0 }),
+    );
+  });
+
+  it("denies reading another person's notifications", async () => {
+    await assertFails(
+      getDocs(collection(env.authenticatedContext(BOB).firestore(), "notifications", SHOPPER, "items")),
+    );
+  });
+});
