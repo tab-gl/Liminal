@@ -43,7 +43,7 @@ class ApkScanner @Inject constructor(
      * Ordered roughly by how badly they can be abused. Anything not listed is
      * shown but not warned about.
      */
-    private val explained = linkedMapOf(
+    private val explained: Map<String, Pair<String, Risk>> = linkedMapOf(
         "android.permission.READ_SMS" to "can read your text messages" to Risk.HIGH,
         "android.permission.RECEIVE_SMS" to "can receive your text messages" to Risk.HIGH,
         "android.permission.SEND_SMS" to "can send text messages, which can cost money" to Risk.HIGH,
@@ -88,10 +88,9 @@ class ApkScanner @Inject constructor(
                 var risk = Risk.LOW
 
                 permissions.forEach { permission ->
-                    val entry = explained[permission] ?: return@forEach
-                    val (text, level) = entry
-                    warnings += text.replaceFirstChar { it.uppercase() }
-                    if (level.ordinal > risk.ordinal) risk = level
+                    val entry: Pair<String, Risk> = explained[permission] ?: return@forEach
+                    warnings += entry.first.replaceFirstChar { it.uppercase() }
+                    if (entry.second.ordinal > risk.ordinal) risk = entry.second
                 }
 
                 // Exported components are how one app reaches into another.
@@ -103,9 +102,10 @@ class ApkScanner @Inject constructor(
                         "open to other apps"
                 }
 
-                if (info.applicationInfo?.targetSdkVersion?.let { it < 31 } == true) {
-                    warnings += "Built for an older Android version (target SDK " +
-                        "${info.applicationInfo.targetSdkVersion})"
+                val app = info.applicationInfo
+                val target = app?.targetSdkVersion ?: 0
+                if (target in 1..30) {
+                    warnings += "Built for an older Android version (target SDK $target)"
                     if (risk == Risk.LOW) risk = Risk.MEDIUM
                 }
 
@@ -113,8 +113,8 @@ class ApkScanner @Inject constructor(
                     packageName = info.packageName.orEmpty(),
                     versionName = info.versionName.orEmpty(),
                     versionCode = info.longVersionCode,
-                    minSdk = info.applicationInfo?.minSdkVersion ?: 0,
-                    targetSdk = info.applicationInfo?.targetSdkVersion ?: 0,
+                    minSdk = app?.minSdkVersion ?: 0,
+                    targetSdk = target,
                     permissions = permissions,
                     warnings = warnings,
                     risk = risk,
