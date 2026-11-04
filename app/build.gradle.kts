@@ -25,8 +25,8 @@ android {
         applicationId = "app.tab.store"
         minSdk = 24
         targetSdk = 36
-        versionCode = 28
-        versionName = "1.0.27"
+        versionCode = 29
+        versionName = "1.0.28"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -43,6 +43,14 @@ android {
             "String",
             "CLOUDINARY_UPLOAD_PRESET",
             "\"${secret("cloudinaryUploadPreset", "SPROUTLY_CLOUDINARY_UPLOAD_PRESET") ?: "sproutly_unsigned"}\"",
+        )
+
+        // Where builds are uploaded: the Sproutly R2 uploader Worker. Public URL,
+        // no secret — the Worker authenticates the caller by Firebase ID token.
+        buildConfigField(
+            "String",
+            "APK_UPLOAD_URL",
+            "\"${secret("apkUploadUrl", "SPROUTLY_APK_UPLOAD_URL") ?: ""}\"",
         )
 
         buildConfigField(
@@ -168,7 +176,6 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.messaging)
-    implementation(libs.firebase.storage)
     implementation(libs.firebase.appcheck.playintegrity)
     debugImplementation(libs.firebase.appcheck.debug)
 

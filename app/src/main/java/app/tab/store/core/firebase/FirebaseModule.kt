@@ -23,11 +23,6 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun provideStorage(): com.google.firebase.storage.FirebaseStorage =
-        com.google.firebase.storage.FirebaseStorage.getInstance()
-
-    @Provides
-    @Singleton
     fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance().apply {
         // Persistent cache keeps the marketplace usable on flaky networks.
         firestoreSettings = FirebaseFirestoreSettings.Builder()

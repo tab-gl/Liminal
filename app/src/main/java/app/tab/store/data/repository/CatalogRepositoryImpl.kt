@@ -149,12 +149,18 @@ class CatalogRepositoryImpl @Inject constructor(
 
     override suspend fun reportProduct(productId: String, reason: String): DataResult<Unit> =
         firestoreResult {
+            val current = firestore.collection(FirestorePaths.PRODUCTS)
+                .document(productId).get().await()
+                .getLong("reportCount") ?: 0L
             firestore.collection(FirestorePaths.PRODUCTS).document(productId)
                 .update(
                     mapOf(
                         "reported" to true,
                         "reportReason" to reason.trim().take(200),
-                        "reportCount" to com.google.firebase.firestore.FieldValue.increment(1),
+                        // A literal, not an increment transform: the rules compare
+                        // the resulting value and a transform is not resolved when
+                        // they run.
+                        "reportCount" to current + 1,
                         "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
                     ),
                 )

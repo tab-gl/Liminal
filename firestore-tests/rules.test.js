@@ -283,6 +283,17 @@ describe("reporting", () => {
     );
   });
 
+  it("refuses a report that skips the count", async () => {
+    await assertFails(
+      updateDoc(doc(shopper(), "products", "app1"), {
+        reported: true,
+        reportReason: "spam",
+        reportCount: 5,
+        updatedAt: 2,
+      }),
+    );
+  });
+
   it("surfaces a reported app to the admin queue", async () => {
     await assertSucceeds(
       updateDoc(doc(shopper(), "products", "app1"), {

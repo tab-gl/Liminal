@@ -1,0 +1,12 @@
+name = "sproutly-apk-upload"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# Create the bucket once:  wrangler r2 bucket create sproutly-apks
+[[r2_buckets]]
+binding = "APKS"
+bucket_name = "sproutly-apks"
+
+[vars]
+# The Firebase web API key is public by design; it identifies the project, not a user.
+FIREBASE_API_KEY = "AIzaSyB0kEyPLACEHOLDER_REPLACE_ME"

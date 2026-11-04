@@ -241,6 +241,8 @@ data class ProductEditorUiState(
     val storeVerified: Boolean = false,
     /** Approval state of the store: publishing needs it to be ACTIVE. */
     val storeStatus: String = "PENDING",
+    /** False when this build has no uploader URL, so paste-a-link is the way. */
+    val apkUploadEnabled: Boolean = true,
     val verificationStatus: String = "NONE",
     val isRequestingVerification: Boolean = false,
     val stock: String = "0",
@@ -298,7 +300,9 @@ class SellerProductEditViewModel @Inject constructor(
     private val productId: String? =
         savedStateHandle.get<String>("productId")?.takeIf { it.isNotBlank() }
 
-    private val _uiState = MutableStateFlow(ProductEditorUiState(productId = productId))
+    private val _uiState = MutableStateFlow(
+        ProductEditorUiState(productId = productId, apkUploadEnabled = apkStorage.isConfigured),
+    )
     val uiState: StateFlow<ProductEditorUiState> = _uiState.asStateFlow()
 
     init {
@@ -390,21 +394,15 @@ class SellerProductEditViewModel @Inject constructor(
     fun onApkLink(v: String) = _uiState.update { it.copy(apkLink = v, error = null) }
 
     /**
-     * Builds go to Firebase Storage: Cloudinary's unsigned preset rejects ZIP
-     * content and caps at 10 MB, which no real APK fits inside.
+     * Builds go to Cloudflare R2 through the uploader Worker: Cloudinary's
+     * unsigned preset rejects ZIP content and caps at 10 MB, which no real APK
+     * fits inside, and a Firestore document is capped at 1 MiB.
      */
     fun onApkPicked(bytes: ByteArray, fileName: String) {
         if (bytes.isEmpty()) return
         viewModelScope.launch {
             _uiState.update { it.copy(isUploadingApk = true, error = null, uploadProgress = 0f) }
-            val storeId = _uiState.value.storeId
-            if (storeId.isBlank()) {
-                _uiState.update {
-                    it.copy(isUploadingApk = false, error = "Open a developer profile first.")
-                }
-                return@launch
-            }
-            apkStorage.upload(bytes, fileName, storeId) { progress ->
+            apkStorage.upload(bytes, fileName) { progress ->
                 _uiState.update { it.copy(uploadProgress = progress) }
             }.collect { result ->
                 result.fold(

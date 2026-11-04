@@ -292,6 +292,7 @@ service cloud.firestore {
         && request.resource.data.reported == true
         && request.resource.data.reportReason is string
         && request.resource.data.reportReason.size() <= 200
+        && request.resource.data.reportCount is int
         && request.resource.data.reportCount == resource.data.get('reportCount', 0) + 1;
 
       // Moderation (Admin → Products).

@@ -1,0 +1,115 @@
+/**
+ * Sproutly build uploader.
+ *
+ * APKs are far too big for Firestore (1 MiB per document) and Cloudinary's
+ * unsigned preset rejects ZIP content and caps at 10 MB, so builds go to R2.
+ *
+ * The bucket must never be writable with credentials that ship inside the app —
+ * anyone could extract them and fill it. So the app proves who it is with its
+ * Firebase ID token, this Worker verifies that token with Google, and only then
+ * does the write happen with the Worker's own R2 binding.
+ *
+ *   POST /upload   Authorization: Bearer <firebase idToken>
+ *                  X-File-Name: app-release.apk
+ *                  body: raw APK bytes
+ *   GET  /apks/<key...>   public download
+ */
+const MAX_BYTES = 100 * 1024 * 1024;
+
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-File-Name",
+  "Access-Control-Max-Age": "86400",
+};
+
+const json = (body, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...CORS },
+  });
+
+/** Verifies the Firebase ID token and returns the uid, or null. */
+async function verifyToken(token, apiKey) {
+  if (!token || !apiKey) return null;
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken: token }),
+    },
+  );
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data?.users?.[0]?.localId ?? null;
+}
+
+function safeName(name) {
+  return (name || "build.apk").replace(/[^A-Za-z0-9._-]/g, "_").slice(-60);
+}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: CORS });
+    }
+
+    // ---------------------------------------------------------------- upload
+    if (request.method === "POST" && url.pathname === "/upload") {
+      const auth = request.headers.get("Authorization") || "";
+      const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+      const uid = await verifyToken(token, env.FIREBASE_API_KEY);
+      if (!uid) return json({ error: "Sign in first." }, 401);
+
+      const declared = Number(request.headers.get("Content-Length") || "0");
+      if (declared > MAX_BYTES) {
+        return json(
+          { error: `That build is ${(declared / 1048576).toFixed(1)} MB. The limit is 100 MB.` },
+          413,
+        );
+      }
+
+      const bytes = await request.arrayBuffer();
+      if (bytes.byteLength === 0) return json({ error: "That file is empty." }, 400);
+      if (bytes.byteLength > MAX_BYTES) {
+        return json({ error: "That build is over 100 MB." }, 413);
+      }
+
+      const key = `apks/${uid}/${Date.now()}-${safeName(request.headers.get("X-File-Name"))}`;
+      await env.APKS.put(key, bytes, {
+        httpMetadata: {
+          contentType: "application/vnd.android.package-archive",
+          contentDisposition: `attachment; filename="${safeName(request.headers.get("X-File-Name"))}"`,
+        },
+      });
+
+      return json({
+        url: `${url.origin}/apks/${key}`,
+        path: key,
+        size: bytes.byteLength,
+      });
+    }
+
+    // -------------------------------------------------------------- download
+    if (request.method === "GET" && url.pathname.startsWith("/apks/")) {
+      const key = decodeURIComponent(url.pathname.slice(1));
+      const object = await env.APKS.get(key);
+      if (!object) return json({ error: "Not found." }, 404);
+      return new Response(object.body, {
+        headers: {
+          "Content-Type":
+            object.httpMetadata?.contentType || "application/vnd.android.package-archive",
+          "Content-Disposition":
+            object.httpMetadata?.contentDisposition || 'attachment; filename="build.apk"',
+          "Cache-Control": "public, max-age=31536000, immutable",
+          ...CORS,
+        },
+      });
+    }
+
+    return json({ error: "Not found." }, 404);
+  },
+};

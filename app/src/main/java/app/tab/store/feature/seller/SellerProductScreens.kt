@@ -474,7 +474,11 @@ fun SellerProductEditScreen(
             // ------------------------------------------------------ distribution
             BentoTile(
                 title = "The build",
-                hint = "Upload the APK or point at a link you control.",
+                hint = if (state.apkUploadEnabled) {
+                    "Upload the APK (up to 100 MB) or point at a link you control."
+                } else {
+                    "Uploads are off in this build — paste a direct link instead."
+                },
             ) {
             ApkSourcePicker(
                 apkUrl = state.apkUrl,
@@ -800,7 +804,7 @@ private fun ApkSourcePicker(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Uploaded to Sproutly storage (Firebase), up to 100 MB. An APK is a ZIP, which Cloudinary refused.",
+                    "Uploaded to Sproutly storage (Cloudflare R2) through our uploader, up to 100 MB.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -813,7 +817,7 @@ private fun ApkSourcePicker(
             label = "Build link",
             placeholder = "https://example.com/app-release.apk",
             keyboardType = KeyboardType.Uri,
-            helperText = "A direct link you control. Keep it live — installs use it.",
+            helperText = "A direct https link you control. Keep it live — installs use it.",
         )
     }
 }

@@ -45,7 +45,7 @@ git pull                                  # 1. get the latest branch
 git log -1 --oneline                      #    confirm the commit you expect
 
 firebase use tab-gl                       # 2. point at the project
-firebase deploy --only firestore:rules,firestore:indexes,storage
+firebase deploy --only firestore:rules,firestore:indexes
 
 cd tools/seed && npm ci                   # 3. categories (upsert, safe to re-run)
 # no lockfile in an older clone? use: npm install
@@ -97,7 +97,7 @@ the default deny-all rules.
 npm install -g firebase-tools
 firebase login
 firebase use tab-gl
-firebase deploy --only firestore:rules,firestore:indexes,storage
+firebase deploy --only firestore:rules,firestore:indexes
 ```
 
 Verify: Firebase Console → Firestore → **Rules** shows your rules with a recent
@@ -210,3 +210,20 @@ These are gaps I chose not to fake, all documented in
   `CatalogRepository.search` is the seam for Algolia or Typesense.
 - **iOS / web clients.** Out of scope; the Firestore rules and functions are
   client-agnostic.
+
+## Build storage (Cloudflare R2)
+
+App builds are too big for Firestore (1 MiB per document) and Cloudinary's
+unsigned preset rejects ZIP content and caps at 10 MB, so builds live in R2.
+
+```bash
+wrangler r2 bucket create sproutly-apks     # once
+cd cloudflare/apk-upload && wrangler deploy  # the uploader Worker
+```
+
+Put the Worker URL in `keystore.properties` as `apkUploadUrl=...` (or the
+`SPROUTLY_APK_UPLOAD_URL` env var) and rebuild. The app never holds an R2
+credential: the Worker verifies the caller's Firebase ID token with Google and
+writes with its own binding.
+
+Listing images stay on Cloudinary.
