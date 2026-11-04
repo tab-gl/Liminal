@@ -1,6 +1,7 @@
 package app.tab.store.feature.profile
 
 import androidx.compose.foundation.layout.Arrangement
+import app.tab.store.BuildConfig
 import app.tab.store.core.designsystem.SproutlyChip
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment

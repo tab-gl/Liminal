@@ -217,8 +217,10 @@ fun ProfileScreen(
             onClearCache = {
                 // Coil keeps decoded images on disk; clearing is the only way to
                 // reclaim it without uninstalling.
-                context.imageLoader.memoryCache?.clear()
-                context.imageLoader.diskCache?.clear()
+                coil.Coil.imageLoader(context).apply {
+                    memoryCache?.clear()
+                    diskCache?.clear()
+                }
                 android.widget.Toast
                     .makeText(context, "Image cache cleared.", android.widget.Toast.LENGTH_SHORT)
                     .show()
