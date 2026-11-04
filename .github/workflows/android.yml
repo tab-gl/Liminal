@@ -104,6 +104,9 @@ jobs:
           SPROUTLY_KEYSTORE_PASSWORD: ${{ secrets.SPROUTLY_KEYSTORE_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD }}
           SPROUTLY_KEY_ALIAS: ${{ secrets.SPROUTLY_KEY_ALIAS || secrets.ANDROID_KEY_ALIAS || 'sproutly' }}
           SPROUTLY_KEY_PASSWORD: ${{ secrets.SPROUTLY_KEY_PASSWORD || secrets.ANDROID_KEY_PASSWORD }}
+          # Where builds are uploaded. Optional: without it the app offers
+          # "Paste link" and says uploads are off in this build.
+          SPROUTLY_APK_UPLOAD_URL: ${{ secrets.SPROUTLY_APK_UPLOAD_URL }}
         run: |
           ./gradlew :app:assembleUniversalRelease :app:assembleArm32Release --stacktrace
 

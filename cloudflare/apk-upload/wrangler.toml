@@ -7,6 +7,6 @@ compatibility_date = "2026-01-01"
 binding = "APKS"
 bucket_name = "sproutly-apks"
 
-[vars]
-# The Firebase web API key is public by design; it identifies the project, not a user.
-FIREBASE_API_KEY = "AIzaSyB0kEyPLACEHOLDER_REPLACE_ME"
+# FIREBASE_API_KEY is set as a Worker secret, not a var:
+#   wrangler secret put FIREBASE_API_KEY
+# A var of the same name here would shadow the secret.
