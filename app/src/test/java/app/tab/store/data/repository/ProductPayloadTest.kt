@@ -17,7 +17,36 @@ class ProductPayloadTest {
 
     @Test
     fun `every product field reaches the firestore payload`() {
-        val payload = productPayload(Product())
+        // Fully populated: the payload drops nulls on purpose, so an empty
+        // Product would look like it was missing fields.
+        val full = Product(
+            id = "p1",
+            storeId = "s1",
+            storeName = "Studio",
+            title = "Notes",
+            description = "A notes app",
+            categoryId = "productivity",
+            categoryLabel = "Productivity",
+            images = listOf(app.tab.store.domain.model.ProductImage("https://x/i.jpg", "i1")),
+            screenshots = listOf(app.tab.store.domain.model.ProductImage("https://x/s.jpg", "s1")),
+            price = 9900,
+            compareAtPrice = 19900,
+            offerEndsAt = 2_000_000_000_000,
+            promoHeadline = "Half price",
+            promoBody = "This week only",
+            promoImageUrl = "https://x/b.jpg",
+            stock = 0,
+            apkUrl = "https://x/app.apk",
+            apkSizeBytes = 1024,
+            versionName = "1.0",
+            versionCode = 1,
+            releaseNotes = "Fixes",
+            scanRisk = "LOW",
+            scanPermissions = listOf("android.permission.CAMERA"),
+            scanWarnings = listOf("Can use your camera"),
+            tags = listOf("notes"),
+        )
+        val payload = productPayload(full)
         val modelFields = Product::class.primaryConstructor!!
             .parameters
             .mapNotNull { it.name }
