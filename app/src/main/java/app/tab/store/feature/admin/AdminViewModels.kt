@@ -46,24 +46,6 @@ class AdminDashboardViewModel @Inject constructor(
         }
     }
 
-    /** Marks a studio as the store's own. Only an admin may do this. */
-    fun setOfficial(store: Store, official: Boolean) {
-        viewModelScope.launch {
-            when (val result = adminRepository.setStoreOfficial(store.id, official)) {
-                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
-                is DataResult.Success -> _uiState.update {
-                    it.copy(
-                        message = if (official) {
-                            "${store.name} is now marked official."
-                        } else {
-                            "${store.name} is no longer marked official."
-                        },
-                    )
-                }
-            }
-        }
-    }
-
     fun approve(store: Store) {
         viewModelScope.launch { adminRepository.setStoreStatus(store.id, StoreStatus.ACTIVE) }
     }
@@ -97,6 +79,24 @@ class AdminStoresViewModel @Inject constructor(
         viewModelScope.launch {
             adminRepository.observePendingStores().collect { pending ->
                 _uiState.update { it.copy(pending = pending) }
+            }
+        }
+    }
+
+    /** Marks a studio as the store's own. Only an admin may do this. */
+    fun setOfficial(store: Store, official: Boolean) {
+        viewModelScope.launch {
+            when (val result = adminRepository.setStoreOfficial(store.id, official)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        message = if (official) {
+                            "${store.name} is now marked official."
+                        } else {
+                            "${store.name} is no longer marked official."
+                        },
+                    )
+                }
             }
         }
     }

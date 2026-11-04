@@ -71,6 +71,7 @@ import app.tab.store.core.designsystem.TablerIcons
 import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.QuantityStepper
+import app.tab.store.core.designsystem.RiskMeter
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyChip
 import app.tab.store.core.designsystem.SproutlyImage

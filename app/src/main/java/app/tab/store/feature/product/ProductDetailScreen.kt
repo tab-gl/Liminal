@@ -47,6 +47,7 @@ import app.tab.store.core.navigation.Routes
 import app.tab.store.domain.model.Product
 import androidx.compose.foundation.clickable
 import kotlin.math.roundToInt
+import app.tab.store.core.designsystem.RiskMeter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -644,3 +645,41 @@ private fun ReportDialog(onDismiss: () -> Unit, onReport: (String) -> Unit) {
     )
 }
 
+/** The app's rating, and a way to set your own — one tap per star. */
+@Composable
+private fun RatingRow(
+    summary: app.tab.store.domain.model.RatingSummary,
+    onRate: (Int) -> Unit,
+) {
+    val mine = summary.mine?.rating ?: 0
+    val shown = mine.takeIf { it > 0 } ?: summary.average.roundToInt()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(summary.display, style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.width(6.dp))
+        repeat(5) { index ->
+            val star = index + 1
+            TablerIcon(
+                icon = TablerIcons.Star,
+                contentDescription = if (mine > 0) "Your rating" else null,
+                modifier = Modifier
+                    .size(18.dp)
+                    .clickable { onRate(star) },
+                tint = if (star <= shown) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant
+                },
+            )
+        }
+        Spacer(Modifier.width(6.dp))
+        Text(
+            when {
+                mine > 0 -> "You rated $mine"
+                summary.hasRatings -> "${summary.count} rating${if (summary.count == 1) "" else "s"}"
+                else -> "No ratings yet"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
