@@ -323,7 +323,10 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 )
             }
             composable(Routes.SETTINGS) {
-                SettingsScreen(onBack = { navController.popBackStack() })
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onLegal = { terms -> go(Routes.legal(terms)) },
+                )
             }
 
             // ------------------------------------------------------------- seller

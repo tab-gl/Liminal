@@ -80,6 +80,7 @@ import app.tab.store.core.utils.pickImageRequest
 import app.tab.store.core.utils.APK_MIME_TYPES
 import app.tab.store.core.utils.rememberApkPicker
 import app.tab.store.core.utils.rememberImagePicker
+import app.tab.store.domain.model.Product
 import app.tab.store.domain.model.ProductStatus
 
 @Composable

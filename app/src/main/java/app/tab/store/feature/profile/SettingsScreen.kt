@@ -35,6 +35,7 @@ import app.tab.store.core.designsystem.SproutlyTopBar
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onLegal: (Boolean) -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
