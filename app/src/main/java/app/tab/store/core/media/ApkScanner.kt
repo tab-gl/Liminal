@@ -43,31 +43,31 @@ class ApkScanner @Inject constructor(
      * Ordered roughly by how badly they can be abused. Anything not listed is
      * shown but not warned about.
      */
-    private val explained: Map<String, Pair<String, Risk>> = listOf(
-        "android.permission.READ_SMS" to "can read your text messages" to Risk.HIGH,
-        "android.permission.RECEIVE_SMS" to "can receive your text messages" to Risk.HIGH,
-        "android.permission.SEND_SMS" to "can send text messages, which can cost money" to Risk.HIGH,
-        "android.permission.CALL_PHONE" to "can place calls without asking" to Risk.HIGH,
-        "android.permission.READ_CALL_LOG" to "can read your call history" to Risk.HIGH,
-        "android.permission.MANAGE_EXTERNAL_STORAGE" to "can read every file on your device" to Risk.HIGH,
-        "android.permission.SYSTEM_ALERT_WINDOW" to "can draw over other apps" to Risk.HIGH,
-        "android.permission.REQUEST_INSTALL_PACKAGES" to "can install other apps" to Risk.HIGH,
-        "android.permission.READ_CONTACTS" to "can read your contacts" to Risk.MEDIUM,
-        "android.permission.WRITE_CONTACTS" to "can change your contacts" to Risk.MEDIUM,
-        "android.permission.ACCESS_FINE_LOCATION" to "can track your precise location" to Risk.MEDIUM,
-        "android.permission.ACCESS_BACKGROUND_LOCATION" to "can track your location in the background" to Risk.HIGH,
-        "android.permission.CAMERA" to "can use your camera" to Risk.MEDIUM,
-        "android.permission.RECORD_AUDIO" to "can use your microphone" to Risk.MEDIUM,
-        "android.permission.READ_PHONE_STATE" to "can see your device identifiers" to Risk.MEDIUM,
-        "android.permission.READ_MEDIA_IMAGES" to "can read your photos" to Risk.MEDIUM,
-        "android.permission.READ_MEDIA_VIDEO" to "can read your videos" to Risk.MEDIUM,
-        "android.permission.READ_EXTERNAL_STORAGE" to "can read your files" to Risk.MEDIUM,
-        "android.permission.WRITE_EXTERNAL_STORAGE" to "can change your files" to Risk.MEDIUM,
-        "android.permission.GET_ACCOUNTS" to "can see the accounts on your device" to Risk.MEDIUM,
-        "android.permission.BODY_SENSORS" to "can read your health sensors" to Risk.MEDIUM,
-        "android.permission.BLUETOOTH_CONNECT" to "can connect to nearby devices" to Risk.LOW,
-        "android.permission.POST_NOTIFICATIONS" to "can send you notifications" to Risk.LOW,
-    ).associate { (permission, rest) -> permission to rest }
+    private val explained: Map<String, Pair<String, Risk>> = mapOf(
+        "android.permission.READ_SMS" to ("can read your text messages" to Risk.HIGH),
+        "android.permission.RECEIVE_SMS" to ("can receive your text messages" to Risk.HIGH),
+        "android.permission.SEND_SMS" to ("can send text messages, which can cost money" to Risk.HIGH),
+        "android.permission.CALL_PHONE" to ("can place calls without asking" to Risk.HIGH),
+        "android.permission.READ_CALL_LOG" to ("can read your call history" to Risk.HIGH),
+        "android.permission.MANAGE_EXTERNAL_STORAGE" to ("can read every file on your device" to Risk.HIGH),
+        "android.permission.SYSTEM_ALERT_WINDOW" to ("can draw over other apps" to Risk.HIGH),
+        "android.permission.REQUEST_INSTALL_PACKAGES" to ("can install other apps" to Risk.HIGH),
+        "android.permission.READ_CONTACTS" to ("can read your contacts" to Risk.MEDIUM),
+        "android.permission.WRITE_CONTACTS" to ("can change your contacts" to Risk.MEDIUM),
+        "android.permission.ACCESS_FINE_LOCATION" to ("can track your precise location" to Risk.MEDIUM),
+        "android.permission.ACCESS_BACKGROUND_LOCATION" to ("can track your location in the background" to Risk.HIGH),
+        "android.permission.CAMERA" to ("can use your camera" to Risk.MEDIUM),
+        "android.permission.RECORD_AUDIO" to ("can use your microphone" to Risk.MEDIUM),
+        "android.permission.READ_PHONE_STATE" to ("can see your device identifiers" to Risk.MEDIUM),
+        "android.permission.READ_MEDIA_IMAGES" to ("can read your photos" to Risk.MEDIUM),
+        "android.permission.READ_MEDIA_VIDEO" to ("can read your videos" to Risk.MEDIUM),
+        "android.permission.READ_EXTERNAL_STORAGE" to ("can read your files" to Risk.MEDIUM),
+        "android.permission.WRITE_EXTERNAL_STORAGE" to ("can change your files" to Risk.MEDIUM),
+        "android.permission.GET_ACCOUNTS" to ("can see the accounts on your device" to Risk.MEDIUM),
+        "android.permission.BODY_SENSORS" to ("can read your health sensors" to Risk.MEDIUM),
+        "android.permission.BLUETOOTH_CONNECT" to ("can connect to nearby devices" to Risk.LOW),
+        "android.permission.POST_NOTIFICATIONS" to ("can send you notifications" to Risk.LOW),
+    )
 
     /** Parses [bytes] as an APK. Returns null when the file is not a readable package. */
     fun scan(bytes: ByteArray, fileName: String): Report? {

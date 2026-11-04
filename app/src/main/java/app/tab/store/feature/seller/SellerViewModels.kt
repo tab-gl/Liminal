@@ -135,6 +135,20 @@ class SellerDashboardViewModel @Inject constructor(
             }
         }
     }
+
+    /** Sets or clears an offer from the Offers tab. */
+    fun setOffer(product: Product, compareAtPaise: Long?, days: Int?) {
+        viewModelScope.launch {
+            val ends = days?.takeIf { it > 0 }
+                ?.let { System.currentTimeMillis() + it * 86_400_000L }
+            sellerRepository.upsertProduct(
+                product.copy(
+                    compareAtPrice = compareAtPaise?.takeIf { it > product.price },
+                    offerEndsAt = ends,
+                ),
+            )
+        }
+    }
 }
 
 // ----------------------------------------------------------------- products
