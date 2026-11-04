@@ -79,8 +79,10 @@ fun Throwable.toDataMessage(): String {
     val text = raw.lowercase()
     val base = when {
         text.contains("permission_denied") || text.contains("insufficient permissions") ->
-            "Firestore denied that request. Deploy the security rules " +
-                "(firebase deploy --only firestore:rules) and check the user's role."
+            // The three things that actually cause this, most likely first.
+            "Firestore refused that write. Either your developer profile is not " +
+                "approved yet, or the rules on the project are older than this build " +
+                "(firebase deploy --only firestore:rules)."
 
         text.contains("unauthenticated") ->
             "Your session expired. Please sign in again."

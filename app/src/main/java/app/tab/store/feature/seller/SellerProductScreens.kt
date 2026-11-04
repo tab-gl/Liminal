@@ -558,8 +558,34 @@ fun SellerProductEditScreen(
                 SproutlyChip(
                     text = "Publish now",
                     selected = state.status == ProductStatus.ACTIVE,
+                    // Going live needs an approved store; the rules enforce it, so
+                    // the control says so rather than failing at the end.
                     onClick = { viewModel.setStatus(ProductStatus.ACTIVE) },
                 )
+            }
+
+            if (state.status == ProductStatus.ACTIVE && !state.canPublish) {
+                Spacer(Modifier.height(10.dp))
+                Surface(
+                    shape = SproutlyRadii.card,
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(14.dp)) {
+                        Text(
+                            "Your developer profile is still in review",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Listings can go live once an admin approves your profile. " +
+                                "Save it as a draft meanwhile — nothing is lost.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(18.dp))
 
@@ -580,9 +606,13 @@ fun SellerProductEditScreen(
             }
 
             SproutlyButton(
-                text = if (productId == null) "Publish app" else "Save app",
+                text = when {
+                    state.status == ProductStatus.ACTIVE && !state.canPublish -> "Waiting for approval"
+                    productId == null -> "Publish app"
+                    else -> "Save app"
+                },
                 onClick = viewModel::save,
-                enabled = state.canSave,
+                enabled = state.canSave && (state.status != ProductStatus.ACTIVE || state.canPublish),
                 loading = state.isSaving,
             )
             Spacer(Modifier.height(32.dp))

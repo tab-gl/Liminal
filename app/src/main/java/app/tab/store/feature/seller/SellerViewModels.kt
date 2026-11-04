@@ -239,6 +239,8 @@ data class ProductEditorUiState(
     val isUploadingApk: Boolean = false,
     /** Paid apps need a verified developer account. */
     val storeVerified: Boolean = false,
+    /** Approval state of the store: publishing needs it to be ACTIVE. */
+    val storeStatus: String = "PENDING",
     val verificationStatus: String = "NONE",
     val isRequestingVerification: Boolean = false,
     val stock: String = "0",
@@ -265,6 +267,9 @@ data class ProductEditorUiState(
 
     val needsVerification: Boolean
         get() = !isFree && !storeVerified
+
+    /** True when the store is approved, i.e. a listing may go live. */
+    val canPublish: Boolean get() = storeStatus == "ACTIVE"
 
     val canSave: Boolean
         get() = title.trim().length >= 3 &&
@@ -308,6 +313,7 @@ class SellerProductEditViewModel @Inject constructor(
                     it.copy(
                         storeVerified = store?.verified == true,
                         verificationStatus = store?.verificationStatus ?: "NONE",
+                        storeStatus = store?.status?.name ?: "PENDING",
                         storeId = store?.id.orEmpty(),
                     )
                 }

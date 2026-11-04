@@ -23,8 +23,6 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    @Provides
-    @Singleton
     fun provideStorage(): com.google.firebase.storage.FirebaseStorage =
         com.google.firebase.storage.FirebaseStorage.getInstance()
 
