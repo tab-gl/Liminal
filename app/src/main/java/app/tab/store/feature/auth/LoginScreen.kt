@@ -236,11 +236,12 @@ fun LoginScreen(
             Text(
                 "By continuing you agree to Sproutly's Terms of Service and Privacy Policy. " +
                     "Tap to read either.",
-                modifier = Modifier.clickable { onLegal(false) },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onLegal(false) },
             )
             Spacer(Modifier.height(12.dp))
         }

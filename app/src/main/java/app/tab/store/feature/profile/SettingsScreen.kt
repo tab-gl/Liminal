@@ -48,7 +48,7 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         SproutlyTopBar(title = "Settings", onBack = onBack)
-        SettingsContent(state, themeMode, themeViewModel::set)
+        SettingsContent(state, themeMode, themeViewModel::set, onLegal)
     }
 }
 
@@ -81,7 +81,7 @@ fun SettingsSheet(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
             )
-            SettingsContent(state, themeMode, themeViewModel::set)
+            SettingsContent(state, themeMode, themeViewModel::set, onLegal)
         }
     }
 }
@@ -91,6 +91,7 @@ private fun SettingsContent(
     state: ProfileUiState,
     themeMode: ThemeMode,
     onTheme: (ThemeMode) -> Unit,
+    onLegal: (Boolean) -> Unit,
 ) {
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
