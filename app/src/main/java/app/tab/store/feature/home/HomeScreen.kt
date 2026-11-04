@@ -74,6 +74,7 @@ import app.tab.store.core.designsystem.ProductRowCard
 import app.tab.store.core.designsystem.SectionHeader
 import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyChip
+import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.formatPrice
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii

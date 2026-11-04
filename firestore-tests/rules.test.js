@@ -25,6 +25,7 @@ const SHOPPER = "carol"; // role CUSTOMER, no store
 const ADMIN = "admin1";  // role ADMIN, no store
 const BOB = "bob";       // bystander
 const DEV2 = "dev2";     // developer whose store is still in review
+const DEV3 = "dev3";     // verified developer, may sell paid apps
 const STORE = "store1";
 const STORE_PENDING = "store-pending";
 
@@ -92,6 +93,14 @@ beforeEach(async () => {
     await setDoc(doc(db, "stores", STORE_PENDING), {
       ownerId: DEV2, name: "Pending Studio", slug: "pending-studio", status: "PENDING",
       verified: false, productCount: 0, rating: 0, ratingCount: 0, createdAt: 1,
+    });
+    await setDoc(doc(db, "users", DEV3), {
+      uid: DEV3, email: "dev3@example.com", displayName: "Dev Three",
+      role: "SELLER", storeId: "store-verified",
+    });
+    await setDoc(doc(db, "stores", "store-verified"), {
+      ownerId: DEV3, name: "Verified Studio", slug: "verified-studio", status: "ACTIVE",
+      verified: true, productCount: 0, rating: 0, ratingCount: 0, createdAt: 1,
     });
     await setDoc(doc(db, "products", "app-pending"), product({
       storeId: STORE_PENDING, status: "DRAFT",
@@ -418,7 +427,8 @@ describe("build link", () => {
 describe("offers", () => {
   it("lets a developer write an offer banner on their own listing", async () => {
     await assertSucceeds(
-      setDoc(doc(dev(), "products", "promo1"), product({
+      setDoc(doc(env.authenticatedContext(DEV3).firestore(), "products", "promo1"), product({
+        storeId: "store-verified",
         status: "DRAFT",
         compareAtPrice: 19900,
         price: 9900,
