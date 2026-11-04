@@ -132,7 +132,7 @@ fun OrderDetailScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(Modifier.height(12.dp))
                     PriceRow("Subtotal", formatPrice(order.subtotal))
-                    PriceRow("Service fee", if (order.shipping == 0L) "Free" else formatPrice(order.shipping))
+                    PriceRow("Platform fee", if (order.shipping == 0L) "Free" else formatPrice(order.shipping))
                     Spacer(Modifier.height(6.dp))
                     Row {
                         Text("Total paid", style = MaterialTheme.typography.titleLarge)

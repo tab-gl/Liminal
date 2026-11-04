@@ -84,6 +84,7 @@ import app.tab.store.core.utils.pickImageRequest
 import app.tab.store.core.utils.APK_MIME_TYPES
 import app.tab.store.core.utils.rememberApkPicker
 import app.tab.store.core.utils.rememberImagePicker
+import app.tab.store.core.utils.Money
 import app.tab.store.domain.model.Product
 import app.tab.store.domain.model.ProductStatus
 
@@ -96,6 +97,18 @@ fun SellerProductsScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var confirmDelete by remember { mutableStateOf<Product?>(null) }
+    var offerFor by remember { mutableStateOf<Product?>(null) }
+
+    offerFor?.let { target ->
+        OfferDialog(
+            product = target,
+            onDismiss = { offerFor = null },
+            onSave = { compareAt, days ->
+                offerFor = null
+                viewModel.setOffer(target, compareAt, days)
+            },
+        )
+    }
 
     confirmDelete?.let { target ->
         AlertDialog(
@@ -219,6 +232,18 @@ fun SellerProductsScreen(
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
                                         }
+                                    }
+                                    IconButton(onClick = { offerFor = product }) {
+                                        TablerIcon(
+                                            TablerIcons.Tag,
+                                            contentDescription = "Offer",
+                                            tint = if (product.hasActiveOffer) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            },
+                                            modifier = Modifier.size(19.dp),
+                                        )
                                     }
                                     IconButton(onClick = { confirmDelete = product }) {
                                         TablerIcon(TablerIcons.Trash,
@@ -996,4 +1021,73 @@ private fun BentoTile(
             content()
         }
     }
+}
+
+/**
+ * Puts an app on offer, or takes it off.
+ *
+ * The price stays what it is; the "was" price is what makes the discount real, so
+ * it has to be higher than what people actually pay.
+ */
+@Composable
+private fun OfferDialog(
+    product: Product,
+    onDismiss: () -> Unit,
+    onSave: (compareAtPaise: Long?, days: Int?) -> Unit,
+) {
+    val current = product.compareAtPrice?.let { Money.toRupeeString(it) }.orEmpty()
+    var was by remember { mutableStateOf(current) }
+    var days by remember {
+        mutableStateOf(
+            product.offerEndsAt
+                ?.let { ((it - System.currentTimeMillis()) / 86_400_000L).coerceAtLeast(0) }
+                ?.toString()
+                .orEmpty(),
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Offer for ${product.title}") },
+        text = {
+            Column {
+                Text(
+                    "People pay ${formatPrice(product.price)}. Enter the price it used to be " +
+                        "to show a discount, and how long the offer runs.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+                SproutlyTextField(
+                    value = was,
+                    onValueChange = { was = it.filter { c -> c.isDigit() }.take(7) },
+                    label = "Was (₹)",
+                    keyboardType = KeyboardType.Number,
+                )
+                SproutlyTextField(
+                    value = days,
+                    onValueChange = { days = it.filter { c -> c.isDigit() }.take(3) },
+                    label = "Runs for (days)",
+                    helperText = "Leave blank to keep it running.",
+                    keyboardType = KeyboardType.Number,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(
+                    was.toLongOrNull()?.let { it * 100 },
+                    days.toIntOrNull(),
+                )
+            }) { Text("Save offer") }
+        },
+        dismissButton = {
+            Row {
+                if (product.compareAtPrice != null) {
+                    TextButton(onClick = { onSave(null, null) }) { Text("Remove") }
+                }
+                TextButton(onClick = onDismiss) { Text("Cancel") }
+            }
+        },
+    )
 }

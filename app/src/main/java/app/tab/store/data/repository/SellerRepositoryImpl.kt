@@ -166,23 +166,7 @@ class SellerRepositoryImpl @Inject constructor(
     override suspend fun upsertProduct(product: Product): DataResult<String> = try {
         val ref = firestore.collection(FirestorePaths.PRODUCTS)
         val docRef = if (product.id.isBlank()) ref.document() else ref.document(product.id)
-        val payload = mutableMapOf<String, Any?>(
-            "storeId" to product.storeId,
-            "storeName" to product.storeName,
-            "title" to product.title.trim(),
-            "titleLower" to product.title.trim().lowercase(),
-            "description" to product.description.trim(),
-            "categoryId" to product.categoryId,
-            "categoryLabel" to product.categoryLabel,
-            "images" to product.images.map { mapOf("url" to it.url, "publicId" to it.publicId) },
-            "price" to product.price,
-            "compareAtPrice" to product.compareAtPrice,
-            "currency" to "INR",
-            "stock" to product.stock,
-            "status" to product.status.name,
-            "tags" to product.tags,
-            "updatedAt" to FieldValue.serverTimestamp(),
-        )
+        val payload = productPayload(product)
         if (product.id.isBlank()) {
             payload["createdAt"] = FieldValue.serverTimestamp()
             payload["rating"] = 0.0

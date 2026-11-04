@@ -63,7 +63,19 @@ class AuthViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             authRepository.currentUser.collect { user ->
-                _uiState.update { it.copy(user = user, isRestoringSession = false) }
+                _uiState.update {
+                    // A null emission does NOT mean "signed out" — it means the
+                    // session has not been restored yet. Clearing the flag here
+                    // was what still flashed the sign-in screen at someone who
+                    // was already signed in.
+                    it.copy(
+                        user = user,
+                        isRestoringSession = when {
+                            user != null -> false
+                            else -> it.isRestoringSession && authRepository.hasCachedSession()
+                        },
+                    )
+                }
             }
         }
     }

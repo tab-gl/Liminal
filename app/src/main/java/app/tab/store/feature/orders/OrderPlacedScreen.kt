@@ -73,7 +73,7 @@ fun OrderPlacedScreen(
             Column(Modifier.padding(16.dp)) {
                 Row {
                     Text(
-                        "Order",
+                        "Install",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

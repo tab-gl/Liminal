@@ -103,7 +103,7 @@ fun LoginScreen(
             Text("Welcome back", style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Sign in to keep shipping.",
+                "Sign in to install and publish.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

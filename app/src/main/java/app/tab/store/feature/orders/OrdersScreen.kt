@@ -135,7 +135,7 @@ private fun OrderCard(
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        order.items.firstOrNull()?.title ?: "Order",
+                        order.items.firstOrNull()?.title ?: "Install",
                         style = MaterialTheme.typography.titleSmall,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,

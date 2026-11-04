@@ -194,6 +194,37 @@ class SellerProductsViewModel @Inject constructor(
         viewModelScope.launch { sellerRepository.setStock(product.id, stock) }
     }
 
+    /**
+     * Puts an offer on an existing app.
+     *
+     * Offers used to be reachable only while creating a listing, which meant an
+     * app already in the store could never be put on offer. The whole product is
+     * carried through so the write keeps every other field.
+     */
+    fun setOffer(product: Product, compareAtPaise: Long?, days: Int?) {
+        viewModelScope.launch {
+            val ends = days?.takeIf { it > 0 }
+                ?.let { System.currentTimeMillis() + it * 86_400_000L }
+            val updated = product.copy(
+                compareAtPrice = compareAtPaise?.takeIf { it > product.price },
+                offerEndsAt = ends,
+            )
+            val result = sellerRepository.upsertProduct(updated)
+            _uiState.update {
+                it.copy(
+                    message = when (result) {
+                        is DataResult.Failure -> result.message
+                        is DataResult.Success -> if (updated.compareAtPrice == null) {
+                            "Offer removed from ${product.title}."
+                        } else {
+                            "${product.title} is on offer."
+                        }
+                    },
+                )
+            }
+        }
+    }
+
     fun delete(product: Product) {
         viewModelScope.launch {
             val res = sellerRepository.deleteProduct(product.id)

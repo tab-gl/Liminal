@@ -67,6 +67,7 @@ fun ProfileScreen(
     onSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val user = state.user
     var showDeveloperPrompt by remember { mutableStateOf(false) }
@@ -212,6 +213,22 @@ fun ProfileScreen(
             onLegal = { terms ->
                 showSettings = false
                 onLegal(terms)
+            },
+            onClearCache = {
+                // Coil keeps decoded images on disk; clearing is the only way to
+                // reclaim it without uninstalling.
+                context.imageLoader.memoryCache?.clear()
+                context.imageLoader.diskCache?.clear()
+                android.widget.Toast
+                    .makeText(context, "Image cache cleared.", android.widget.Toast.LENGTH_SHORT)
+                    .show()
+            },
+            onFeedback = {
+                val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                    data = android.net.Uri.parse("mailto:support@sproutly.app")
+                    putExtra(android.content.Intent.EXTRA_SUBJECT, "Sproutly feedback")
+                }
+                runCatching { context.startActivity(intent) }
             },
         )
     }

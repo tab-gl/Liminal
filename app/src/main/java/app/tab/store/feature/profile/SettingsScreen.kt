@@ -36,6 +36,8 @@ import app.tab.store.core.designsystem.SproutlyTopBar
 fun SettingsScreen(
     onBack: () -> Unit,
     onLegal: (Boolean) -> Unit = {},
+    onClearCache: () -> Unit = {},
+    onFeedback: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -48,7 +50,14 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         SproutlyTopBar(title = "Settings", onBack = onBack)
-        SettingsContent(state, themeMode, themeViewModel::set, onLegal)
+        SettingsContent(
+            state = state,
+            themeMode = themeMode,
+            onTheme = themeViewModel::set,
+            onLegal = onLegal,
+            onClearCache = onClearCache,
+            onFeedback = onFeedback,
+        )
     }
 }
 
@@ -61,6 +70,8 @@ fun SettingsScreen(
 fun SettingsSheet(
     onDismiss: () -> Unit,
     onLegal: (Boolean) -> Unit = {},
+    onClearCache: () -> Unit = {},
+    onFeedback: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -81,7 +92,14 @@ fun SettingsSheet(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
             )
-            SettingsContent(state, themeMode, themeViewModel::set, onLegal)
+            SettingsContent(
+            state = state,
+            themeMode = themeMode,
+            onTheme = themeViewModel::set,
+            onLegal = onLegal,
+            onClearCache = onClearCache,
+            onFeedback = onFeedback,
+        )
         }
     }
 }
@@ -92,6 +110,8 @@ private fun SettingsContent(
     themeMode: ThemeMode,
     onTheme: (ThemeMode) -> Unit,
     onLegal: (Boolean) -> Unit,
+    onClearCache: () -> Unit,
+    onFeedback: () -> Unit,
 ) {
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
@@ -121,6 +141,21 @@ private fun SettingsContent(
                         color = MaterialTheme.colorScheme.outlineVariant,
                     )
                     SettingRow("Role", state.user?.role?.name?.lowercase()?.replaceFirstChar { it.uppercase() }.orEmpty())
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                    SettingRow("App version", BuildConfig.VERSION_NAME)
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                    SettingLink("Clear image cache") { onClearCache() }
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                    SettingLink("Send feedback") { onFeedback() }
                 }
             }
 
