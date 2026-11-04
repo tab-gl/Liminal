@@ -27,6 +27,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
@@ -149,12 +151,16 @@ class CatalogRepositoryImpl @Inject constructor(
 
     override fun observeReviews(
         productId: String,
-    ): Flow<List<app.tab.store.domain.model.Review>> =
-        firestore.collection(FirestorePaths.PRODUCTS).document(productId)
+    ): Flow<List<app.tab.store.domain.model.Review>> = callbackFlow {
+        val registration = firestore.collection(FirestorePaths.PRODUCTS).document(productId)
             .collection("reviews")
-            .snapshots()
-            .map { snapshot ->
-                snapshot.documents.map { doc ->
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(
+                    snapshot?.documents.orEmpty().map { doc ->
                     app.tab.store.domain.model.Review(
                         reviewerId = doc.id,
                         reviewerName = doc.getString("reviewerName").orEmpty(),
@@ -162,8 +168,11 @@ class CatalogRepositoryImpl @Inject constructor(
                         text = doc.getString("text").orEmpty(),
                         createdAt = doc.getLong("createdAt") ?: 0L,
                     )
-                }
+                    },
+                )
             }
+        awaitClose { registration.remove() }
+    }
 
     override suspend fun rate(productId: String, rating: Int, text: String): DataResult<Unit> =
         firestoreResult {

@@ -120,6 +120,10 @@ interface AdminRepository {
     fun observePendingStores(): Flow<List<Store>>
     fun observeAllStores(): Flow<List<Store>>
     suspend fun setStoreStatus(storeId: String, status: app.tab.store.domain.model.StoreStatus): DataResult<Unit>
+
+    /** Marks a studio as the store's own, which badges everything it publishes. */
+    suspend fun setStoreOfficial(storeId: String, official: Boolean): DataResult<Unit>
+
     fun observeUsers(): Flow<List<User>>
     suspend fun setUserRole(uid: String, role: app.tab.store.domain.model.UserRole): DataResult<Unit>
     fun observeReportedProducts(): Flow<List<Product>>
