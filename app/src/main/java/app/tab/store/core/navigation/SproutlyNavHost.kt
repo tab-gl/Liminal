@@ -54,6 +54,7 @@ import app.tab.store.feature.notifications.NotificationsScreen
 import app.tab.store.feature.orders.OrderDetailScreen
 import app.tab.store.feature.orders.OrderPlacedScreen
 import app.tab.store.feature.games.GamesScreen
+import app.tab.store.feature.legal.LegalScreen
 import app.tab.store.feature.offers.OffersScreen
 import app.tab.store.feature.orders.OrdersScreen
 import app.tab.store.feature.rankings.RankingsScreen
@@ -167,6 +168,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             // ------------------------------------------------------------- auth
             composable(Routes.LOGIN) {
                 LoginScreen(
+                    onLegal = { terms -> go(Routes.legal(terms)) },
                     onRegister = { go(Routes.REGISTER) },
                     onForgotPassword = { go(Routes.FORGOT_PASSWORD) },
                 )
@@ -236,6 +238,17 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             composable(Routes.GAMES) {
                 GamesScreen(onProduct = { go(Routes.product(it)) })
             }
+            composable(
+                route = Routes.LEGAL,
+                arguments = listOf(
+                    navArgument("terms") { type = NavType.BoolType; defaultValue = false },
+                ),
+            ) { entry ->
+                LegalScreen(
+                    startOnTerms = entry.arguments?.getBoolean("terms") == true,
+                    onBack = { navController.popBackStack() },
+                )
+            }
             composable(Routes.RANKINGS) {
                 RankingsScreen(onProduct = { go(Routes.product(it)) })
             }
@@ -289,6 +302,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onSellerHub = { go(Routes.SELLER_DASHBOARD) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
                     onOpenSwitcher = { showSwitcher = true },
+                    onLegal = { terms -> go(Routes.legal(terms)) },
                     onAdmin = { go(Routes.ADMIN_DASHBOARD) },
                     onSettings = { go(Routes.SETTINGS) },
                 )

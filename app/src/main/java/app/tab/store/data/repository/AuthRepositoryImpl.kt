@@ -35,15 +35,22 @@ class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val sessionStore: SessionStore,
+    private val sessionCache: app.tab.store.core.account.SessionCache,
 ) : AuthRepository {
 
     private val uidFlow = MutableStateFlow(auth.currentUser?.uid)
 
     init {
-        auth.addAuthStateListener { uidFlow.value = it.currentUser?.uid }
+        auth.addAuthStateListener { state ->
+            uidFlow.value = state.currentUser?.uid
+            // Keep the on-disk flag in step with the real session, so the first
+            // frame after a cold start already knows whether to hold.
+            state.currentUser?.let { sessionCache.remember(it.uid) } ?: sessionCache.clear()
+        }
     }
 
-    override fun hasCachedSession(): Boolean = auth.currentUser != null
+    override fun hasCachedSession(): Boolean =
+        sessionCache.hasSession() || auth.currentUser != null
 
     override val currentUser: Flow<User?> = uidFlow.flatMapLatest { uid ->
         if (uid == null) {

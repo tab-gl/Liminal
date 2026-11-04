@@ -62,6 +62,7 @@ fun ProfileScreen(
     onSellerHub: () -> Unit,
     onBecomeDeveloper: () -> Unit,
     onOpenSwitcher: () -> Unit,
+    onLegal: (Boolean) -> Unit = {},
     onAdmin: () -> Unit,
     onSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
@@ -206,7 +207,13 @@ fun ProfileScreen(
     }
 
     if (showSettings) {
-        SettingsSheet(onDismiss = { showSettings = false })
+        SettingsSheet(
+            onDismiss = { showSettings = false },
+            onLegal = { terms ->
+                showSettings = false
+                onLegal(terms)
+            },
+        )
     }
 
     if (showDeveloperPrompt) {

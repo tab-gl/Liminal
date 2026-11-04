@@ -17,6 +17,7 @@ from pathlib import Path
 
 VERSION = "3.31.0"
 CDN = f"https://cdn.jsdelivr.net/npm/@tabler/icons@{VERSION}/icons/outline"
+FILLED_CDN = f"https://cdn.jsdelivr.net/npm/@tabler/icons@{VERSION}/icons/filled"
 OUT = Path(__file__).resolve().parent.parent / "app/src/main/res/drawable"
 
 # semantic name in the app -> Tabler icon file
@@ -50,6 +51,7 @@ ICONS = {
     "Analytics": "chart-bar",
     "ChevronDown": "chevron-down",
     "ChevronLeft": "chevron-left",
+    "ChevronRight": "chevron-right",
     "Link": "link",
     "Verified": "shield-check",
     "Receipt": "receipt",
@@ -57,6 +59,9 @@ ICONS = {
     "Trash": "trash",
     "Image": "photo",
     "SearchOff": "search-off",
+    "Apps": "apps",
+    "Dice": "dice",
+    "Discount": "discount",
     "Gamepad": "device-gamepad-2",
     "Eye": "eye",
     "EyeOff": "eye-off",
@@ -66,6 +71,15 @@ ICONS = {
     "Category": "category",
     "Tag": "tag",
     "Clock": "clock",
+}
+
+# Icons that also have a filled variant, used for the selected tab.
+FILLED = {
+    "Apps": "apps",
+    "Games": "dice",
+    "Offers": "discount",
+    "User": "user",
+    "Favourite": "heart",
 }
 
 HEADER = """<?xml version="1.0" encoding="utf-8"?>
@@ -151,6 +165,41 @@ def convert(svg: str) -> str:
     return HEADER.format(version=VERSION) + "".join(body) + FOOTER
 
 
+FILLED_PATH = """    <path
+        android:pathData="{d}"
+        android:fillColor="#FF000000"
+        android:strokeWidth="0" />
+"""
+
+
+def convert_filled(svg: str) -> str:
+    """Filled icons paint their shapes instead of stroking them."""
+    body = []
+    for match in re.finditer(r"<(path|circle|rect)\s([^>]*?)/?>", svg):
+        tag, raw = match.group(1), match.group(2)
+        attrs = dict(re.findall(r'([\w:-]+)="([^"]*)"', raw))
+        # Tabler's filled SVGs carry a transparent 24x24 box first
+        if attrs.get("fill") == "none":
+            continue
+        if tag == "path":
+            d = attrs.get("d")
+        elif tag == "circle":
+            d = circle_to_path(float(attrs["cx"]), float(attrs["cy"]), float(attrs["r"]))
+        elif tag == "rect":
+            d = rect_to_path(
+                float(attrs.get("x", 0)), float(attrs.get("y", 0)),
+                float(attrs["width"]), float(attrs["height"]),
+                float(attrs.get("rx", 0) or 0),
+            )
+        else:
+            d = None
+        if d and d.replace(" ", "").lower() != "m00h24v24h0z":
+            body.append(FILLED_PATH.format(d=d.strip()))
+    if not body:
+        raise ValueError("no filled shapes found")
+    return HEADER.format(version=VERSION) + "".join(body) + FOOTER
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     written, failed = [], []
@@ -163,6 +212,16 @@ def main() -> int:
             written.append(name)
         except Exception as error:  # noqa: BLE001 - report and continue
             failed.append(f"{name} ({tabler}): {error}")
+
+    for name, tabler in FILLED.items():
+        url = f"{FILLED_CDN}/{tabler}.svg"
+        try:
+            with urllib.request.urlopen(url, timeout=30) as response:
+                svg = response.read().decode()
+            (OUT / f"ic_tb_{name.lower()}_filled.xml").write_text(convert_filled(svg))
+            written.append(f"{name} (filled)")
+        except Exception as error:  # noqa: BLE001
+            failed.append(f"{name} filled ({tabler}): {error}")
 
     print(f"{len(written)} icons written to {OUT}")
     for item in failed:

@@ -33,6 +33,10 @@ data class Product(
     /** Where the build lives: an uploaded APK or a link the developer owns. */
     val apkUrl: String? = null,
     val apkSizeBytes: Long? = null,
+    /** Release identity, so an update is a version rather than a new listing. */
+    val versionName: String = "",
+    val versionCode: Int = 0,
+    val releaseNotes: String = "",
     val tags: List<String> = emptyList(),
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,

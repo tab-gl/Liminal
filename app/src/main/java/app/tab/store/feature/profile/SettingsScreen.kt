@@ -2,6 +2,11 @@ package app.tab.store.feature.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import app.tab.store.core.designsystem.SproutlyChip
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.size
+import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.TablerIcons
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,6 +59,7 @@ fun SettingsScreen(
 @Composable
 fun SettingsSheet(
     onDismiss: () -> Unit,
+    onLegal: (Boolean) -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -123,6 +129,22 @@ private fun SettingsContent(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(16.dp)) {
+                    SettingLink("Privacy policy") { onLegal(false) }
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                    SettingLink("Terms of service") { onLegal(true) }
+                }
+            }
+
+            Spacer(Modifier.height(18.dp))
+            Surface(
+                shape = SproutlyRadii.card,
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(16.dp)) {
                     Row {
                         BrandMark(size = 30.dp)
                         Spacer(Modifier.height(10.dp))
@@ -154,6 +176,24 @@ private fun SettingRow(title: String, value: String) {
             value,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun SettingLink(title: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        TablerIcon(
+            TablerIcons.ChevronRight,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

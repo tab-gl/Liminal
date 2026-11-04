@@ -1,6 +1,8 @@
 package app.tab.store.core.navigation
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -41,18 +43,20 @@ data class TabDestination(
     val route: String,
     val label: String,
     @DrawableRes val icon: Int,
+    /** The filled variant of the same icon, shown while this tab is current. */
+    @DrawableRes val iconFilled: Int = icon,
 )
 
 /** Browsing destinations, in the left pill. */
 val primaryTabs = listOf(
-    TabDestination(Routes.HOME, "Apps", TablerIcons.Grid),
-    TabDestination(Routes.GAMES, "Games", TablerIcons.Gamepad),
-    TabDestination(Routes.OFFERS, "Offers", TablerIcons.Bag),
+    TabDestination(Routes.HOME, "Apps", TablerIcons.Apps, TablerIcons.AppsFilled),
+    TabDestination(Routes.GAMES, "Games", TablerIcons.Dice, TablerIcons.GamesFilled),
+    TabDestination(Routes.OFFERS, "Offers", TablerIcons.Discount, TablerIcons.OffersFilled),
 )
 
 /** You, in the right pill. Search is a FAB, not a tab. */
 val utilityTabs = listOf(
-    TabDestination(Routes.PROFILE, "Profile", TablerIcons.User),
+    TabDestination(Routes.PROFILE, "Profile", TablerIcons.User, TablerIcons.UserFilled),
 )
 
 val mainTabs = primaryTabs + utilityTabs
@@ -202,7 +206,20 @@ private fun FloatingTab(
             ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TablerIcon(tab.icon, tab.label, Modifier.size(iconSize), content)
+            // Outline at rest, filled when current — cross-faded so the change
+            // reads as the icon settling, not as a swap.
+            Crossfade(
+                targetState = selected,
+                animationSpec = tween(180),
+                label = "tabIconFill",
+            ) { filled ->
+                TablerIcon(
+                    icon = if (filled) tab.iconFilled else tab.icon,
+                    contentDescription = tab.label,
+                    modifier = Modifier.size(iconSize),
+                    tint = content,
+                )
+            }
             if (selected) {
                 Spacer(Modifier.width(6.dp))
                 Text(

@@ -50,6 +50,16 @@ object TablerIcons {
     @DrawableRes val Analytics = R.drawable.ic_tb_analytics
     @DrawableRes val ChevronDown = R.drawable.ic_tb_chevrondown
     @DrawableRes val ChevronLeft = R.drawable.ic_tb_chevronleft
+    @DrawableRes val ChevronRight = R.drawable.ic_tb_chevronright
+    @DrawableRes val Apps = R.drawable.ic_tb_apps
+    @DrawableRes val Dice = R.drawable.ic_tb_dice
+    @DrawableRes val Discount = R.drawable.ic_tb_discount
+    @DrawableRes val AppsFilled = R.drawable.ic_tb_apps_filled
+    @DrawableRes val GamesFilled = R.drawable.ic_tb_games_filled
+    @DrawableRes val OffersFilled = R.drawable.ic_tb_offers_filled
+    @DrawableRes val UserFilled = R.drawable.ic_tb_user_filled
+    @DrawableRes val FavouriteFilled = R.drawable.ic_tb_favourite_filled
+
     @DrawableRes val Link = R.drawable.ic_tb_link
     @DrawableRes val Verified = R.drawable.ic_tb_verified
     @DrawableRes val Receipt = R.drawable.ic_tb_receipt

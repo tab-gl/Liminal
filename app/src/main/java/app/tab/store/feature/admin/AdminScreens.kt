@@ -108,6 +108,40 @@ fun AdminDashboardScreen(
                 }
             }
 
+            // What actually needs a decision, surfaced first.
+            val pendingCount = state.pendingStores.size
+            if (pendingCount > 0 || state.overview.blockedProducts > 0) {
+                Surface(
+                    shape = SproutlyRadii.card,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            "Needs attention",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        if (pendingCount > 0) {
+                            Text(
+                                "$pendingCount store${if (pendingCount == 1) "" else "s"} waiting for approval",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                        if (state.overview.blockedProducts > 0) {
+                            Text(
+                                "${state.overview.blockedProducts} app${if (state.overview.blockedProducts == 1) "" else "s"} currently blocked",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 MetricBox("Users", state.overview.userCount.toString(), Modifier.weight(1f))

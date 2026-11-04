@@ -33,6 +33,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -89,6 +90,29 @@ fun SellerProductsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+    var confirmDelete by remember { mutableStateOf<Product?>(null) }
+
+    confirmDelete?.let { target ->
+        AlertDialog(
+            onDismissRequest = { confirmDelete = null },
+            title = { Text("Delete ${target.title}?") },
+            text = {
+                Text(
+                    "This removes the listing and its screenshots. Installs already " +
+                        "made stay in people's libraries, and the app stops appearing in the store.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDelete = null
+                    viewModel.delete(target)
+                }) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = null }) { Text("Keep it") }
+            },
+        )
+    }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -191,7 +215,7 @@ fun SellerProductsScreen(
                                             )
                                         }
                                     }
-                                    IconButton(onClick = { viewModel.delete(product) }) {
+                                    IconButton(onClick = { confirmDelete = product }) {
                                         TablerIcon(TablerIcons.Trash,
                                             contentDescription = "Delete",
                                             tint = MaterialTheme.colorScheme.error,
@@ -451,6 +475,46 @@ fun SellerProductEditScreen(
                 onLinkChange = viewModel::onApkLink,
                 onPicked = viewModel::onApkPicked,
                 onClear = viewModel::clearApk,
+            )
+            Spacer(Modifier.height(18.dp))
+
+            // ---------------------------------------------------------- release
+            Text("Release", style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                if (productId == null) "The version you are publishing."
+                else "Bump the version and replace the build to ship an update.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            Row {
+                Box(Modifier.weight(1f)) {
+                    SproutlyTextField(
+                        value = state.versionName,
+                        onValueChange = viewModel::onVersionName,
+                        label = "Version name",
+                        placeholder = "1.0.0",
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Box(Modifier.weight(1f)) {
+                    SproutlyTextField(
+                        value = state.versionCode,
+                        onValueChange = viewModel::onVersionCode,
+                        label = "Version code",
+                        placeholder = "1",
+                        keyboardType = KeyboardType.Number,
+                    )
+                }
+            }
+            SproutlyTextField(
+                value = state.releaseNotes,
+                onValueChange = viewModel::onReleaseNotes,
+                label = "What's new",
+                singleLine = false,
+                minLines = 3,
+                helperText = "Shown to people deciding whether to update.",
             )
             Spacer(Modifier.height(18.dp))
 

@@ -213,16 +213,58 @@ fun SellerDashboardScreen(
             }
 
             Spacer(Modifier.height(16.dp))
+
+            // Bento: one tall tile for the main action, then pairs. The grid is
+            // built from rows rather than a LazyVerticalGrid so it scrolls with
+            // the rest of the page instead of fighting it.
+            Text("Publish", style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(10.dp))
+
+            Bento(
+                icon = TablerIcons.Plus,
+                label = "Publish a new app",
+                detail = "Upload a build or paste a link, set a price, ship it.",
+                emphasis = true,
+                onClick = onProducts,
+            )
+            Spacer(Modifier.height(10.dp))
+
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                QuickAction(TablerIcons.Plus, "Publish app", Modifier.weight(1f)) {
-                    onProducts()
-                }
-                QuickAction(TablerIcons.Receipt, "Installs", Modifier.weight(1f)) {
-                    onOrders()
-                }
-                QuickAction(TablerIcons.Analytics, "Analytics", Modifier.weight(1f)) {
-                    onAnalytics()
-                }
+                Bento(
+                    icon = TablerIcons.Dice,
+                    label = "Your apps",
+                    detail = "${state.stats.unitsSold} installs",
+                    modifier = Modifier.weight(1f),
+                    onClick = onProducts,
+                )
+                Bento(
+                    icon = TablerIcons.Receipt,
+                    label = "Installs",
+                    detail = "${state.stats.orderCount} total",
+                    modifier = Modifier.weight(1f),
+                    onClick = onOrders,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Bento(
+                    icon = TablerIcons.Analytics,
+                    label = "Analytics",
+                    detail = "Charts and trends",
+                    modifier = Modifier.weight(1f),
+                    onClick = onAnalytics,
+                )
+                Bento(
+                    icon = if (state.store?.verified == true) TablerIcons.Verified else TablerIcons.Tag,
+                    label = "Verification",
+                    detail = when {
+                        state.store?.verified == true -> "Verified"
+                        state.store?.verificationStatus == "PENDING" -> "In review"
+                        else -> "Needed for paid apps"
+                    },
+                    modifier = Modifier.weight(1f),
+                    onClick = onStoreEdit,
+                )
             }
 
             Spacer(Modifier.height(18.dp))
@@ -535,6 +577,59 @@ private fun MetricTile(label: String, value: String, modifier: Modifier = Modifi
                 label,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** One bento tile: a soft surface with an icon, a label and a line of detail. */
+@Composable
+private fun Bento(
+    icon: Int,
+    label: String,
+    detail: String,
+    modifier: Modifier = Modifier,
+    emphasis: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.card,
+        color = if (emphasis) MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (emphasis) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                TablerIcon(
+                    icon = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = if (emphasis) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.titleSmall,
+                color = if (emphasis) MaterialTheme.colorScheme.onPrimaryContainer
+                else MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (emphasis) MaterialTheme.colorScheme.onPrimaryContainer
+                else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

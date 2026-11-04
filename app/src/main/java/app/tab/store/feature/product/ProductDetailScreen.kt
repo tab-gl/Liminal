@@ -302,6 +302,35 @@ fun ProductDetailScreen(
                         }
                     }
 
+                    if (product.versionName.isNotBlank()) {
+                        Spacer(Modifier.height(14.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            TablerIcon(
+                                TablerIcons.Tag,
+                                contentDescription = null,
+                                modifier = Modifier.size(15.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                "Version ${product.versionName}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    if (product.releaseNotes.isNotBlank()) {
+                        Spacer(Modifier.height(16.dp))
+                        Text("What's new", style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            product.releaseNotes,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
                     Spacer(Modifier.height(20.dp))
                     Text("About this app", style = MaterialTheme.typography.headlineSmall)
                     Spacer(Modifier.height(8.dp))

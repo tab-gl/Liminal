@@ -224,6 +224,10 @@ data class ProductEditorUiState(
     val compareAtRupees: String = "",
     /** Days until a declared offer ends; blank means no end date. */
     val offerDays: String = "",
+    /** Release identity: what makes this an update rather than a new app. */
+    val versionName: String = "",
+    val versionCode: String = "",
+    val releaseNotes: String = "",
     /** Where the build comes from: uploaded APK or an existing link. */
     val apkUrl: String? = null,
     val apkLink: String = "",
@@ -324,6 +328,9 @@ class SellerProductEditViewModel @Inject constructor(
                                     apkSizeBytes = product.apkSizeBytes,
                                     compareAtRupees = product.compareAtPrice
                                         ?.let { c -> Money.toRupeeString(c) }.orEmpty(),
+                                    versionName = product.versionName,
+                                    versionCode = product.versionCode.takeIf { it > 0 }?.toString().orEmpty(),
+                                    releaseNotes = product.releaseNotes,
                                     offerDays = product.offerEndsAt
                                         ?.let { ends ->
                                             val days = ((ends - System.currentTimeMillis()) / 86_400_000L)
@@ -352,6 +359,14 @@ class SellerProductEditViewModel @Inject constructor(
     fun onOfferDays(v: String) = _uiState.update {
         it.copy(offerDays = v.filter { c -> c.isDigit() }.take(3))
     }
+
+    fun onVersionName(v: String) = _uiState.update { it.copy(versionName = v.take(20)) }
+
+    fun onVersionCode(v: String) = _uiState.update {
+        it.copy(versionCode = v.filter { c -> c.isDigit() }.take(9))
+    }
+
+    fun onReleaseNotes(v: String) = _uiState.update { it.copy(releaseNotes = v.take(500)) }
     fun onStock(v: String) = _uiState.update {
         it.copy(stock = v.filter { c -> c.isDigit() }.take(6))
     }
@@ -532,6 +547,9 @@ class SellerProductEditViewModel @Inject constructor(
                 stock = state.stock.toIntOrNull() ?: 0,
                 apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
                 apkSizeBytes = state.apkSizeBytes,
+                versionName = state.versionName.trim().ifBlank { "1.0" },
+                versionCode = state.versionCode.toIntOrNull() ?: 1,
+                releaseNotes = state.releaseNotes.trim(),
                 status = state.status,
                 tags = state.tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
             )

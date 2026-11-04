@@ -47,6 +47,7 @@ import app.tab.store.core.designsystem.SproutlyTheme
 fun LoginScreen(
     onRegister: () -> Unit,
     onForgotPassword: () -> Unit,
+    onLegal: (Boolean) -> Unit = {},
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -232,7 +233,9 @@ fun LoginScreen(
             }
             Spacer(Modifier.height(10.dp))
             Text(
-                "By continuing you agree to Sproutly's Terms of Service and Privacy Policy.",
+                "By continuing you agree to Sproutly's Terms of Service and Privacy Policy. " +
+                    "Tap to read either.",
+                modifier = Modifier.clickable { onLegal(false) },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
