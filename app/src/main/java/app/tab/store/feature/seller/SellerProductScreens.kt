@@ -252,6 +252,7 @@ fun SellerProductEditScreen(
     viewModel: SellerProductEditViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val picker = rememberImagePicker { uri -> if (uri != null) viewModel.onImagePicked(uri) }
     val screenshotPicker = rememberImagePicker { uri ->
         if (uri != null) viewModel.onScreenshotPicked(uri)
@@ -479,12 +480,16 @@ fun SellerProductEditScreen(
                 title = "Offer banner",
                 hint = "Shown in the store while your offer runs. Tap it to open the app.",
             ) {
+                val promoScope = rememberCoroutineScope()
                 val promoPicker = rememberLauncherForActivityResult(
                     ActivityResultContracts.PickVisualMedia(),
                 ) { uri ->
-                    uri?.let {
-                        picker.readBytes(it)?.let { bytes ->
-                            viewModel.uploadPromoImage(bytes, "promo.jpg")
+                    if (uri != null) {
+                        promoScope.launch {
+                            val bytes = withContext(Dispatchers.IO) {
+                                context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                            }
+                            if (bytes != null) viewModel.uploadPromoImage(bytes, "promo.jpg")
                         }
                     }
                 }

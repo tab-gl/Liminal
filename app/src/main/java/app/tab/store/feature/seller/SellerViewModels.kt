@@ -350,14 +350,14 @@ class SellerProductEditViewModel @Inject constructor(
                                     versionName = product.versionName,
                                     versionCode = product.versionCode.takeIf { it > 0 }?.toString().orEmpty(),
                                     releaseNotes = product.releaseNotes,
-                                    offerDays = product.offerEndsAt,
-                                    promoHeadline = product.promoHeadline,
-                                    promoBody = product.promoBody,
-                                    promoImageUrl = product.promoImageUrl,
+                                    offerDays = product.offerEndsAt
                                         ?.let { ends ->
                                             val days = ((ends - System.currentTimeMillis()) / 86_400_000L)
                                             if (days > 0) days.toString() else ""
                                         }.orEmpty(),
+                                    promoHeadline = product.promoHeadline,
+                                    promoBody = product.promoBody,
+                                    promoImageUrl = product.promoImageUrl,
                                     stock = product.stock.toString(),
                                     images = product.images,
                                     screenshots = product.screenshots,
