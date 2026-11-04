@@ -100,7 +100,7 @@ fun SellerProductsScreen(
     var offerFor by remember { mutableStateOf<Product?>(null) }
 
     offerFor?.let { target ->
-        OfferDialog(
+        SellerOfferDialog(
             product = target,
             onDismiss = { offerFor = null },
             onSave = { compareAt, days ->
@@ -603,6 +603,16 @@ fun SellerProductEditScreen(
             )
             }
 
+            if (state.scanRisk.isNotBlank()) {
+                Spacer(Modifier.height(10.dp))
+                SproutSafeCard(
+                    risk = state.scanRisk,
+                    permissions = state.scanPermissions,
+                    warnings = state.scanWarnings,
+                    packageName = state.scanPackageName,
+                )
+            }
+
             Spacer(Modifier.height(12.dp))
 
             // ---------------------------------------------------------- release
@@ -1030,7 +1040,7 @@ private fun BentoTile(
  * it has to be higher than what people actually pay.
  */
 @Composable
-private fun OfferDialog(
+internal fun SellerOfferDialog(
     product: Product,
     onDismiss: () -> Unit,
     onSave: (compareAtPaise: Long?, days: Int?) -> Unit,
@@ -1090,4 +1100,82 @@ private fun OfferDialog(
             }
         },
     )
+}
+
+/**
+ * Sprout Safe, for the developer: what their own build asks for, read from the
+ * APK's manifest before it is published.
+ */
+@Composable
+private fun SproutSafeCard(
+    risk: String,
+    permissions: List<String>,
+    warnings: List<String>,
+    packageName: String,
+) {
+    val colour = when (risk) {
+        "HIGH" -> MaterialTheme.colorScheme.errorContainer
+        "MEDIUM" -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.primaryContainer
+    }
+    val onColour = when (risk) {
+        "HIGH" -> MaterialTheme.colorScheme.onErrorContainer
+        "MEDIUM" -> MaterialTheme.colorScheme.onSecondaryContainer
+        else -> MaterialTheme.colorScheme.onPrimaryContainer
+    }
+
+    Surface(
+        shape = SproutlyRadii.card,
+        color = colour,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TablerIcon(
+                    TablerIcons.Verified,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = onColour,
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Sprout Safe", style = MaterialTheme.typography.titleSmall, color = onColour)
+                Spacer(Modifier.weight(1f))
+                Text(
+                    when (risk) {
+                        "HIGH" -> "High risk"
+                        "MEDIUM" -> "Worth a look"
+                        else -> "Looks fine"
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = onColour,
+                )
+            }
+            if (packageName.isNotBlank()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    packageName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = onColour,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "${permissions.size} permission${if (permissions.size == 1) "" else "s"} requested",
+                style = MaterialTheme.typography.bodySmall,
+                color = onColour,
+            )
+            warnings.forEach { warning ->
+                Spacer(Modifier.height(3.dp))
+                Text("· $warning", style = MaterialTheme.typography.bodySmall, color = onColour)
+            }
+            if (warnings.isEmpty() && permissions.isNotEmpty()) {
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    "· None of them are unusual for an app.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = onColour,
+                )
+            }
+        }
+    }
 }

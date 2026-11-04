@@ -322,14 +322,7 @@ fun ProductDetailScreen(
                     if (!product.apkUrl.isNullOrBlank()) {
                         Spacer(Modifier.height(10.dp))
                         Surface(
-                            onClick = {
-                                context.startActivity(
-                                    android.content.Intent(
-                                        android.content.Intent.ACTION_VIEW,
-                                        android.net.Uri.parse(product.apkUrl),
-                                    ),
-                                )
-                            },
+                            onClick = { viewModel.installBuild() },
                             shape = SproutlyRadii.card,
                             color = MaterialTheme.colorScheme.primaryContainer,
                             modifier = Modifier.fillMaxWidth(),
@@ -346,7 +339,7 @@ fun ProductDetailScreen(
                                 )
                                 Spacer(Modifier.width(10.dp))
                                 Text(
-                                    "Download the build",
+                                    if (state.isInstalling) "Downloading…" else "Install the build",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 )
@@ -627,4 +620,60 @@ private fun ReportDialog(onDismiss: () -> Unit, onReport: (String) -> Unit) {
             androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancel") }
         },
     )
+}
+
+/** What the build can reach, shown before anyone installs it. */
+@Composable
+private fun SproutSafeSection(product: Product) {
+    val (container, content) = when (product.scanRisk) {
+        "HIGH" -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        "MEDIUM" -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+        else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+    }
+    Surface(
+        shape = SproutlyRadii.card,
+        color = container,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TablerIcon(
+                    TablerIcons.Verified,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = content,
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Sprout Safe", style = MaterialTheme.typography.titleSmall, color = content)
+                Spacer(Modifier.weight(1f))
+                Text(
+                    when (product.scanRisk) {
+                        "HIGH" -> "High risk"
+                        "MEDIUM" -> "Worth a look"
+                        else -> "Looks fine"
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = content,
+                )
+            }
+            Spacer(Modifier.height(6.dp))
+            Text(
+                if (product.scanPermissions.isEmpty()) {
+                    "This build requests no permissions."
+                } else {
+                    "This build can access: " +
+                        product.scanPermissions
+                            .map { it.substringAfterLast('.').lowercase().replace('_', ' ') }
+                            .take(8)
+                            .joinToString(", ")
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = content,
+            )
+            product.scanWarnings.take(4).forEach { warning ->
+                Spacer(Modifier.height(3.dp))
+                Text("· $warning", style = MaterialTheme.typography.bodySmall, color = content)
+            }
+        }
+    }
 }

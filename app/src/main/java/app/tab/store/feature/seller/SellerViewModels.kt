@@ -78,6 +78,7 @@ class SellerSetupViewModel @Inject constructor(
 // ---------------------------------------------------------------- dashboard
 data class SellerDashboardUiState(
     val store: Store? = null,
+    val products: List<Product> = emptyList(),
     val stats: SellerStats = SellerStats(),
     val recentOrders: List<Order> = emptyList(),
     val lowStock: List<Product> = emptyList(),
@@ -87,7 +88,7 @@ data class SellerDashboardUiState(
 
 @HiltViewModel
 class SellerDashboardViewModel @Inject constructor(
-    sellerRepository: SellerRepository,
+    private val sellerRepository: SellerRepository,
     orderRepository: OrderRepository,
 ) : ViewModel() {
 
@@ -101,6 +102,13 @@ class SellerDashboardViewModel @Inject constructor(
                     it.copy(store = store, isLoading = false, needsStore = store == null)
                 }
                 if (store != null) {
+                    launch {
+                        // The Offers tab lists every app, so the dashboard keeps
+                        // the listings as well as the totals.
+                        sellerRepository.observeStoreProducts(store.id).collect { products ->
+                            _uiState.update { s -> s.copy(products = products) }
+                        }
+                    }
                     launch {
                         sellerRepository.observeStats(store.id).collect { stats ->
                             _uiState.update { s -> s.copy(stats = stats) }
@@ -278,6 +286,12 @@ data class ProductEditorUiState(
     val storeStatus: String = "PENDING",
     /** False when this build has no uploader URL, so paste-a-link is the way. */
     val apkUploadEnabled: Boolean = true,
+    /** Sprout Safe result for the picked build. */
+    val scanRisk: String = "",
+    val scanPermissions: List<String> = emptyList(),
+    val scanWarnings: List<String> = emptyList(),
+    val scanPackageName: String = "",
+    val scanVersionName: String = "",
     val verificationStatus: String = "NONE",
     val isRequestingVerification: Boolean = false,
     val stock: String = "0",
@@ -330,6 +344,7 @@ class SellerProductEditViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val uploader: CloudinaryUploader,
     private val apkStorage: app.tab.store.core.media.ApkStorage,
+    private val apkScanner: app.tab.store.core.media.ApkScanner,
 ) : ViewModel() {
 
     private val productId: String? =
@@ -464,6 +479,26 @@ class SellerProductEditViewModel @Inject constructor(
      */
     fun onApkPicked(bytes: ByteArray, fileName: String) {
         if (bytes.isEmpty()) return
+        // Sprout Safe first: the developer should know what their build asks for
+        // before it reaches anyone.
+        viewModelScope.launch {
+            apkScanner.scan(bytes, fileName)?.let { report ->
+                _uiState.update {
+                    it.copy(
+                        scanRisk = report.risk.name,
+                        scanPermissions = report.permissions,
+                        scanWarnings = report.warnings,
+                        scanPackageName = report.packageName,
+                        scanVersionName = report.versionName,
+                        // Trust the build's own version if the form is empty.
+                        versionName = it.versionName.ifBlank { report.versionName },
+                        versionCode = it.versionCode.ifBlank {
+                            report.versionCode.takeIf { code -> code > 0 }?.toString().orEmpty()
+                        },
+                    )
+                }
+            }
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isUploadingApk = true, error = null, uploadProgress = 0f) }
             apkStorage.upload(bytes, fileName) { progress ->
@@ -645,6 +680,9 @@ class SellerProductEditViewModel @Inject constructor(
                 promoImageUrl = state.promoImageUrl,
                 versionName = state.versionName.trim().ifBlank { "1.0" },
                 versionCode = state.versionCode.toIntOrNull() ?: 1,
+                scanRisk = state.scanRisk,
+                scanPermissions = state.scanPermissions,
+                scanWarnings = state.scanWarnings,
                 releaseNotes = state.releaseNotes.trim(),
                 status = state.status,
                 tags = state.tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
@@ -767,6 +805,7 @@ class SellerStoreEditViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val uploader: CloudinaryUploader,
     private val apkStorage: app.tab.store.core.media.ApkStorage,
+    private val apkScanner: app.tab.store.core.media.ApkScanner,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StoreEditorUiState())

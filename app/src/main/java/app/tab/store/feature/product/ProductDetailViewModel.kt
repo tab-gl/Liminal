@@ -25,6 +25,8 @@ data class ProductDetailUiState(
     val isInstalling: Boolean = false,
     val message: String? = null,
     val navigateToLibrary: Boolean = false,
+    /** True when the device must allow Sproutly as an install source first. */
+    val needsInstallPermission: Boolean = false,
     /** The developer behind this listing, and what else they have published. */
     val store: app.tab.store.domain.model.Store? = null,
     val developerApps: List<Product> = emptyList(),
@@ -37,6 +39,7 @@ data class ProductDetailUiState(
 class ProductDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val catalogRepository: CatalogRepository,
+    private val appInstaller: app.tab.store.core.media.AppInstaller,
     private val orderRepository: OrderRepository,
     private val wishlistRepository: WishlistRepository,
 ) : ViewModel() {
@@ -101,6 +104,38 @@ class ProductDetailViewModel @Inject constructor(
     }
 
     /** Get / Install: writes the install record and opens the library. */
+    /**
+     * Downloads the build and opens the installer, asking for the install-source
+     * permission first when the device has not granted it.
+     */
+    fun installBuild() {
+        val product = _uiState.value.product ?: return
+        val url = product.apkUrl
+        if (url.isNullOrBlank()) {
+            _uiState.update { it.copy(message = "This app has no build attached yet.") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isInstalling = true) }
+            val outcome = appInstaller.downloadAndInstall(url, "${product.title}.apk")
+            _uiState.update {
+                it.copy(
+                    isInstalling = false,
+                    message = when (outcome) {
+                        is AppInstaller.Outcome.Launched -> null
+                        is AppInstaller.Outcome.NeedsPermission ->
+                            "Allow Sproutly to install apps, then tap Install again."
+                        is AppInstaller.Outcome.Failed -> outcome.message
+                    },
+                    needsInstallPermission = outcome is AppInstaller.Outcome.NeedsPermission,
+                )
+            }
+            if (outcome is AppInstaller.Outcome.NeedsPermission) appInstaller.requestPermission()
+        }
+    }
+
+    fun openInstallPermission() = appInstaller.requestPermission()
+
     fun install() {
         val product = _uiState.value.product ?: return
         viewModelScope.launch {

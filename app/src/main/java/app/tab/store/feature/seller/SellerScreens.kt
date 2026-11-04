@@ -5,6 +5,12 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.style.TextOverflow
+import app.tab.store.core.designsystem.SproutlyChip
+import app.tab.store.domain.model.Product
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -162,6 +168,19 @@ fun SellerDashboardScreen(
     viewModel: SellerDashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var tab by remember { mutableStateOf(SellerTab.OVERVIEW) }
+    var offerFor by remember { mutableStateOf<Product?>(null) }
+
+    offerFor?.let { target ->
+        SellerOfferDialog(
+            product = target,
+            onDismiss = { offerFor = null },
+            onSave = { compareAt, days ->
+                offerFor = null
+                viewModel.setOffer(target, compareAt, days)
+            },
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -174,6 +193,21 @@ fun SellerDashboardScreen(
             onBack = onBack,
         )
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            SellerTab.entries.forEach { entry ->
+                SproutlyChip(
+                    text = entry.label,
+                    selected = tab == entry,
+                    onClick = { tab = entry },
+                )
+            }
+        }
+
         if (state.needsStore) {
             EmptyState(
                 title = "No developer profile yet",
@@ -182,6 +216,85 @@ fun SellerDashboardScreen(
                 actionLabel = "Get started",
                 onAction = onSetupStore,
             )
+            return@Column
+        }
+
+        if (tab == SellerTab.OFFERS) {
+            Column(Modifier.padding(horizontal = 20.dp)) {
+                Text("Offers", style = MaterialTheme.typography.headlineSmall)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Put any of your apps on offer, or take one off. People see the " +
+                        "discount on the app and on the Offers tab.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+
+                if (state.products.isEmpty()) {
+                    EmptyState(
+                        title = "No apps yet",
+                        message = "Publish an app and it will appear here, ready for an offer.",
+                        icon = TablerIcons.Gift,
+                    )
+                }
+
+                state.products.forEach { product ->
+                    Surface(
+                        shape = SproutlyRadii.card,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    product.title,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    if (product.hasActiveOffer) {
+                                        "${formatPrice(product.price)} · was " +
+                                            formatPrice(product.compareAtPrice ?: product.price) +
+                                            " · ${product.discountPercent}% off"
+                                    } else {
+                                        "${formatPrice(product.price)} · no offer"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Surface(
+                                onClick = { offerFor = product },
+                                shape = SproutlyRadii.pill,
+                                color = if (product.hasActiveOffer) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                },
+                            ) {
+                                Text(
+                                    if (product.hasActiveOffer) "Edit" else "Add offer",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = if (product.hasActiveOffer) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    },
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(24.dp))
+            }
             return@Column
         }
 
@@ -633,4 +746,10 @@ private fun Bento(
             )
         }
     }
+}
+
+/** The developer console's tabs. */
+private enum class SellerTab(val label: String) {
+    OVERVIEW("Overview"),
+    OFFERS("Offers"),
 }

@@ -43,6 +43,9 @@ internal fun productPayload(product: Product): MutableMap<String, Any?> {
         "versionName" to product.versionName,
         "versionCode" to product.versionCode,
         "releaseNotes" to product.releaseNotes,
+        "scanRisk" to product.scanRisk,
+        "scanPermissions" to product.scanPermissions,
+        "scanWarnings" to product.scanWarnings,
         "tags" to product.tags,
         "updatedAt" to FieldValue.serverTimestamp(),
     )

@@ -41,6 +41,10 @@ data class Product(
     val versionName: String = "",
     val versionCode: Int = 0,
     val releaseNotes: String = "",
+    /** Sprout Safe: what the build can reach, from its own manifest. */
+    val scanRisk: String = "",
+    val scanPermissions: List<String> = emptyList(),
+    val scanWarnings: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,

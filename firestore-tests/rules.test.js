@@ -447,3 +447,22 @@ describe("offers", () => {
     );
   });
 });
+
+describe("sprout safe", () => {
+  it("stores the scan result with the listing", async () => {
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "scanned"), product({
+        status: "DRAFT",
+        scanRisk: "MEDIUM",
+        scanPermissions: ["android.permission.CAMERA"],
+        scanWarnings: ["Can use your camera"],
+      })),
+    );
+  });
+
+  it("does not let a buyer rewrite a scan result", async () => {
+    await assertFails(
+      updateDoc(doc(shopper(), "products", "app1"), { scanRisk: "LOW" }),
+    );
+  });
+});
