@@ -3,6 +3,7 @@ package app.tab.store.feature.product
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.tab.store.core.media.AppInstaller
 import app.tab.store.domain.model.Product
 import app.tab.store.domain.repository.OrderRepository
 import app.tab.store.domain.repository.CatalogRepository
@@ -126,6 +127,7 @@ class ProductDetailViewModel @Inject constructor(
                         is AppInstaller.Outcome.NeedsPermission ->
                             "Allow Sproutly to install apps, then tap Install again."
                         is AppInstaller.Outcome.Failed -> outcome.message
+                        else -> null
                     },
                     needsInstallPermission = outcome is AppInstaller.Outcome.NeedsPermission,
                 )

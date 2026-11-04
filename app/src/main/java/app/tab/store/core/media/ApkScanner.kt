@@ -43,7 +43,7 @@ class ApkScanner @Inject constructor(
      * Ordered roughly by how badly they can be abused. Anything not listed is
      * shown but not warned about.
      */
-    private val explained: Map<String, Pair<String, Risk>> = linkedMapOf(
+    private val explained: Map<String, Pair<String, Risk>> = listOf(
         "android.permission.READ_SMS" to "can read your text messages" to Risk.HIGH,
         "android.permission.RECEIVE_SMS" to "can receive your text messages" to Risk.HIGH,
         "android.permission.SEND_SMS" to "can send text messages, which can cost money" to Risk.HIGH,
@@ -67,7 +67,7 @@ class ApkScanner @Inject constructor(
         "android.permission.BODY_SENSORS" to "can read your health sensors" to Risk.MEDIUM,
         "android.permission.BLUETOOTH_CONNECT" to "can connect to nearby devices" to Risk.LOW,
         "android.permission.POST_NOTIFICATIONS" to "can send you notifications" to Risk.LOW,
-    )
+    ).associate { (permission, rest) -> permission to rest }
 
     /** Parses [bytes] as an APK. Returns null when the file is not a readable package. */
     fun scan(bytes: ByteArray, fileName: String): Report? {
