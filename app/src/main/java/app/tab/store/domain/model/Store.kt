@@ -24,6 +24,8 @@ data class Store(
     val ratingCount: Int = 0,
     /** Paid apps require a verified developer account. */
     val verified: Boolean = false,
+    /** The store's own studio; its listings carry the Official badge. */
+    val official: Boolean = false,
     val verificationStatus: String = "NONE",
     val productCount: Int = 0,
     val createdAt: Long = 0L,

@@ -147,6 +147,41 @@ class CatalogRepositoryImpl @Inject constructor(
         DataResult.Failure(t.toUserMessage(), t)
     }
 
+    override fun observeReviews(
+        productId: String,
+    ): Flow<List<app.tab.store.domain.model.Review>> =
+        firestore.collection(FirestorePaths.PRODUCTS).document(productId)
+            .collection("reviews")
+            .snapshots()
+            .map { snapshot ->
+                snapshot.documents.map { doc ->
+                    app.tab.store.domain.model.Review(
+                        reviewerId = doc.id,
+                        reviewerName = doc.getString("reviewerName").orEmpty(),
+                        rating = (doc.getLong("rating") ?: 0L).toInt(),
+                        text = doc.getString("text").orEmpty(),
+                        createdAt = doc.getLong("createdAt") ?: 0L,
+                    )
+                }
+            }
+
+    override suspend fun rate(productId: String, rating: Int, text: String): DataResult<Unit> =
+        firestoreResult {
+            val user = auth.currentUser ?: error("Sign in to rate an app.")
+            firestore.collection(FirestorePaths.PRODUCTS).document(productId)
+                .collection("reviews").document(user.uid)
+                .set(
+                    mapOf(
+                        "reviewerId" to user.uid,
+                        "reviewerName" to (user.displayName ?: "Someone"),
+                        "rating" to rating.coerceIn(1, 5),
+                        "text" to text.trim().take(500),
+                        "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    ),
+                )
+                .await()
+        }
+
     override suspend fun reportProduct(productId: String, reason: String): DataResult<Unit> =
         firestoreResult {
             val current = firestore.collection(FirestorePaths.PRODUCTS)

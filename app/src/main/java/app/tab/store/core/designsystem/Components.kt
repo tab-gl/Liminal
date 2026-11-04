@@ -650,13 +650,22 @@ fun ProductCard(
                 }
             }
             Spacer(Modifier.height(8.dp))
-            Text(
-                text = product.title,
-                style = MaterialTheme.typography.titleSmall,
-                maxLines = if (compact) 1 else 2,
-                overflow = TextOverflow.Ellipsis,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 3.dp),
-            )
+            ) {
+                Text(
+                    text = product.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = if (compact) 1 else 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                if (product.official) {
+                    Spacer(Modifier.width(6.dp))
+                    OfficialBadge()
+                }
+            }
             Text(
                 text = product.storeName.ifBlank { product.categoryLabel },
                 style = MaterialTheme.typography.labelSmall,
@@ -873,4 +882,109 @@ fun SoftCard(
             .padding(16.dp),
         content = content,
     )
+}
+
+/**
+ * Sprout Safe's risk meter.
+ *
+ * A number and a bar instead of a wall of bullet points: the score says how much
+ * the build can reach, the colour says whether that is ordinary, and the two
+ * strongest reasons sit underneath.
+ */
+@Composable
+fun RiskMeter(
+    score: Int,
+    reasons: List<String>,
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
+) {
+    val clamped = score.coerceIn(0, 100)
+    val (container, content) = when {
+        clamped >= 60 -> MaterialTheme.colorScheme.errorContainer to
+            MaterialTheme.colorScheme.onErrorContainer
+        clamped >= 25 -> MaterialTheme.colorScheme.secondaryContainer to
+            MaterialTheme.colorScheme.onSecondaryContainer
+        else -> MaterialTheme.colorScheme.primaryContainer to
+            MaterialTheme.colorScheme.onPrimaryContainer
+    }
+    val label = when {
+        clamped >= 60 -> "High reach"
+        clamped >= 25 -> "Some reach"
+        else -> "Low reach"
+    }
+
+    Surface(
+        shape = SproutlyRadii.card,
+        color = container,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TablerIcon(
+                    TablerIcons.Verified,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = content,
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Sprout Safe", style = MaterialTheme.typography.titleSmall, color = content)
+                Spacer(Modifier.weight(1f))
+                Text(
+                    "$clamped / 100 · $label",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = content,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(SproutlyRadii.pill)
+                    .background(content.copy(alpha = 0.18f)),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(clamped / 100f)
+                        .height(8.dp)
+                        .clip(SproutlyRadii.pill)
+                        .background(content),
+                )
+            }
+            if (!compact && reasons.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                reasons.take(2).forEach { reason ->
+                    Text("· $reason", style = MaterialTheme.typography.bodySmall, color = content)
+                }
+            }
+        }
+    }
+}
+
+/** Marks a listing published by the store's own studio. */
+@Composable
+fun OfficialBadge(modifier: Modifier = Modifier) {
+    Surface(
+        shape = SproutlyRadii.pill,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TablerIcon(
+                TablerIcons.Verified,
+                contentDescription = null,
+                modifier = Modifier.size(12.dp),
+                tint = MaterialTheme.colorScheme.onPrimary,
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                "Official",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
+        }
+    }
 }

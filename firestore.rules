@@ -178,10 +178,12 @@ service cloud.firestore {
       allow update: if (isSeller() && resource.data.ownerId == uid()
           && unchanged('ownerId')
           && unchanged('status')
-          // Verification is the admin's decision, never the owner's. The request
-          // branch above is the only way an owner may touch these two fields.
+          // Verification and official status are the admin's decisions, never the
+          // owner's. The request branch above is the only way an owner may touch
+          // verified/verificationStatus.
           && unchanged('verified')
           && unchanged('verificationStatus')
+          && unchanged('official')
           && unchanged('rating')
           && unchanged('ratingCount')
           && unchanged('createdAt')
@@ -220,6 +222,9 @@ service cloud.firestore {
           && request.resource.data.screenshots is list
           && request.resource.data.screenshots.size() <= 8
           && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED']
+          // The badge is copied from the store, so a seller cannot claim it.
+          && request.resource.data.get('official', false)
+             == storeDoc(request.resource.data.storeId).get('official', false)
           // A live app must point at a build. A draft may not have one yet —
           // saving a draft early is normal and should not be refused.
           && (request.resource.data.status != 'ACTIVE'
@@ -309,6 +314,26 @@ service cloud.firestore {
       allow update: if isAdmin();
 
       allow delete: if (isSeller() && resource.data.storeId == myStoreId()) || isAdmin();
+
+      // ------------------------------------------------------------ reviews
+      // One review per person, and only their own. The average is computed by
+      // the client from these documents, so a listing never needs a write from
+      // someone who does not own it.
+      match /reviews/{reviewerId} {
+        allow read: if true;
+
+        allow create, update: if isSignedIn()
+          && reviewerId == uid()
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.reviewerId == uid()
+          && (!request.resource.data.keys().hasAny(['text'])
+              || (request.resource.data.text is string
+                  && request.resource.data.text.size() <= 500));
+
+        allow delete: if isSignedIn() && reviewerId == uid();
+      }
     }
 
     // ---------------------------------------------------------- categories

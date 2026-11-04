@@ -361,6 +361,17 @@ fun AdminStoresScreen(
                                             Text("Approve")
                                         }
                                     }
+                                    // The store's own studio: everything it publishes
+                                    // carries the Official badge.
+                                    TextButton(onClick = { viewModel.setOfficial(store, !store.official) }) {
+                                        TablerIcon(
+                                            TablerIcons.Verified,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(if (store.official) "Unmark official" else "Mark official")
+                                    }
                                     if (store.status != StoreStatus.SUSPENDED) {
                                         TextButton(
                                             onClick = { viewModel.setStatus(store, StoreStatus.SUSPENDED) },

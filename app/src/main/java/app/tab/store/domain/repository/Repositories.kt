@@ -62,6 +62,12 @@ interface CatalogRepository {
         pageSize: Int = 20,
         pageToken: String? = null,
     ): DataResult<ProductPage>
+    /** Ratings written by other people. */
+    fun observeReviews(productId: String): Flow<List<app.tab.store.domain.model.Review>>
+
+    /** Writes or replaces the caller's own rating. */
+    suspend fun rate(productId: String, rating: Int, text: String): DataResult<Unit>
+
     /** Flags a listing for moderation. */
     suspend fun reportProduct(productId: String, reason: String): DataResult<Unit>
 

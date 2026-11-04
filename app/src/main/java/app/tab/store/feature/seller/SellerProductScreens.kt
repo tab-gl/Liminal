@@ -605,11 +605,9 @@ fun SellerProductEditScreen(
 
             if (state.scanRisk.isNotBlank()) {
                 Spacer(Modifier.height(10.dp))
-                SproutSafeCard(
-                    risk = state.scanRisk,
-                    permissions = state.scanPermissions,
-                    warnings = state.scanWarnings,
-                    packageName = state.scanPackageName,
+                RiskMeter(
+                    score = state.scanScore,
+                    reasons = state.scanWarnings,
                 )
             }
 

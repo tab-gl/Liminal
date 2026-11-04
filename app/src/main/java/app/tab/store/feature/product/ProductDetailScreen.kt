@@ -45,6 +45,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.platform.LocalContext
 import app.tab.store.core.navigation.Routes
 import app.tab.store.domain.model.Product
+import androidx.compose.foundation.clickable
+import kotlin.math.roundToInt
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,6 +57,7 @@ import app.tab.store.core.designsystem.PriceText
 import app.tab.store.core.designsystem.RatingBadge
 import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyButton
+import app.tab.store.core.designsystem.OfficialBadge
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTag
@@ -294,6 +297,16 @@ fun ProductDetailScreen(
                         }
                     }
 
+                    Spacer(Modifier.height(12.dp))
+                    if (product.official) {
+                        OfficialBadge()
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    RatingRow(
+                        summary = state.rating,
+                        onRate = { stars -> viewModel.rate(stars) },
+                    )
+
                     Spacer(Modifier.height(14.dp))
                     Surface(
                         onClick = { shareProduct() },
@@ -390,6 +403,14 @@ fun ProductDetailScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
+                    }
+
+                    if (product.scanRisk.isNotBlank()) {
+                        Spacer(Modifier.height(14.dp))
+                        RiskMeter(
+                            score = product.scanScore,
+                            reasons = product.scanWarnings,
+                        )
                     }
 
                     if (product.releaseNotes.isNotBlank()) {
@@ -623,58 +644,3 @@ private fun ReportDialog(onDismiss: () -> Unit, onReport: (String) -> Unit) {
     )
 }
 
-/** What the build can reach, shown before anyone installs it. */
-@Composable
-private fun SproutSafeSection(product: Product) {
-    val (container, content) = when (product.scanRisk) {
-        "HIGH" -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
-        "MEDIUM" -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
-        else -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
-    }
-    Surface(
-        shape = SproutlyRadii.card,
-        color = container,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TablerIcon(
-                    TablerIcons.Verified,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = content,
-                )
-                Spacer(Modifier.width(6.dp))
-                Text("Sprout Safe", style = MaterialTheme.typography.titleSmall, color = content)
-                Spacer(Modifier.weight(1f))
-                Text(
-                    when (product.scanRisk) {
-                        "HIGH" -> "High risk"
-                        "MEDIUM" -> "Worth a look"
-                        else -> "Looks fine"
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    color = content,
-                )
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                if (product.scanPermissions.isEmpty()) {
-                    "This build requests no permissions."
-                } else {
-                    "This build can access: " +
-                        product.scanPermissions
-                            .map { it.substringAfterLast('.').lowercase().replace('_', ' ') }
-                            .take(8)
-                            .joinToString(", ")
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = content,
-            )
-            product.scanWarnings.take(4).forEach { warning ->
-                Spacer(Modifier.height(3.dp))
-                Text("· $warning", style = MaterialTheme.typography.bodySmall, color = content)
-            }
-        }
-    }
-}

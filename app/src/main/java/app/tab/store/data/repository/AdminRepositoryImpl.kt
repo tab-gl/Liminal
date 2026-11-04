@@ -118,6 +118,18 @@ class AdminRepositoryImpl @Inject constructor(
      * Block body (not `= try { ... }`) because the guards return early — Kotlin
      * forbids `return` inside an expression-bodied function.
      */
+    override suspend fun setStoreOfficial(storeId: String, official: Boolean): DataResult<Unit> =
+        firestoreResult {
+            firestore.collection(FirestorePaths.STORES).document(storeId)
+                .update(
+                    mapOf(
+                        "official" to official,
+                        "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    ),
+                )
+                .await()
+        }
+
     override suspend fun setUserRole(uid: String, role: UserRole): DataResult<Unit> {
         return try {
             if (role == UserRole.SELLER) {

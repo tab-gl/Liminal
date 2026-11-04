@@ -28,6 +28,9 @@ data class ProductDetailUiState(
     val navigateToLibrary: Boolean = false,
     /** True when the device must allow Sproutly as an install source first. */
     val needsInstallPermission: Boolean = false,
+    /** What everyone else rated this app, and what you rated it. */
+    val rating: app.tab.store.domain.model.RatingSummary =
+        app.tab.store.domain.model.RatingSummary(),
     /** The developer behind this listing, and what else they have published. */
     val store: app.tab.store.domain.model.Store? = null,
     val developerApps: List<Product> = emptyList(),
@@ -41,6 +44,7 @@ class ProductDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val catalogRepository: CatalogRepository,
     private val appInstaller: app.tab.store.core.media.AppInstaller,
+    private val auth: com.google.firebase.auth.FirebaseAuth,
     private val orderRepository: OrderRepository,
     private val wishlistRepository: WishlistRepository,
 ) : ViewModel() {
@@ -51,6 +55,23 @@ class ProductDetailViewModel @Inject constructor(
     val uiState: StateFlow<ProductDetailUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            catalogRepository.observeReviews(productId).collect { reviews ->
+                val mine = auth.currentUser?.uid?.let { uid ->
+                    reviews.firstOrNull { it.reviewerId == uid }
+                }
+                _uiState.update {
+                    it.copy(
+                        rating = app.tab.store.domain.model.RatingSummary(
+                            average = if (reviews.isEmpty()) 0.0
+                            else reviews.sumOf { review -> review.rating }.toDouble() / reviews.size,
+                            count = reviews.size,
+                            mine = mine,
+                        ),
+                    )
+                }
+            }
+        }
         viewModelScope.launch {
             catalogRepository.observeProduct(productId).collect { product ->
                 _uiState.update {
@@ -158,6 +179,18 @@ class ProductDetailViewModel @Inject constructor(
     }
 
     fun consumeMessage() = _uiState.update { it.copy(message = null) }
+
+    /** Writes the caller's rating and refreshes the summary. */
+    fun rate(stars: Int, text: String = "") {
+        viewModelScope.launch {
+            when (val result = catalogRepository.rate(productId, stars, text)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(message = "Thanks for rating.")
+                }
+            }
+        }
+    }
 
     fun consumeNavigation() = _uiState.update { it.copy(navigateToLibrary = false) }
 

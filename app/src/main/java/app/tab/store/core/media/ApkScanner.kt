@@ -33,6 +33,8 @@ class ApkScanner @Inject constructor(
         val permissions: List<String>,
         val warnings: List<String>,
         val risk: Risk,
+        /** 0–100: how much this build can reach. Shown as a meter. */
+        val score: Int,
     ) {
         val isReadable: Boolean get() = packageName.isNotBlank()
     }
@@ -86,11 +88,17 @@ class ApkScanner @Inject constructor(
                 val permissions = info.requestedPermissions?.toList().orEmpty()
                 val warnings = mutableListOf<String>()
                 var risk = Risk.LOW
+                var score = 0
 
                 permissions.forEach { permission ->
                     val entry: Pair<String, Risk> = explained[permission] ?: return@forEach
                     warnings += entry.first.replaceFirstChar { it.uppercase() }
                     if (entry.second.ordinal > risk.ordinal) risk = entry.second
+                    score += when (entry.second) {
+                        Risk.HIGH -> 25
+                        Risk.MEDIUM -> 12
+                        Risk.LOW -> 3
+                    }
                 }
 
                 // Exported components are how one app reaches into another.
@@ -100,6 +108,7 @@ class ApkScanner @Inject constructor(
                 if (exported > 0) {
                     warnings += "$exported component${if (exported == 1) " is" else "s are"} " +
                         "open to other apps"
+                    score += minOf(exported * 4, 12)
                 }
 
                 val app = info.applicationInfo
@@ -107,6 +116,7 @@ class ApkScanner @Inject constructor(
                 if (target in 1..30) {
                     warnings += "Built for an older Android version (target SDK $target)"
                     if (risk == Risk.LOW) risk = Risk.MEDIUM
+                    score += 10
                 }
 
                 Report(
@@ -118,6 +128,7 @@ class ApkScanner @Inject constructor(
                     permissions = permissions,
                     warnings = warnings,
                     risk = risk,
+                    score = score.coerceIn(0, 100),
                 )
             }
         }.getOrNull().also { runCatching { file.delete() } }

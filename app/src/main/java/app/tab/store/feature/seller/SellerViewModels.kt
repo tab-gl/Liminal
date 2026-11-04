@@ -296,12 +296,14 @@ data class ProductEditorUiState(
     val isUploadingApk: Boolean = false,
     /** Paid apps need a verified developer account. */
     val storeVerified: Boolean = false,
+    val storeOfficial: Boolean = false,
     /** Approval state of the store: publishing needs it to be ACTIVE. */
     val storeStatus: String = "PENDING",
     /** False when this build has no uploader URL, so paste-a-link is the way. */
     val apkUploadEnabled: Boolean = true,
     /** Sprout Safe result for the picked build. */
     val scanRisk: String = "",
+    val scanScore: Int = 0,
     val scanPermissions: List<String> = emptyList(),
     val scanWarnings: List<String> = emptyList(),
     val scanPackageName: String = "",
@@ -386,6 +388,7 @@ class SellerProductEditViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         storeVerified = store?.verified == true,
+                        storeOfficial = store?.official == true,
                         verificationStatus = store?.verificationStatus ?: "NONE",
                         storeStatus = store?.status?.name ?: "PENDING",
                         storeId = store?.id.orEmpty(),
@@ -506,6 +509,7 @@ class SellerProductEditViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         scanRisk = report.risk.name,
+                        scanScore = report.score,
                         scanPermissions = report.permissions,
                         scanWarnings = report.warnings,
                         scanPackageName = report.packageName,
@@ -700,7 +704,9 @@ class SellerProductEditViewModel @Inject constructor(
                 promoImageUrl = state.promoImageUrl,
                 versionName = state.versionName.trim().ifBlank { "1.0" },
                 versionCode = state.versionCode.toIntOrNull() ?: 1,
+                official = state.storeOfficial,
                 scanRisk = state.scanRisk,
+                scanScore = state.scanScore,
                 scanPermissions = state.scanPermissions,
                 scanWarnings = state.scanWarnings,
                 releaseNotes = state.releaseNotes.trim(),

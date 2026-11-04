@@ -506,3 +506,74 @@ describe("publishing shape", () => {
     );
   });
 });
+
+describe("ratings", () => {
+  const review = (overrides = {}) => ({
+    reviewerId: SHOPPER,
+    reviewerName: "Carol",
+    rating: 5,
+    text: "Works well",
+    createdAt: 1,
+    ...overrides,
+  });
+
+  it("lets a signed-in person rate an app once", async () => {
+    await assertSucceeds(
+      setDoc(doc(shopper(), "products", "app1", "reviews", SHOPPER), review()),
+    );
+  });
+
+  it("refuses a rating out of range", async () => {
+    await assertFails(
+      setDoc(doc(shopper(), "products", "app1", "reviews", SHOPPER), review({ rating: 9 })),
+    );
+  });
+
+  it("refuses writing a rating as someone else", async () => {
+    await assertFails(
+      setDoc(doc(shopper(), "products", "app1", "reviews", BOB), review()),
+    );
+  });
+
+  it("lets anyone read the ratings", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), "products", "app1", "reviews", SHOPPER),
+        review(),
+      );
+    });
+    await assertSucceeds(getDocs(collection(guest(), "products", "app1", "reviews")));
+  });
+});
+
+describe("official studios", () => {
+  it("only an admin may mark a studio official", async () => {
+    await assertFails(
+      updateDoc(doc(dev(), "stores", STORE), { official: true }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(admin(), "stores", STORE), { official: true }),
+    );
+  });
+
+  it("a listing cannot claim the badge its store does not have", async () => {
+    await assertFails(
+      setDoc(doc(dev(), "products", "fake-official"), product({
+        status: "DRAFT",
+        official: true,
+      })),
+    );
+  });
+
+  it("a listing of an official store carries the badge", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "stores", STORE), { official: true });
+    });
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "real-official"), product({
+        status: "DRAFT",
+        official: true,
+      })),
+    );
+  });
+});
