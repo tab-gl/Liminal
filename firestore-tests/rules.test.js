@@ -362,7 +362,7 @@ describe("coverage", () => {
     // The catch-all must stay a deny: a new collection added to the client
     // should fail loudly here rather than be silently world-readable.
     await assertFails(getDoc(doc(guest(), "something_new", "x")));
-    await assertFails(getDoc(doc(alice(), "something_new", "x")));
+    await assertFails(getDoc(doc(shopper(), "something_new", "x")));
   });
 
   it("denies writes to the platform config from a normal user", async () => {
