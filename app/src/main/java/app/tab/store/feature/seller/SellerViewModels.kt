@@ -336,6 +336,12 @@ data class ProductEditorUiState(
     /** True when the store is approved, i.e. a listing may go live. */
     val canPublish: Boolean get() = storeStatus == "ACTIVE"
 
+    /** A paid listing additionally needs a verified developer profile. */
+    val paidNeedsVerification: Boolean
+        get() = priceRupees.toLongOrNull()?.let { it > 0 } == true && !storeVerified
+
+    val canGoLive: Boolean get() = canPublish && !paidNeedsVerification
+
     val canSave: Boolean
         get() = title.trim().length >= 3 &&
             categoryId.isNotBlank() &&

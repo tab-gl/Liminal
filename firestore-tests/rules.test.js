@@ -466,3 +466,43 @@ describe("sprout safe", () => {
     );
   });
 });
+
+describe("publishing shape", () => {
+  it("a listing with no offer is accepted", async () => {
+    // offerEndsAt written as null used to fail `offerEndsAt is int`, which
+    // denied every ordinary publish.
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "no-offer"), product({
+        status: "DRAFT",
+        offerEndsAt: null,
+      })),
+    );
+  });
+
+  it("a draft may exist without a build", async () => {
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "no-build"), product({
+        status: "DRAFT",
+        apkUrl: null,
+      })),
+    );
+  });
+
+  it("but a live listing must have a build", async () => {
+    await assertFails(
+      setDoc(doc(dev(), "products", "live-no-build"), product({
+        status: "ACTIVE",
+        apkUrl: null,
+      })),
+    );
+  });
+
+  it("a live listing with a build is accepted", async () => {
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "live-with-build"), product({
+        status: "ACTIVE",
+        apkUrl: "https://sproutly-apk-upload.example.workers.dev/apks/x/app.apk",
+      })),
+    );
+  });
+});

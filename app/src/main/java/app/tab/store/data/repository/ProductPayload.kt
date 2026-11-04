@@ -48,7 +48,11 @@ internal fun productPayload(product: Product): MutableMap<String, Any?> {
         "scanWarnings" to product.scanWarnings,
         "tags" to product.tags,
         "updatedAt" to FieldValue.serverTimestamp(),
-    )
+    ).apply {
+        // Absent is cleaner than null, and it keeps the rules from having to
+        // special-case every optional field.
+        entries.removeAll { (_, value) -> value == null }
+    }
 }
 
 /** Fields that are derived, client-only, or set by someone other than the seller. */

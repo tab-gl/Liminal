@@ -688,6 +688,30 @@ fun SellerProductEditScreen(
                 )
             }
 
+            if (state.status == ProductStatus.ACTIVE && state.paidNeedsVerification) {
+                Spacer(Modifier.height(10.dp))
+                Surface(
+                    shape = SproutlyRadii.card,
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(14.dp)) {
+                        Text(
+                            "Paid apps need a verified profile",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Ask for verification from your developer profile, or set the " +
+                                "price to 0 to publish it free.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                        )
+                    }
+                }
+            }
+
             if (state.status == ProductStatus.ACTIVE && !state.canPublish) {
                 Spacer(Modifier.height(10.dp))
                 Surface(
@@ -732,11 +756,13 @@ fun SellerProductEditScreen(
             SproutlyButton(
                 text = when {
                     state.status == ProductStatus.ACTIVE && !state.canPublish -> "Waiting for approval"
+                    state.status == ProductStatus.ACTIVE && state.paidNeedsVerification -> "Verification needed"
                     productId == null -> "Publish app"
                     else -> "Save app"
                 },
                 onClick = viewModel::save,
-                enabled = state.canSave && (state.status != ProductStatus.ACTIVE || state.canPublish),
+                enabled = state.canSave &&
+                    (state.status != ProductStatus.ACTIVE || state.canGoLive),
                 loading = state.isSaving,
             )
             Spacer(Modifier.height(32.dp))
