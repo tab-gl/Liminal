@@ -58,7 +58,7 @@ fun OrderPlacedScreen(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            "We have sent your order to the seller. You will get a notification as soon as it is confirmed.",
+            "Installed. We will tell you when there is an update.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

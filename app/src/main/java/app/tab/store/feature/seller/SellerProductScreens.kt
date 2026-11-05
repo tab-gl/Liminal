@@ -118,8 +118,8 @@ fun SellerProductsScreen(
             title = { Text("Delete ${target.title}?") },
             text = {
                 Text(
-                    "This removes the listing and its screenshots. Installs already " +
-                        "made stay in people's libraries, and the app stops appearing in the store.",
+                    "This deletes the listing and its screenshots. " +
+                        "Existing installs stay.",
                 )
             },
             confirmButton = {
@@ -497,7 +497,7 @@ fun SellerProductEditScreen(
             // ---------------------------------------------------------- pricing
             BentoTile(
                 title = "Pricing",
-                hint = "Free apps install straight away; paid apps need a verified account.",
+                hint = "Paid apps need a verified account.",
             ) {
             PricingDropdown(
                 isFree = state.isFree,
@@ -549,7 +549,7 @@ fun SellerProductEditScreen(
             // ------------------------------------------------------ offer banner
             BentoTile(
                 title = "Offer banner",
-                hint = "Shown in the store while your offer runs. Tap it to open the app.",
+                hint = "Shows while the offer runs.",
             ) {
                 val promoScope = rememberCoroutineScope()
                 val promoPicker = rememberLauncherForActivityResult(
@@ -631,9 +631,9 @@ fun SellerProductEditScreen(
             BentoTile(
                 title = "The build",
                 hint = if (state.apkUploadEnabled) {
-                    "Upload the APK (up to 100 MB) or point at a link you control."
+                    "Upload the APK (100 MB max) or paste a link."
                 } else {
-                    "Uploads are off in this build — paste a direct link instead."
+                    "Uploads are off in this build. Paste a link."
                 },
             ) {
             ApkSourcePicker(
@@ -664,7 +664,7 @@ fun SellerProductEditScreen(
             Spacer(Modifier.height(4.dp))
             Text(
                 if (productId == null) "The version you are publishing."
-                else "Bump the version and replace the build to ship an update.",
+                else "Raise the version and replace the build.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -747,8 +747,8 @@ fun SellerProductEditScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Ask for verification from your developer profile, or set the " +
-                                "price to 0 to publish it free.",
+                            "Request verification from your profile, or " +
+                                "set the price to 0.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                         )
@@ -771,8 +771,8 @@ fun SellerProductEditScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Listings can go live once an admin approves your profile. " +
-                                "Save it as a draft meanwhile — nothing is lost.",
+                            "An admin has to approve your profile first. " +
+                                "Save a draft meanwhile.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                         )
@@ -994,7 +994,7 @@ private fun ApkSourcePicker(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Uploaded to Sproutly storage (Cloudflare R2) through our uploader, up to 100 MB.",
+                    "Uploaded to Sproutly. 100 MB max.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1007,7 +1007,7 @@ private fun ApkSourcePicker(
             label = "Build link",
             placeholder = "https://example.com/app-release.apk",
             keyboardType = KeyboardType.Uri,
-            helperText = "A direct https link you control. Keep it live — installs use it.",
+            helperText = "Must stay online.",
         )
     }
 }

@@ -435,7 +435,7 @@ fun HomeScreen(
                     EmptyState(
                         modifier = Modifier.padding(bottom = 96.dp),
                         title = "Nothing published yet",
-                        message = "Once developers publish their first apps they will appear right here.",
+                        message = "New apps show up here.",
                         actionLabel = "Browse apps",
                         onAction = onSeeAll,
                         icon = TablerIcons.Store,

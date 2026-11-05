@@ -66,5 +66,6 @@ internal val productPayloadExempt = setOf(
     "ratingCount",
     "unitsSold",
     "createdAt",   // written once, on create
+    "reported",    // moderation owns the flag, not the seller
     "updatedAt",   // written as a server timestamp
 )

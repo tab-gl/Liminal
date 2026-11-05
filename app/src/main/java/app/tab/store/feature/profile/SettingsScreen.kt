@@ -190,7 +190,7 @@ private fun SettingsContent(
                     Spacer(Modifier.height(10.dp))
                     Text("Sproutly ${app.tab.store.BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "The app store for independent developers. Built with Kotlin, Jetpack Compose and Firebase; app imagery is delivered from Cloudinary.",
+                        "An app store for independent developers.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

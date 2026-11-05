@@ -49,6 +49,8 @@ data class Product(
     val releaseNotes: String = "",
     /** Published by a verified studio the store itself runs. */
     val official: Boolean = false,
+    /** Flagged for moderation. */
+    val reported: Boolean = false,
     /** Sprout Safe: what the build can reach, from its own manifest. */
     val scanRisk: String = "",
     val scanScore: Int = 0,

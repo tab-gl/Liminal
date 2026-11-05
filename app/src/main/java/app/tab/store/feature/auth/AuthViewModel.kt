@@ -172,7 +172,7 @@ class AuthViewModel @Inject constructor(
                 is DataResult.Success -> _uiState.update {
                     it.copy(
                         isLoading = false,
-                        info = "Reset link sent. Check ${email.trim()} for the next step.",
+                        info = "Reset link sent to ${email.trim()}.",
                     )
                 }
             }

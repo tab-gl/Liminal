@@ -68,7 +68,7 @@ fun OrdersScreen(
                 state.isLoading -> LoadingColumn(Modifier.padding(horizontal = 20.dp))
                 state.orders.isEmpty() -> EmptyState(
                     title = "Nothing published yet",
-                    message = "Apps you install will show up here, with updates as developers ship them.",
+                    message = "Apps you install show up here.",
                     icon = TablerIcons.Receipt,
                     actionLabel = "Browse apps",
                     onAction = onStartShopping,

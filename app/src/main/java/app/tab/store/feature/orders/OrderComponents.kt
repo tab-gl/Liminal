@@ -121,7 +121,7 @@ fun OrderTimeline(events: List<OrderEvent>, currentStatus: OrderStatus, modifier
         }
         if (currentStatus == OrderStatus.CANCELLED) {
             Text(
-                "This order was cancelled. Any amount collected is refunded to the original payment method.",
+                "Cancelled.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )

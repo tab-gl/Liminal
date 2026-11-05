@@ -48,6 +48,7 @@ import app.tab.store.domain.model.Product
 import androidx.compose.foundation.clickable
 import kotlin.math.roundToInt
 import app.tab.store.core.designsystem.RiskMeter
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,6 +70,7 @@ import app.tab.store.core.designsystem.formatPrice
 fun ProductDetailScreen(
     productId: String,
     onBack: () -> Unit,
+    isAdmin: Boolean = false,
     onStore: (String) -> Unit,
     onDownloads: () -> Unit,
     onProduct: (String) -> Unit = {},
@@ -299,6 +301,15 @@ fun ProductDetailScreen(
                     }
 
                     Spacer(Modifier.height(12.dp))
+                    if (isAdmin) {
+                        AdminActions(
+                            status = product.status,
+                            reported = product.reported,
+                            onStatus = viewModel::adminSetStatus,
+                            onResolve = viewModel::adminResolve,
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
                     if (product.official) {
                         OfficialBadge()
                         Spacer(Modifier.height(8.dp))
@@ -610,7 +621,7 @@ private fun ReportDialog(onDismiss: () -> Unit, onReport: (String) -> Unit) {
         text = {
             Column {
                 Text(
-                    "Reports go to Sproutly moderators. You are not identified to the developer.",
+                    "Goes to moderators. The developer does not see who reported.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -680,6 +691,60 @@ private fun RatingRow(
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** Every moderation action, on the listing it applies to. */
+@Composable
+private fun AdminActions(
+    status: app.tab.store.domain.model.ProductStatus,
+    reported: Boolean,
+    onStatus: (app.tab.store.domain.model.ProductStatus) -> Unit,
+    onResolve: (Boolean) -> Unit,
+) {
+    Surface(
+        shape = SproutlyRadii.card,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Text(
+                "ADMIN",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.4.sp,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (status != app.tab.store.domain.model.ProductStatus.BLOCKED) {
+                    AdminChip("Block") { onStatus(app.tab.store.domain.model.ProductStatus.BLOCKED) }
+                } else {
+                    AdminChip("Restore") { onStatus(app.tab.store.domain.model.ProductStatus.ACTIVE) }
+                }
+                if (status != app.tab.store.domain.model.ProductStatus.DRAFT) {
+                    AdminChip("Unpublish") { onStatus(app.tab.store.domain.model.ProductStatus.DRAFT) }
+                }
+                if (reported) {
+                    AdminChip("Keep") { onResolve(true) }
+                    AdminChip("Remove") { onResolve(false) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdminChip(label: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.pill,
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
         )
     }
 }

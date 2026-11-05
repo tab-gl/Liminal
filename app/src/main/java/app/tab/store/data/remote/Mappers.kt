@@ -59,6 +59,7 @@ fun DocumentSnapshot.toStore(): Store = Store(
     ratingCount = int("ratingCount"),
         verified = getBoolean("verified") ?: false,
         official = getBoolean("official") ?: false,
+        reported = getBoolean("reported") ?: false,
         verificationStatus = getString("verificationStatus") ?: "NONE",
     productCount = int("productCount"),
     createdAt = long("createdAt"),

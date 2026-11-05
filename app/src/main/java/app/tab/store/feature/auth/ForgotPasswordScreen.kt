@@ -36,7 +36,7 @@ fun ForgotPasswordScreen(
         SproutlyTopBar(title = "Reset password", onBack = onBack)
         Column(Modifier.padding(horizontal = 24.dp)) {
             Text(
-                "Enter the email you signed up with and we will send a reset link.",
+                "We will email you a reset link.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

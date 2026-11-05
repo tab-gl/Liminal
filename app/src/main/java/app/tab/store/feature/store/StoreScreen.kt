@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,12 +61,24 @@ data class StoreUiState(
 class StoreViewModel @Inject constructor(
     savedStateHandle: androidx.lifecycle.SavedStateHandle,
     catalogRepository: CatalogRepository,
+    private val adminRepository: app.tab.store.domain.repository.AdminRepository,
 ) : ViewModel() {
 
     private val storeId: String = savedStateHandle.get<String>("storeId").orEmpty()
 
     private val _uiState = MutableStateFlow(StoreUiState())
     val uiState: StateFlow<StoreUiState> = _uiState.asStateFlow()
+
+    /** Approve, suspend, verify or mark the studio official — admin only. */
+    fun adminSetStatus(status: app.tab.store.domain.model.StoreStatus) {
+        val store = _uiState.value.store ?: return
+        viewModelScope.launch { adminRepository.setStoreStatus(store.id, status) }
+    }
+
+    fun adminMarkOfficial(official: Boolean) {
+        val store = _uiState.value.store ?: return
+        viewModelScope.launch { adminRepository.setStoreOfficial(store.id, official) }
+    }
 
     init {
         viewModelScope.launch {
@@ -85,6 +98,7 @@ class StoreViewModel @Inject constructor(
 fun StoreScreen(
     storeId: String,
     onBack: () -> Unit,
+    isAdmin: Boolean = false,
     onProduct: (String) -> Unit,
     viewModel: StoreViewModel = hiltViewModel(),
 ) {
@@ -92,6 +106,17 @@ fun StoreScreen(
     val store = state.store
 
     LazyColumn(Modifier.fillMaxSize()) {
+        if (isAdmin && store != null) {
+            item {
+                Spacer(Modifier.height(8.dp))
+                StoreAdminActions(
+                    store = store,
+                    onStatus = viewModel::adminSetStatus,
+                    onOfficial = viewModel::adminMarkOfficial,
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+        }
         item {
             Box {
                 SproutlyImage(
@@ -216,5 +241,57 @@ fun StoreScreen(
             }
             item { Spacer(Modifier.height(24.dp)) }
         }
+    }
+}
+
+/** Every moderation action, on the developer it applies to. */
+@Composable
+fun StoreAdminActions(
+    store: app.tab.store.domain.model.Store,
+    onStatus: (app.tab.store.domain.model.StoreStatus) -> Unit,
+    onOfficial: (Boolean) -> Unit,
+) {
+    Surface(
+        shape = SproutlyRadii.card,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Text(
+                "ADMIN",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.4.sp,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (store.status != app.tab.store.domain.model.StoreStatus.ACTIVE) {
+                    AdminChip("Approve") { onStatus(app.tab.store.domain.model.StoreStatus.ACTIVE) }
+                }
+                if (store.status != app.tab.store.domain.model.StoreStatus.SUSPENDED) {
+                    AdminChip("Suspend") { onStatus(app.tab.store.domain.model.StoreStatus.SUSPENDED) }
+                }
+                AdminChip(if (store.official) "Unmark official" else "Mark official") {
+                    onOfficial(!store.official)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdminChip(label: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.pill,
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+        )
     }
 }

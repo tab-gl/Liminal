@@ -59,7 +59,7 @@ fun DeveloperSwitchDialog(
         },
         text = {
             Text(
-                text = "Publishing apps needs a developer account. You keep everything " +
+                text = "Publishing needs a developer account. " +
                     "you already have — you also get Developer Studio to publish apps, " +
                     "manage releases and track installs.",
                 style = MaterialTheme.typography.bodyMedium,

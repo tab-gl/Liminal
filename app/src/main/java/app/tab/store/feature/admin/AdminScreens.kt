@@ -609,7 +609,7 @@ fun AdminCategoriesScreen(
         ) {
             SproutlyTopBar(title = "Categories", onBack = onBack)
             Text(
-                "Categories power the home rails and search filters. Keep names short and shopper-friendly.",
+                "Used for home rails and search filters.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

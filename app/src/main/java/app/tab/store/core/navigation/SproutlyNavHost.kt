@@ -230,6 +230,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             ) { entry ->
                 ProductDetailScreen(
                     productId = entry.arguments?.getString("productId").orEmpty(),
+                    isAdmin = role == UserRole.ADMIN,
                     onBack = { navController.popBackStack() },
                     onStore = { go(Routes.store(it)) },
                     onDownloads = { goTab(Routes.ORDERS) },
@@ -242,6 +243,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             ) { entry ->
                 StoreScreen(
                     storeId = entry.arguments?.getString("storeId").orEmpty(),
+                    isAdmin = role == UserRole.ADMIN,
                     onBack = { navController.popBackStack() },
                     onProduct = { go(Routes.product(it)) },
                 )

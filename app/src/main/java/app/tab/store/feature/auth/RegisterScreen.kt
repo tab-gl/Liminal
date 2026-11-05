@@ -52,7 +52,7 @@ fun RegisterScreen(
         SproutlyTopBar(title = "Create your account", onBack = onBack)
         Column(Modifier.padding(horizontal = 24.dp)) {
             Text(
-                "One account to publish apps — and install everyone else's.",
+                "One account for installing and publishing.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -144,7 +144,7 @@ fun RegisterScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "Want to publish? You can open a developer profile right after signing up.",
+                    "You can open a developer profile any time.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

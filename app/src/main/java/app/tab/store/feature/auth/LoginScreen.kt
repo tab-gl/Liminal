@@ -93,7 +93,7 @@ fun LoginScreen(
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "The app store for independent developers — publish your app, reach the people who'll love it.",
+                text = "An app store for independent developers.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = SproutlyPalette.Olive,
             )
