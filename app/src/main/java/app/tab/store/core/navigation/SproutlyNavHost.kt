@@ -56,6 +56,7 @@ import app.tab.store.feature.orders.OrderDetailScreen
 import app.tab.store.feature.orders.OrderPlacedScreen
 import app.tab.store.feature.games.GamesScreen
 import app.tab.store.feature.legal.LegalScreen
+import app.tab.store.feature.onboarding.OnboardingScreen
 import app.tab.store.feature.offers.OffersScreen
 import app.tab.store.feature.orders.OrdersScreen
 import app.tab.store.feature.rankings.RankingsScreen
@@ -101,6 +102,11 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     // Held at graph scope so "Add another account" can sign out from anywhere.
+    val firstRun: app.tab.store.core.account.FirstRunStore =
+        dagger.hilt.android.EntryPointAccessors.fromApplication(
+            androidx.compose.ui.platform.LocalContext.current.applicationContext,
+            app.tab.store.core.account.FirstRunEntryPoint::class.java,
+        ).firstRun()
     val profileViewModel: ProfileViewModel = hiltViewModel()
     val profileState by profileViewModel.uiState.collectAsStateWithLifecycle()
     var showSwitcher by remember { mutableStateOf(false) }
@@ -155,6 +161,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     // Admins land in the store like everyone else — admin status
                     // must never cost them the catalogue. The console is one tap
                     // away from Profile or the account switcher.
+                    // First run after signing in: the two opening screens.
+                    !firstRun.isDone() -> Routes.ONBOARDING
                     else -> Routes.HOME
                 }
             },
@@ -241,6 +249,14 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
 
             composable(Routes.GAMES) {
                 GamesScreen(onProduct = { go(Routes.product(it)) })
+            }
+            composable(Routes.ONBOARDING) {
+                OnboardingScreen(
+                    onDone = {
+                        firstRun.markDone()
+                        goTab(Routes.HOME)
+                    },
+                )
             }
             composable(
                 route = Routes.LEGAL,

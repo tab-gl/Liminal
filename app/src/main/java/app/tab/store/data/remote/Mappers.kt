@@ -90,6 +90,8 @@ fun DocumentSnapshot.toProduct(): Product {
         price = long("price"),
         compareAtPrice = (get("compareAtPrice") as? Number)?.toLong(),
         offerEndsAt = (get("offerEndsAt") as? Number)?.toLong(),
+        offerKind = getString("offerKind") ?: "PRICE_DROP",
+        promoCode = getString("promoCode") ?: "",
         promoHeadline = getString("promoHeadline") ?: "",
         promoBody = getString("promoBody") ?: "",
         promoImageUrl = getString("promoImageUrl"),

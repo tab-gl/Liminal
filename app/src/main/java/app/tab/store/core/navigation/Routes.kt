@@ -13,6 +13,7 @@ object Routes {
     const val GAMES = "games"
     const val OFFERS = "offers"
     const val RANKINGS = "rankings"
+    const val ONBOARDING = "onboarding"
     const val LEGAL = "legal?terms={terms}"
 
     fun legal(terms: Boolean = false) = "legal?terms=$terms"

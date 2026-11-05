@@ -55,6 +55,34 @@ class NotificationRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun push(
+        id: String,
+        type: String,
+        title: String,
+        body: String,
+        deepLink: String,
+    ): DataResult<Unit> {
+        val uid = uid ?: return DataResult.Failure("Sign in to see this.")
+        return try {
+            firestore.collection(FirestorePaths.NOTIFICATIONS).document(uid)
+                .collection("items").document(id)
+                .set(
+                    mapOf(
+                        "type" to type,
+                        "title" to title,
+                        "body" to body.take(200),
+                        "deepLink" to deepLink,
+                        "read" to false,
+                        "createdAt" to System.currentTimeMillis(),
+                    ),
+                )
+                .await()
+            DataResult.Success(Unit)
+        } catch (t: Throwable) {
+            DataResult.Failure(t.toUserMessage(), t)
+        }
+    }
+
     override suspend fun registerDeviceToken(token: String): DataResult<Unit> {
         val uid = uid ?: return DataResult.Failure("Sign in to receive updates.")
         return try {

@@ -131,7 +131,7 @@ private fun RankedRow(
                     maxLines = 1,
                 )
                 Text(
-                    "${product.unitsSold} installs",
+                    app.tab.store.core.utils.InstallCount.phrase(product.unitsSold),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

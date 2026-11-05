@@ -132,7 +132,7 @@ private fun heroSlides(
         slides += HeroSlide(
             eyebrow = "Top of the charts",
             title = app.title,
-            body = "${app.unitsSold} installs and counting.",
+            body = app.tab.store.core.utils.InstallCount.phrase(app.unitsSold),
             cta = "Open",
             onClick = { onProduct(app.id) },
         )
@@ -433,9 +433,9 @@ fun HomeScreen(
                 item {
                     EmptyState(
                         modifier = Modifier.padding(bottom = 96.dp),
-                        title = "No apps yet",
+                        title = "Nothing published yet",
                         message = "Once developers publish their first apps they will appear right here.",
-                        actionLabel = "Browse the store",
+                        actionLabel = "Browse apps",
                         onAction = onSeeAll,
                         icon = TablerIcons.Store,
                     )

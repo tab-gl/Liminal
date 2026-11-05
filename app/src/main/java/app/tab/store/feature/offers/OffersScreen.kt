@@ -174,8 +174,8 @@ private fun OfferBanner(product: Product, onClick: () -> Unit) {
             }
             Column(Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (product.hasActiveOffer) {
-                        SproutlyTag("${product.discountPercent}% off")
+                    if (product.offerLine.isNotBlank()) {
+                        SproutlyTag(product.offerLine)
                         Spacer(Modifier.width(8.dp))
                     }
                     Text(
@@ -202,10 +202,13 @@ private fun OfferBanner(product: Product, onClick: () -> Unit) {
                 }
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    if (product.hasActiveOffer) {
-                        "${formatPrice(product.price)} · was ${formatPrice(product.compareAtPrice ?: product.price)}"
-                    } else {
-                        formatPrice(product.price)
+                    when {
+                        product.hasActiveOffer ->
+                            "${formatPrice(product.price)} · was ${formatPrice(product.compareAtPrice ?: product.price)}"
+                        product.offerKind == "PROMO_CODE" && product.promoCode.isNotBlank() ->
+                            "Use code ${product.promoCode} in the app"
+                        product.offerKind == "IN_APP" -> "In-app perk — open the app to see it"
+                        else -> formatPrice(product.price)
                     },
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,

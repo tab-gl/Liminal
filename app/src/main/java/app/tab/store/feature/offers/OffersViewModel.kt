@@ -25,7 +25,7 @@ data class OffersUiState(
      */
     val banner: Product?
         get() = offers.firstOrNull {
-            it.hasActiveOffer && (!it.promoHeadline.isBlank() || !it.promoImageUrl.isNullOrBlank())
+            it.hasAnyOffer && (!it.promoHeadline.isBlank() || !it.promoImageUrl.isNullOrBlank())
         }
 }
 
@@ -48,7 +48,7 @@ class OffersViewModel @Inject constructor(
     ) { fresh, popular ->
         (fresh + popular)
             .distinctBy { it.id }
-            .filter { it.hasActiveOffer }
+            .filter { it.hasAnyOffer }
             .sortedByDescending { it.discountPercent }
             .let { ranked ->
                 loading.value = false

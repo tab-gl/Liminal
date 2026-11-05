@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
+import app.tab.store.core.designsystem.HomeSkeleton
 import app.tab.store.core.designsystem.SproutlyTheme
 import app.tab.store.core.navigation.SproutlyNavHost
 import app.tab.store.core.notifications.DeviceTokenRegistrar
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
     lateinit var themePreference: app.tab.store.core.theme.ThemePreference
 
     @Inject lateinit var deviceTokenRegistrar: DeviceTokenRegistrar
+    @Inject lateinit var updateNotifier: app.tab.store.core.updates.UpdateNotifier
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +46,10 @@ class MainActivity : ComponentActivity() {
                     // at someone who is already signed in, so we hold on a plain
                     // surface for the few hundred milliseconds it takes.
                     if (state.isRestoringSession) {
-                        Box(Modifier.fillMaxSize())
+                        // Not a blank screen: the storefront's own skeleton, so
+                        // the first second looks like the app opening. The
+                        // sign-in screen only appears once we know it is needed.
+                        HomeSkeleton()
                     } else {
                         SproutlyNavHost(
                             isSignedIn = state.user != null,
@@ -58,6 +63,8 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             authViewModel.awaitSession()
             deviceTokenRegistrar.syncToken()
+            // Tell people about updates for what they installed, once per launch.
+            updateNotifier.check()
         }
     }
 }

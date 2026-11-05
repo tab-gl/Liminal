@@ -618,3 +618,31 @@ describe("editing a live listing", () => {
     );
   });
 });
+
+describe("updates", () => {
+  it("lets someone write an update notice for themselves", async () => {
+    await assertSucceeds(
+      setDoc(doc(shopper(), "notifications", SHOPPER, "items", "update_app1_2"), {
+        type: "UPDATE",
+        title: "Notes has an update",
+        body: "Version 1.1 is ready.",
+        deepLink: "product/app1",
+        read: false,
+        createdAt: 1,
+      }),
+    );
+  });
+
+  it("refuses an update notice written into someone else's inbox", async () => {
+    await assertFails(
+      setDoc(doc(shopper(), "notifications", BOB, "items", "update_app1_2"), {
+        type: "UPDATE",
+        title: "Notes has an update",
+        body: "Version 1.1 is ready.",
+        deepLink: "product/app1",
+        read: false,
+        createdAt: 1,
+      }),
+    );
+  });
+});

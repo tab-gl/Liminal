@@ -24,6 +24,12 @@ data class Product(
     val compareAtPrice: Long? = null,
     /** When a declared offer ends; null means the price is simply the price. */
     val offerEndsAt: Long? = null,
+    /**
+     * What kind of offer this is: a price drop, a code people type in the app, or
+     * something inside the app. Not every offer is a cheaper price.
+     */
+    val offerKind: String = "PRICE_DROP",
+    val promoCode: String = "",
     /** The offer banner: what the store shows while the offer runs. */
     val promoHeadline: String = "",
     val promoBody: String = "",
@@ -63,6 +69,19 @@ data class Product(
             val ends = offerEndsAt ?: return true
             return ends > System.currentTimeMillis()
         }
+    /** A code or an in-app perk is an offer too, with no price change. */
+    val hasAnyOffer: Boolean
+        get() = (hasActiveOffer || (offerKind != "PRICE_DROP" && promoCode.isNotBlank()))
+
+    /** One line describing the offer, whatever kind it is. */
+    val offerLine: String
+        get() = when {
+            hasActiveOffer -> "${discountPercent}% off"
+            offerKind == "PROMO_CODE" && promoCode.isNotBlank() -> "Code $promoCode"
+            offerKind == "IN_APP" -> "In-app perk"
+            else -> ""
+        }
+
     val isOutOfStock: Boolean get() = stock <= 0
     val isPurchasable: Boolean get() = status == ProductStatus.ACTIVE
     val discountPercent: Int

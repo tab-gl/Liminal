@@ -89,6 +89,10 @@ class OrderRepositoryImpl @Inject constructor(
                     "quantity" to 1,
                     "storeId" to storeId,
                     "storeName" to snap.getString("storeName").orEmpty(),
+                    // What was actually installed, so a later build can be
+                    // recognised as an update rather than a second install.
+                    "versionCode" to ((snap.get("versionCode") as? Number)?.toInt() ?: 0),
+                    "versionName" to snap.getString("versionName").orEmpty(),
                 )
 
                 tx.set(

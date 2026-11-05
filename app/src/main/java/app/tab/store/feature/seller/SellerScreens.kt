@@ -175,9 +175,9 @@ fun SellerDashboardScreen(
         SellerOfferDialog(
             product = target,
             onDismiss = { offerFor = null },
-            onSave = { compareAt, days ->
+            onSave = { compareAt, days, kind, code ->
                 offerFor = null
-                viewModel.setOffer(target, compareAt, days)
+                viewModel.setOffer(target, compareAt, days, kind, code)
             },
         )
     }
@@ -233,7 +233,7 @@ fun SellerDashboardScreen(
 
                 if (state.products.isEmpty()) {
                     EmptyState(
-                        title = "No apps yet",
+                        title = "Nothing published yet",
                         message = "Publish an app and it will appear here, ready for an offer.",
                         icon = TablerIcons.Gift,
                     )
@@ -346,20 +346,27 @@ fun SellerDashboardScreen(
                 Bento(
                     icon = TablerIcons.Dice,
                     label = "Your apps",
-                    detail = "${state.stats.unitsSold} installs",
+                    detail = app.tab.store.core.utils.InstallCount.phrase(state.stats.unitsSold),
                     modifier = Modifier.weight(1f),
                     onClick = onProducts,
                 )
                 Bento(
                     icon = TablerIcons.Receipt,
                     label = "Installs",
-                    detail = "${state.stats.orderCount} total",
+                    detail = app.tab.store.core.utils.InstallCount.label(state.stats.orderCount) + " installs",
                     modifier = Modifier.weight(1f),
                     onClick = onOrders,
                 )
             }
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Bento(
+                    icon = TablerIcons.Store,
+                    label = "Your store page",
+                    detail = "What people see",
+                    modifier = Modifier.weight(1f),
+                    onClick = onStoreEdit,
+                )
                 Bento(
                     icon = TablerIcons.Analytics,
                     label = "Analytics",
@@ -468,7 +475,7 @@ fun SellerDashboardScreen(
             Spacer(Modifier.height(8.dp))
             if (state.recentOrders.isEmpty()) {
                 Text(
-                    "No installs yet. Share your app link to get your first one.",
+                    "No installs yet. Share an app link to get your first one.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

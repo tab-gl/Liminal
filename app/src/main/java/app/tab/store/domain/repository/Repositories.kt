@@ -147,6 +147,18 @@ interface NotificationRepository {
     suspend fun markRead(id: String): DataResult<Unit>
     suspend fun markAllRead(): DataResult<Unit>
     suspend fun registerDeviceToken(token: String): DataResult<Unit>
+
+    /**
+     * Writes a notice into the signed-in person's inbox. [id] makes it
+     * idempotent: the same id twice updates one notice instead of adding two.
+     */
+    suspend fun push(
+        id: String,
+        type: String,
+        title: String,
+        body: String,
+        deepLink: String,
+    ): DataResult<Unit>
 }
 
 interface MediaRepository {

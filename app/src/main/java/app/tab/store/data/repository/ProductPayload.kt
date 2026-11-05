@@ -32,6 +32,8 @@ internal fun productPayload(product: Product): MutableMap<String, Any?> {
         "price" to product.price,
         "compareAtPrice" to product.compareAtPrice,
         "offerEndsAt" to product.offerEndsAt,
+        "offerKind" to product.offerKind,
+        "promoCode" to product.promoCode,
         "promoHeadline" to product.promoHeadline,
         "promoBody" to product.promoBody,
         "promoImageUrl" to product.promoImageUrl,

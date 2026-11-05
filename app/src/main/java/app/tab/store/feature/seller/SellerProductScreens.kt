@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -104,9 +105,9 @@ fun SellerProductsScreen(
         SellerOfferDialog(
             product = target,
             onDismiss = { offerFor = null },
-            onSave = { compareAt, days ->
+            onSave = { compareAt, days, kind, code ->
                 offerFor = null
-                viewModel.setOffer(target, compareAt, days)
+                viewModel.setOffer(target, compareAt, days, kind, code)
             },
         )
     }
@@ -229,7 +230,7 @@ fun SellerProductsScreen(
                                             )
                                             Spacer(Modifier.width(6.dp))
                                             Text(
-                                                "${product.unitsSold} installs",
+                                                app.tab.store.core.utils.InstallCount.phrase(product.unitsSold),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
@@ -326,6 +327,23 @@ fun SellerProductEditScreen(
             onBack = onBack,
         )
         Column(Modifier.padding(horizontal = 20.dp)) {
+            // EDITORIAL masthead: the number, then what this page is.
+            Spacer(Modifier.height(8.dp))
+            Text(
+                if (productId == null) "01" else "02",
+                style = MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                if (productId == null) "PUBLISH A NEW APP" else "EDIT THIS LISTING",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.6.sp,
+            )
+            Spacer(Modifier.height(10.dp))
+            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.onSurface)
+            Spacer(Modifier.height(18.dp))
+
             // Images — the icon tile sits first, as the anchor of the grid.
             BentoTile(title = "Icon", hint = "What people see in the store.") {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1050,11 +1068,9 @@ private fun formatBytes(bytes: Long): String = when {
 }
 
 /**
- * One tile of the publication bento.
- *
- * The form is a grid of cards rather than a column of fields: identity and build
- * are wide, pricing and release sit side by side. A tile is just a surface with
- * a label, so the same block can be dropped anywhere in the grid.
+ * A tile of the publication grid, in the Swiss editorial manner: hairline rules
+ * instead of soft cards, an uppercase label, everything on a strict left edge.
+ * The form is a document you fill in, so it is set like one.
  */
 @Composable
 private fun BentoTile(
@@ -1063,25 +1079,34 @@ private fun BentoTile(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface(
-        shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = modifier.fillMaxWidth(),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
     ) {
-        Column(Modifier.padding(14.dp)) {
-            if (title != null) {
-                Text(title, style = MaterialTheme.typography.titleSmall)
-                if (hint != null) {
-                    Text(
-                        hint,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+        if (title != null) {
+            Text(
+                title.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.4.sp,
+            )
+            Spacer(Modifier.height(6.dp))
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f),
+            )
+            Spacer(Modifier.height(10.dp))
+            if (hint != null) {
+                Text(
+                    hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(Modifier.height(10.dp))
             }
-            content()
         }
+        content()
     }
 }
 
@@ -1095,10 +1120,12 @@ private fun BentoTile(
 internal fun SellerOfferDialog(
     product: Product,
     onDismiss: () -> Unit,
-    onSave: (compareAtPaise: Long?, days: Int?) -> Unit,
+    onSave: (compareAtPaise: Long?, days: Int?, kind: String, code: String) -> Unit,
 ) {
     val current = product.compareAtPrice?.let { Money.toRupeeString(it) }.orEmpty()
     var was by remember { mutableStateOf(current) }
+    var kind2 by remember { mutableStateOf(product.offerKind) }
+    var code by remember { mutableStateOf(product.promoCode) }
     var days by remember {
         mutableStateOf(
             product.offerEndsAt
@@ -1120,6 +1147,32 @@ internal fun SellerOfferDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
+                Text("Offer kind", style = MaterialTheme.typography.labelSmall)
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        "PRICE_DROP" to "Price drop",
+                        "PROMO_CODE" to "Code",
+                        "IN_APP" to "In-app",
+                    ).forEach { (kind, label) ->
+                        SproutlyChip(
+                            text = label,
+                            selected = kind2 == kind,
+                            onClick = { kind2 = kind },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                if (kind2 == "PROMO_CODE") {
+                    SproutlyTextField(
+                        value = code,
+                        onValueChange = { code = it.take(20) },
+                        label = "Code",
+                        placeholder = "SPROUT50",
+                        helperText = "People type this inside the app.",
+                    )
+                }
+                if (kind2 == "PRICE_DROP") {
                 SproutlyTextField(
                     value = was,
                     onValueChange = { was = it.filter { c -> c.isDigit() }.take(7) },
@@ -1133,6 +1186,7 @@ internal fun SellerOfferDialog(
                     helperText = "Leave blank to keep it running.",
                     keyboardType = KeyboardType.Number,
                 )
+                }
             }
         },
         confirmButton = {
@@ -1140,13 +1194,15 @@ internal fun SellerOfferDialog(
                 onSave(
                     was.toLongOrNull()?.let { it * 100 },
                     days.toIntOrNull(),
+                    kind2,
+                    code.trim(),
                 )
             }) { Text("Save offer") }
         },
         dismissButton = {
             Row {
                 if (product.compareAtPrice != null) {
-                    TextButton(onClick = { onSave(null, null) }) { Text("Remove") }
+                    TextButton(onClick = { onSave(null, null, "PRICE_DROP", "") }) { Text("Remove") }
                 }
                 TextButton(onClick = onDismiss) { Text("Cancel") }
             }

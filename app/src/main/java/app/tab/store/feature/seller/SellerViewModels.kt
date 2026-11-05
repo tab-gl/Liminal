@@ -137,7 +137,13 @@ class SellerDashboardViewModel @Inject constructor(
     }
 
     /** Sets or clears an offer from the Offers tab. */
-    fun setOffer(product: Product, compareAtPaise: Long?, days: Int?) {
+    fun setOffer(
+        product: Product,
+        compareAtPaise: Long?,
+        days: Int?,
+        kind: String = "PRICE_DROP",
+        code: String = "",
+    ) {
         viewModelScope.launch {
             val ends = days?.takeIf { it > 0 }
                 ?.let { System.currentTimeMillis() + it * 86_400_000L }
@@ -145,6 +151,8 @@ class SellerDashboardViewModel @Inject constructor(
                 product.copy(
                     compareAtPrice = compareAtPaise?.takeIf { it > product.price },
                     offerEndsAt = ends,
+                    offerKind = kind,
+                    promoCode = if (kind == "PROMO_CODE") code else "",
                 ),
             )
         }
@@ -253,13 +261,21 @@ class SellerProductsViewModel @Inject constructor(
      * app already in the store could never be put on offer. The whole product is
      * carried through so the write keeps every other field.
      */
-    fun setOffer(product: Product, compareAtPaise: Long?, days: Int?) {
+    fun setOffer(
+        product: Product,
+        compareAtPaise: Long?,
+        days: Int?,
+        kind: String = "PRICE_DROP",
+        code: String = "",
+    ) {
         viewModelScope.launch {
             val ends = days?.takeIf { it > 0 }
                 ?.let { System.currentTimeMillis() + it * 86_400_000L }
             val updated = product.copy(
                 compareAtPrice = compareAtPaise?.takeIf { it > product.price },
                 offerEndsAt = ends,
+                offerKind = kind,
+                promoCode = if (kind == "PROMO_CODE") code else "",
             )
             val result = sellerRepository.upsertProduct(updated)
             _uiState.update {
