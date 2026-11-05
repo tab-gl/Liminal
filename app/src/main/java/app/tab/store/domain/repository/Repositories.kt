@@ -116,8 +116,6 @@ interface SellerRepository {
     suspend fun setStock(productId: String, stock: Int): DataResult<Unit>
     suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit>
 
-    /** Clears the flag once a moderator has looked, telling the developer. */
-    suspend fun resolveReport(productId: String, keepListed: Boolean): DataResult<Unit>
     fun observeStats(storeId: String): Flow<SellerStats>
 }
 
