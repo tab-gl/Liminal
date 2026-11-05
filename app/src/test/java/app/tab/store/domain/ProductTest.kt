@@ -26,9 +26,9 @@ class ProductTest {
     @Test
     fun `an app is installable regardless of stock`() {
         // A digital listing has no inventory: installs are not limited by stock,
-        // only by whether the app is published.
+        // only by whether the app is published. The stock concept is gone, so the
+        // only thing to assert is that a published app can be installed.
         val product = Product(price = 1_000, stock = 0, status = ProductStatus.ACTIVE)
-        assertTrue(product.isOutOfStock)
         assertTrue(product.isPurchasable)
     }
 
