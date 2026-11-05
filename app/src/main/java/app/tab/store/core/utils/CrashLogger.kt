@@ -2,6 +2,7 @@ package app.tab.store.core.utils
 
 import android.content.Context
 import androidx.core.content.edit
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +18,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class CrashLogger @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
 ) {
     private val prefs = context.getSharedPreferences("sproutly_crash", Context.MODE_PRIVATE)
 
