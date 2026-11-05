@@ -19,6 +19,9 @@ class SproutlyApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        // Before anything else: if this process dies, keep the reason.
+        crashLogger.install()
+        crashLogger.last()
         FirebaseApp.initializeApp(this)
 
         // App Check protects Firestore/Functions from traffic that is not our app.

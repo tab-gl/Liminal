@@ -899,19 +899,14 @@ fun RiskMeter(
     compact: Boolean = false,
 ) {
     val clamped = score.coerceIn(0, 100)
-    val (container, content) = when {
-        clamped >= 60 -> MaterialTheme.colorScheme.errorContainer to
-            MaterialTheme.colorScheme.onErrorContainer
-        clamped >= 25 -> MaterialTheme.colorScheme.secondaryContainer to
-            MaterialTheme.colorScheme.onSecondaryContainer
-        else -> MaterialTheme.colorScheme.primaryContainer to
-            MaterialTheme.colorScheme.onPrimaryContainer
+    // Nothing under 61 is treated as a warning. An app that asks for a camera and
+    // notifications is ordinary; colouring that amber taught people to ignore it.
+    val (container, content) = if (clamped > 60) {
+        MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
     }
-    val label = when {
-        clamped >= 60 -> "High reach"
-        clamped >= 25 -> "Some reach"
-        else -> "Low reach"
-    }
+    val label = if (clamped > 60) "High reach" else "Low reach"
 
     Surface(
         shape = SproutlyRadii.card,

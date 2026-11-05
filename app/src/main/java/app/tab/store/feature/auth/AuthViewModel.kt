@@ -29,6 +29,11 @@ data class AuthUiState(
     val password: String = "",
     val name: String = "",
     val passwordVisible: Boolean = false,
+    /**
+     * True when this device already holds a session — Google or email-password.
+     * The sign-in screen is only for devices that do not.
+     */
+    val hasDeviceSession: Boolean = false,
 ) {
     val canSubmitLogin: Boolean
         get() = Validators.isValidEmail(email) && password.isNotEmpty() && !isLoading
@@ -50,6 +55,7 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         AuthUiState(
             isRestoringSession = authRepository.hasCachedSession(),
+            hasDeviceSession = authRepository.hasCachedSession(),
             // Arriving here from the account switcher: the address is already
             // known, so only the password is left to type.
             email = pendingSwitch.take().orEmpty(),

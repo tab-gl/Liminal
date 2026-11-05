@@ -52,7 +52,10 @@ class MainActivity : ComponentActivity() {
                         HomeSkeleton()
                     } else {
                         SproutlyNavHost(
-                            isSignedIn = state.user != null,
+                            // A session on the device is enough: the profile can
+                            // arrive a moment later without costing a sign-in
+                            // screen.
+                            isSignedIn = state.user != null || state.hasDeviceSession,
                             role = state.user?.role,
                         )
                     }

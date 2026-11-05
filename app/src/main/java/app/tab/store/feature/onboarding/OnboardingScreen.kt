@@ -4,6 +4,14 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -58,22 +66,41 @@ fun OnboardingScreen(onDone: () -> Unit) {
 
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 repeat(3) { index ->
+                    val active = index <= step
                     Box(
                         Modifier
                             .weight(1f)
                             .height(4.dp)
                             .clip(SproutlyRadii.pill)
-                            .background(
-                                if (index <= step) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceContainerHigh,
-                            ),
-                    )
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                    ) {
+                        AnimatedVisibility(visible = active) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(4.dp)
+                                    .clip(SproutlyRadii.pill)
+                                    .background(MaterialTheme.colorScheme.primary),
+                            )
+                        }
+                    }
                 }
             }
 
             Spacer(Modifier.height(40.dp))
 
-            when (step) {
+            AnimatedContent(
+                targetState = step,
+                transitionSpec = {
+                    (slideInHorizontally(tween(320)) { it / 6 } + fadeIn(tween(280)))
+                        .togetherWith(
+                            slideOutHorizontally(tween(220)) { -it / 8 } + fadeOut(tween(180)),
+                        )
+                },
+                label = "onboardingStep",
+                modifier = Modifier.weight(1f),
+            ) { current ->
+            when (current) {
                 0 -> Panel(
                     eyebrow = "Welcome",
                     title = "Apps from\nindependent\ndevelopers",
@@ -109,6 +136,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     primary = "Open Sproutly" to onDone,
                     secondary = null,
                 )
+            }
             }
         }
     }

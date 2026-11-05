@@ -42,6 +42,7 @@ fun SettingsScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val lastCrash = remember { app.tab.store.core.utils.CrashLogHolder.last }
     val themeViewModel: ThemeViewModel = hiltViewModel()
     val themeMode by themeViewModel.mode.collectAsStateWithLifecycle()
 
@@ -76,6 +77,7 @@ fun SettingsSheet(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val lastCrash = remember { app.tab.store.core.utils.CrashLogHolder.last }
     val themeViewModel: ThemeViewModel = hiltViewModel()
     val themeMode by themeViewModel.mode.collectAsStateWithLifecycle()
     androidx.compose.material3.ModalBottomSheet(
@@ -157,6 +159,22 @@ private fun SettingsContent(
                         color = MaterialTheme.colorScheme.outlineVariant,
                     )
                     SettingLink("Send feedback") { onFeedback() }
+                    if (!lastCrash.isNullOrBlank()) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+                        Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                            Text("Last crash", style = MaterialTheme.typography.titleSmall)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                lastCrash,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 8,
+                            )
+                        }
+                    }
                 }
             }
 

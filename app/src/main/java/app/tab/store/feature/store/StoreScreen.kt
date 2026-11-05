@@ -176,7 +176,8 @@ fun StoreScreen(
                     }
                     if (store != null) {
                         SproutlyTag(
-                            text = "${state.products.size} apps",
+                            text = if (state.products.size == 1) "1 app"
+                            else "${state.products.size} apps",
                             container = MaterialTheme.colorScheme.primaryContainer,
                             content = MaterialTheme.colorScheme.onPrimaryContainer,
                         )

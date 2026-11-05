@@ -184,9 +184,14 @@ class CatalogRepositoryImpl @Inject constructor(
                     app.tab.store.domain.model.Review(
                         reviewerId = doc.id,
                         reviewerName = doc.getString("reviewerName").orEmpty(),
-                        rating = (doc.getLong("rating") ?: 0L).toInt(),
+                        rating = (doc.get("rating") as? Number)?.toInt() ?: 0,
                         text = doc.getString("text").orEmpty(),
-                        createdAt = doc.getLong("createdAt") ?: 0L,
+                        // createdAt is a server timestamp, and getLong() throws on a
+                        // Timestamp — that was the crash when a review was added.
+                        createdAt = (doc.get("createdAt") as? com.google.firebase.Timestamp)
+                            ?.toDate()?.time
+                            ?: (doc.get("createdAt") as? Number)?.toLong()
+                            ?: 0L,
                     )
                     },
                 )
@@ -215,7 +220,7 @@ class CatalogRepositoryImpl @Inject constructor(
         firestoreResult {
             val current = firestore.collection(FirestorePaths.PRODUCTS)
                 .document(productId).get().await()
-                .getLong("reportCount") ?: 0L
+                .get("reportCount") as? Long ?: 0L
             firestore.collection(FirestorePaths.PRODUCTS).document(productId)
                 .update(
                     mapOf(

@@ -55,14 +55,14 @@ fun OrderDetailScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Order #${orderId.take(8).uppercase()}",
+                title = "Install",
                 subtitle = state.order?.let { DateFormatters.dateTime(it.placedAt) },
                 onBack = onBack,
             )
             val order = state.order
             when {
                 state.isLoading || order == null -> ErrorState(
-                    message = "We could not load this order.",
+                    message = "We could not load this install.",
                     onRetry = onBack,
                 )
                 else -> Column(
@@ -81,18 +81,10 @@ fun OrderDetailScreen(
                     }
                     Spacer(Modifier.height(18.dp))
 
-                    Surface(
-                        shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-                            OrderTimeline(order.timeline, order.status)
-                        }
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-                    Text("Items", style = MaterialTheme.typography.headlineSmall)
+                    // A digital install is one event, not a delivery chain. The
+                    // five-step timeline belonged to a shop.
+                    Spacer(Modifier.height(14.dp))
+                    Text("Installed", style = MaterialTheme.typography.titleSmall)
                     Spacer(Modifier.height(8.dp))
                     order.items.forEach { item ->
                         Row(
@@ -122,35 +114,14 @@ fun OrderDetailScreen(
                                 )
                             }
                             Text(
-                                formatPrice(item.lineTotal),
-                                style = MaterialTheme.typography.titleSmall,
+                                "v${item.versionName.ifBlank { item.versionCode.toString() }}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
 
-                    Spacer(Modifier.height(14.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(Modifier.height(12.dp))
-                    PriceRow("Subtotal", formatPrice(order.subtotal))
-                    PriceRow("Platform fee", if (order.shipping == 0L) "Free" else formatPrice(order.shipping))
-                    Spacer(Modifier.height(6.dp))
-                    Row {
-                        Text("Total paid", style = MaterialTheme.typography.titleLarge)
-                        Spacer(Modifier.weight(1f))
-                        Text(formatPrice(order.total), style = MaterialTheme.typography.headlineSmall)
-                    }
-
-
-
-                    if (order.canCancel) {
-                        Spacer(Modifier.height(22.dp))
-                        SproutlyButton(
-                            text = if (state.isCancelling) "Cancelling…" else "Cancel",
-                            onClick = viewModel::cancel,
-                            loading = state.isCancelling,
-                        )
-                    }
-                    Spacer(Modifier.height(28.dp))
+                    Spacer(Modifier.height(24.dp))
                 }
             }
         }
