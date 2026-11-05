@@ -495,7 +495,7 @@ service cloud.firestore {
         // Scoped to order notices with a bounded body.
         // Admins resolve listings and tell the developer why.
         allow create: if isSignedIn()
-          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM', 'MODERATION', 'RATING']
+          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM', 'MODERATION', 'RATING', 'UPDATE']
           && request.resource.data.title is string
           && request.resource.data.body is string
           && request.resource.data.body.size() <= 200
