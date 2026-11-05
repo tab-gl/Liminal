@@ -86,28 +86,45 @@ export default {
         },
       });
 
+      // The key already begins with "apks/". Prefixing it again produced
+      // /apks/apks/<uid>/… and the download then looked up a key that did not
+      // exist, so every build link 404'd.
       return json({
-        url: `${url.origin}/apks/${key}`,
+        url: `${url.origin}/${key}`,
         path: key,
         size: bytes.byteLength,
       });
     }
 
     // -------------------------------------------------------------- download
-    if (request.method === "GET" && url.pathname.startsWith("/apks/")) {
-      const key = decodeURIComponent(url.pathname.slice(1));
+    if ((request.method === "GET" || request.method === "HEAD") &&
+        url.pathname.startsWith("/apks/")) {
+      let key = decodeURIComponent(url.pathname.slice(1));
+      // Links issued before the fix carry an extra "apks/"; collapse it so
+      // listings published yesterday still download today.
+      if (key.startsWith("apks/apks/")) key = key.slice("apks/".length);
+
       const object = await env.APKS.get(key);
-      if (!object) return json({ error: "Not found." }, 404);
-      return new Response(object.body, {
-        headers: {
-          "Content-Type":
-            object.httpMetadata?.contentType || "application/vnd.android.package-archive",
-          "Content-Disposition":
-            object.httpMetadata?.contentDisposition || 'attachment; filename="build.apk"',
-          "Cache-Control": "public, max-age=31536000, immutable",
-          ...CORS,
-        },
-      });
+      if (!object) {
+        return json({ error: "Not found.", key }, 404);
+      }
+
+      const headers = {
+        "Content-Type":
+          object.httpMetadata?.contentType || "application/vnd.android.package-archive",
+        "Content-Disposition":
+          object.httpMetadata?.contentDisposition || 'attachment; filename="build.apk"',
+        // Lets the app show a real percentage instead of an indeterminate bar.
+        "Content-Length": String(object.size),
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=31536000, immutable",
+        ...CORS,
+      };
+
+      if (request.method === "HEAD") {
+        return new Response(null, { headers });
+      }
+      return new Response(object.body, { headers });
     }
 
     return json({ error: "Not found." }, 404);

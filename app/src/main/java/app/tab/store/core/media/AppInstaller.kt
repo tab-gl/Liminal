@@ -53,12 +53,16 @@ class AppInstaller @Inject constructor(
         fileName: String,
         onProgress: (Float) -> Unit = {},
     ): Outcome = withContext(Dispatchers.IO) {
-        if (!url.startsWith("https://", ignoreCase = true)) {
+        // Links issued before the Worker fix carry /apks/apks/; the Worker
+        // tolerates it, and so does this, so old listings keep working.
+        val fixedUrl = url.replace("/apks/apks/", "/apks/")
+
+        if (!fixedUrl.startsWith("https://", ignoreCase = true)) {
             return@withContext Outcome.Failed("This build link is not a secure direct download.")
         }
         if (!canInstall()) return@withContext Outcome.NeedsPermission
 
-        val file = runCatching { download(url, fileName, onProgress) }.getOrElse { error ->
+        val file = runCatching { download(fixedUrl, fileName, onProgress) }.getOrElse { error ->
             // Never surface the raw URL: a failed download used to print the whole
             // link, which read like the app handing out a file path.
             return@withContext Outcome.Failed(
