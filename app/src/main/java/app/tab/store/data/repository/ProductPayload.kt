@@ -41,6 +41,14 @@ internal fun productPayload(product: Product): MutableMap<String, Any?> {
         "stock" to product.stock,
         "status" to product.status.name,
         "apkUrl" to product.apkUrl,
+        "flavours" to product.flavours.map {
+            mapOf(
+                "name" to it.name,
+                "apkUrl" to it.apkUrl,
+                "versionName" to it.versionName,
+                "versionCode" to it.versionCode,
+            )
+        },
         "apkSizeBytes" to product.apkSizeBytes,
         "versionName" to product.versionName,
         "versionCode" to product.versionCode,

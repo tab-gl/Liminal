@@ -28,6 +28,8 @@ data class ProductDetailUiState(
     val navigateToLibrary: Boolean = false,
     /** True when the device must allow Sproutly as an install source first. */
     val needsInstallPermission: Boolean = false,
+    /** Which build of the app to install, when it ships more than one. */
+    val chosenFlavour: Int = 0,
     /** What everyone else rated this app, and what you rated it. */
     val rating: app.tab.store.domain.model.RatingSummary =
         app.tab.store.domain.model.RatingSummary(),
@@ -128,12 +130,35 @@ class ProductDetailViewModel @Inject constructor(
 
     /** Get / Install: writes the install record and opens the library. */
     /**
+     * Install does both things: it records the app in the library and hands the
+     * build to the system installer. The button used to only record it, which is
+     * why installing felt like nothing happened.
+     */
+    fun installApp() {
+        val product = _uiState.value.product ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isInstalling = true) }
+            when (val recorded = orderRepository.install(product.id)) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isInstalling = false, message = recorded.message)
+                }
+                is DataResult.Success -> {
+                    _uiState.update { it.copy(isInstalling = false) }
+                    installBuild()
+                }
+            }
+        }
+    }
+
+    /**
      * Downloads the build and opens the installer, asking for the install-source
      * permission first when the device has not granted it.
      */
     fun installBuild() {
         val product = _uiState.value.product ?: return
-        val url = product.apkUrl
+        val url = product.flavours.getOrNull(_uiState.value.chosenFlavour)?.apkUrl
+            ?.takeIf { it.isNotBlank() }
+            ?: product.apkUrl
         if (url.isNullOrBlank()) {
             _uiState.update { it.copy(message = "This app has no build attached yet.") }
             return
@@ -157,6 +182,8 @@ class ProductDetailViewModel @Inject constructor(
             if (outcome is AppInstaller.Outcome.NeedsPermission) appInstaller.requestPermission()
         }
     }
+
+    fun chooseFlavour(index: Int) = _uiState.update { it.copy(chosenFlavour = index) }
 
     fun openInstallPermission() = appInstaller.requestPermission()
 

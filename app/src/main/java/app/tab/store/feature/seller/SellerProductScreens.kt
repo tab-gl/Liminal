@@ -659,6 +659,38 @@ fun SellerProductEditScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            BentoTile(
+                title = "Builds",
+                hint = "Optional: a lite build, a pro build, or separate ABIs.",
+            ) {
+                state.flavours.forEachIndexed { index, flavour ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.weight(1f)) {
+                            SproutlyTextField(
+                                value = flavour.name,
+                                onValueChange = { viewModel.updateFlavour(index, name = it) },
+                                label = "Name",
+                                placeholder = "Lite",
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        TextButton(onClick = { viewModel.removeFlavour(index) }) { Text("Remove") }
+                    }
+                    SproutlyTextField(
+                        value = flavour.apkUrl,
+                        onValueChange = { viewModel.updateFlavour(index, url = it) },
+                        label = "Build link",
+                        placeholder = "https://…",
+                        keyboardType = KeyboardType.Uri,
+                    )
+                }
+                if (state.flavours.size < 4) {
+                    TextButton(onClick = viewModel::addFlavour) { Text("Add another build") }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
             // ---------------------------------------------------------- release
             Text("Release", style = MaterialTheme.typography.titleSmall)
             Spacer(Modifier.height(4.dp))

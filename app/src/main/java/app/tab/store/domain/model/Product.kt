@@ -9,6 +9,19 @@ enum class ProductStatus { DRAFT, ACTIVE, ARCHIVED, BLOCKED;
 
 data class ProductImage(val url: String, val publicId: String?)
 
+/**
+ * One build of the same app.
+ *
+ * Plenty of apps ship more than one: a lite edition, a pro edition, or separate
+ * 32-bit and 64-bit builds. Each flavour is a name plus where its build lives.
+ */
+data class Flavour(
+    val name: String = "",
+    val apkUrl: String = "",
+    val versionName: String = "",
+    val versionCode: Int = 0,
+)
+
 data class Product(
     val id: String = "",
     val storeId: String = "",
@@ -42,6 +55,8 @@ data class Product(
     val unitsSold: Int = 0,
     /** Where the build lives: an uploaded APK or a link the developer owns. */
     val apkUrl: String? = null,
+    /** Extra builds of the same app, if the developer publishes any. */
+    val flavours: List<Flavour> = emptyList(),
     val apkSizeBytes: Long? = null,
     /** Release identity, so an update is a version rather than a new listing. */
     val versionName: String = "",

@@ -116,6 +116,16 @@ fun DocumentSnapshot.toProduct(): Product {
         ratingCount = int("ratingCount"),
         apkUrl = strOrNull("apkUrl"),
         apkSizeBytes = (get("apkSizeBytes") as? Number)?.toLong(),
+        flavours = (get("flavours") as? List<*>).orEmpty().mapNotNull { raw ->
+            (raw as? Map<*, *>)?.let { map ->
+                app.tab.store.domain.model.Flavour(
+                    name = map["name"] as? String ?: "",
+                    apkUrl = map["apkUrl"] as? String ?: "",
+                    versionName = map["versionName"] as? String ?: "",
+                    versionCode = (map["versionCode"] as? Number)?.toInt() ?: 0,
+                )
+            }
+        },
         versionName = getString("versionName") ?: "",
         versionCode = int("versionCode"),
         releaseNotes = getString("releaseNotes") ?: "",

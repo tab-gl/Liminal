@@ -319,7 +319,7 @@ fun SellerDashboardScreen(
                     Spacer(Modifier.height(14.dp))
                     Row {
                         DashStat("Installs", state.stats.orderCount.toString(), Modifier.weight(1f))
-                        DashStat("Installs", state.stats.unitsSold.toString(), Modifier.weight(1f))
+                        DashStat("Apps", state.stats.activeProducts.toString(), Modifier.weight(1f))
                         DashStat("Avg order", formatPrice(state.stats.averageOrderValue), Modifier.weight(1f))
                     }
                 }
@@ -346,7 +346,8 @@ fun SellerDashboardScreen(
                 Bento(
                     icon = TablerIcons.Dice,
                     label = "Your apps",
-                    detail = app.tab.store.core.utils.InstallCount.phrase(state.stats.unitsSold),
+                    detail = if (state.stats.activeProducts == 1) "1 app"
+                    else "${state.stats.activeProducts} apps",
                     modifier = Modifier.weight(1f),
                     onClick = onProducts,
                 )

@@ -646,3 +646,28 @@ describe("updates", () => {
     );
   });
 });
+
+describe("flavours", () => {
+  it("accepts a listing with extra builds", async () => {
+    await assertSucceeds(
+      setDoc(doc(dev(), "products", "multi"), product({
+        status: "DRAFT",
+        flavours: [
+          { name: "Lite", apkUrl: "https://x/lite.apk", versionName: "1.0", versionCode: 1 },
+          { name: "Pro", apkUrl: "https://x/pro.apk", versionName: "1.0", versionCode: 2 },
+        ],
+      })),
+    );
+  });
+
+  it("refuses more than four builds", async () => {
+    await assertFails(
+      setDoc(doc(dev(), "products", "too-many"), product({
+        status: "DRAFT",
+        flavours: Array.from({ length: 5 }, (_, i) => ({
+          name: `B${i}`, apkUrl: "https://x/a.apk", versionName: "1.0", versionCode: i,
+        })),
+      })),
+    );
+  });
+});

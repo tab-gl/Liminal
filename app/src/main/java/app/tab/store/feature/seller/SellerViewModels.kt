@@ -352,6 +352,8 @@ data class ProductEditorUiState(
     /** False when this build has no uploader URL, so paste-a-link is the way. */
     val apkUploadEnabled: Boolean = true,
     /** Sprout Safe result for the picked build. */
+    /** Extra builds: a name and a link each. */
+    val flavours: List<app.tab.store.domain.model.Flavour> = emptyList(),
     val scanRisk: String = "",
     val scanScore: Int = 0,
     val scanPermissions: List<String> = emptyList(),
@@ -464,6 +466,7 @@ class SellerProductEditViewModel @Inject constructor(
                                     apkUrl = product.apkUrl,
                                     apkLink = product.apkUrl.orEmpty(),
                                     apkSizeBytes = product.apkSizeBytes,
+                                    flavours = product.flavours,
                                     compareAtRupees = product.compareAtPrice
                                         ?.let { c -> Money.toRupeeString(c) }.orEmpty(),
                                     versionName = product.versionName,
@@ -499,6 +502,35 @@ class SellerProductEditViewModel @Inject constructor(
 
     fun onOfferDays(v: String) = _uiState.update {
         it.copy(offerDays = v.filter { c -> c.isDigit() }.take(3))
+    }
+
+    fun addFlavour() {
+        if (_uiState.value.flavours.size >= 4) return
+        _uiState.update {
+            it.copy(
+                flavours = it.flavours + app.tab.store.domain.model.Flavour(
+                    name = "Build ${it.flavours.size + 1}",
+                ),
+            )
+        }
+    }
+
+    fun updateFlavour(index: Int, name: String? = null, url: String? = null) {
+        _uiState.update { state ->
+            val next = state.flavours.toMutableList()
+            val current = next.getOrNull(index) ?: return@update state
+            next[index] = current.copy(
+                name = name ?: current.name,
+                apkUrl = url ?: current.apkUrl,
+            )
+            state.copy(flavours = next)
+        }
+    }
+
+    fun removeFlavour(index: Int) {
+        _uiState.update { state ->
+            state.copy(flavours = state.flavours.filterIndexed { i, _ -> i != index })
+        }
     }
 
     fun onPromoHeadline(v: String) = _uiState.update { it.copy(promoHeadline = v.take(60)) }
@@ -749,6 +781,7 @@ class SellerProductEditViewModel @Inject constructor(
                 stock = state.stock.toIntOrNull() ?: 0,
                 apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
                 apkSizeBytes = state.apkSizeBytes,
+                flavours = state.flavours.filter { it.apkUrl.isNotBlank() },
                 promoHeadline = state.promoHeadline.trim(),
                 promoBody = state.promoBody.trim(),
                 promoImageUrl = state.promoImageUrl,

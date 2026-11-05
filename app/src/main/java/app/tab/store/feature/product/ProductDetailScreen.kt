@@ -60,6 +60,7 @@ import app.tab.store.core.designsystem.RatingBadge
 import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.OfficialBadge
+import app.tab.store.core.designsystem.SproutlyChip
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTag
@@ -345,34 +346,6 @@ fun ProductDetailScreen(
                         }
                     }
 
-                    if (!product.apkUrl.isNullOrBlank()) {
-                        Spacer(Modifier.height(10.dp))
-                        Surface(
-                            onClick = { viewModel.installBuild() },
-                            shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                TablerIcon(
-                                    TablerIcons.Download,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Text(
-                                    if (state.isInstalling) "Downloading…" else "Install the build",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
-                            }
-                        }
-                    }
-
                     Spacer(Modifier.height(10.dp))
                     Surface(
                         onClick = { showReportDialog = true },
@@ -414,6 +387,21 @@ fun ProductDetailScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                    }
+
+                    if (product.flavours.isNotEmpty()) {
+                        Spacer(Modifier.height(14.dp))
+                        Text("Builds", style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            product.flavours.forEachIndexed { index, flavour ->
+                                SproutlyChip(
+                                    text = flavour.name.ifBlank { "Build ${index + 1}" },
+                                    selected = state.chosenFlavour == index,
+                                    onClick = { viewModel.chooseFlavour(index) },
+                                )
+                            }
                         }
                     }
 
@@ -462,7 +450,7 @@ fun ProductDetailScreen(
                     Spacer(Modifier.height(20.dp))
                     SproutlyButton(
                         text = "Install",
-                        onClick = viewModel::install,
+                        onClick = viewModel::installApp,
                         enabled = state.canInstall,
                         loading = state.isInstalling,
                     )
