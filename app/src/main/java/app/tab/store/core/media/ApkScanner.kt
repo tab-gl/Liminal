@@ -71,6 +71,15 @@ class ApkScanner @Inject constructor(
         "android.permission.POST_NOTIFICATIONS" to ("can send you notifications" to Risk.LOW),
     )
 
+    /**
+     * Scores are reported at 75% of the raw sum.
+     *
+     * The raw weights treated an ordinary app with a camera and notifications as
+     * half-risky, which is not useful: most apps ask for those. Scaling the total
+     * keeps the ordering and the warnings, and stops the meter crying wolf.
+     */
+    private val SCORE_SCALE = 0.75
+
     /** Parses [bytes] as an APK. Returns null when the file is not a readable package. */
     fun scan(bytes: ByteArray, fileName: String): Report? {
         val dir = File(context.cacheDir, "apks").apply { mkdirs() }
@@ -128,7 +137,7 @@ class ApkScanner @Inject constructor(
                     permissions = permissions,
                     warnings = warnings,
                     risk = risk,
-                    score = score.coerceIn(0, 100),
+                    score = (score * SCORE_SCALE).toInt().coerceIn(0, 100),
                 )
             }
         }.getOrNull().also { runCatching { file.delete() } }

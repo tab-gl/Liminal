@@ -431,7 +431,8 @@ fun SellerDashboardScreen(
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
-                            "${state.stats.activeProducts} live apps",
+                            if (state.stats.activeProducts == 1) "1 live app"
+                            else "${state.stats.activeProducts} live apps",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -446,7 +447,7 @@ fun SellerDashboardScreen(
                 }
             }
 
-            if (state.lowStock.isNotEmpty()) {
+            if (state.drafts.isNotEmpty()) {
                 Spacer(Modifier.height(16.dp))
                 Surface(
                     shape = SproutlyRadii.card,
@@ -455,15 +456,35 @@ fun SellerDashboardScreen(
                 ) {
                     Column(Modifier.padding(14.dp)) {
                         Text(
-                            "Needs attention",
+                            "Not published yet",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
-                        state.lowStock.forEach { product ->
+                        Text(
+                            if (state.drafts.size == 1) "1 draft is not published"
+                            else "${state.drafts.size} drafts are not published",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                        state.drafts.take(3).forEach { product ->
                             Text(
-                                "${product.title}",
+                                product.title,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        // Says what to do, not just that something is wrong.
+                        Surface(
+                            onClick = { onProducts() },
+                            shape = SproutlyRadii.pill,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        ) {
+                            Text(
+                                "Open drafts",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.tertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                             )
                         }
                     }

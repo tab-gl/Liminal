@@ -81,7 +81,11 @@ data class SellerDashboardUiState(
     val products: List<Product> = emptyList(),
     val stats: SellerStats = SellerStats(),
     val recentOrders: List<Order> = emptyList(),
-    val lowStock: List<Product> = emptyList(),
+    /**
+     * Drafts, not "low stock": a digital app has no inventory, so the old
+     * stock-based warning listed every app forever and could never be cleared.
+     */
+    val drafts: List<Product> = emptyList(),
     val isLoading: Boolean = true,
     val needsStore: Boolean = false,
 )
@@ -119,7 +123,7 @@ class SellerDashboardViewModel @Inject constructor(
                             _uiState.update {
                                 it.copy(
                                     recentOrders = orders.take(4),
-                                    lowStock = emptyList(),
+                                    drafts = emptyList(),
                                 )
                             }
                         }
@@ -127,7 +131,7 @@ class SellerDashboardViewModel @Inject constructor(
                     launch {
                         sellerRepository.observeStoreProducts(store.id).collect { products ->
                             _uiState.update {
-                                it.copy(lowStock = products.filter { p -> p.stock in 0..5 }.take(5))
+                                it.copy(drafts = products.filter { p -> p.status == ProductStatus.DRAFT }.take(5))
                             }
                         }
                     }
