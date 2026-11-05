@@ -156,6 +156,14 @@ class OrderRepositoryImpl @Inject constructor(
     ) {
         val storeIds = items.mapNotNull { it["storeId"] as? String }.distinct()
         val shortId = orderId.take(8).uppercase()
+        val itemTitle = runCatching {
+            firestore.collection(FirestorePaths.ORDERS).document(orderId).get().await()
+                .get("items")?.let { items ->
+                    (items as? List<*>)?.firstOrNull()?.let { first ->
+                        (first as? Map<*, *>)?.get("title") as? String
+                    }
+                }
+        }.getOrNull()
         storeIds.forEach { storeId ->
             runCatching {
                 val store = firestore.collection(FirestorePaths.STORES).document(storeId).get().await()
@@ -164,7 +172,7 @@ class OrderRepositoryImpl @Inject constructor(
                     .set(
                         mapOf(
                             "title" to "New install",
-                            "body" to "$title was installed ($shortId).",
+                            "body" to "${itemTitle ?: "An app"} was installed ($shortId).",
                             "type" to "ORDER",
                             "read" to false,
                             "deepLink" to "order/$orderId",
