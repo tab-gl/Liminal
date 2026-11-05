@@ -220,14 +220,14 @@ fun ProductDetailScreen(
                 Column(Modifier.padding(20.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         SproutlyTag(product.categoryLabel.ifBlank { "Sproutly" })
-                        if (product.isOutOfStock) {
+                        if (product.status == app.tab.store.domain.model.ProductStatus.BLOCKED) {
                             Spacer(Modifier.width(6.dp))
                             SproutlyTag(
-                                text = "UNAVAILABLE",
+                                text = "REMOVED",
                                 container = MaterialTheme.colorScheme.errorContainer,
                                 content = MaterialTheme.colorScheme.onErrorContainer,
                             )
-                        } else if (product.stock <= 5) {
+                        } else if (false) {
                             Spacer(Modifier.width(6.dp))
                             SproutlyTag(
                                 text = "LIMITED AVAILABILITY",
@@ -461,7 +461,7 @@ fun ProductDetailScreen(
                     Spacer(Modifier.height(24.dp))
                     Spacer(Modifier.height(20.dp))
                     SproutlyButton(
-                        text = if (product.isOutOfStock) "Unavailable" else "Get",
+                        text = "Install",
                         onClick = viewModel::install,
                         enabled = state.canInstall,
                         loading = state.isInstalling,

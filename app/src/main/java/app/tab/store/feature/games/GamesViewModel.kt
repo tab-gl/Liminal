@@ -28,7 +28,10 @@ class GamesViewModel @Inject constructor(
             GamesUiState(
                 games = products,
                 top = products.sortedByDescending { it.unitsSold }.take(8),
-                fresh = products.sortedByDescending { it.createdAt }.take(8),
+                // Anything already in the top rail is not repeated below it.
+                fresh = products.sortedByDescending { it.createdAt }
+                    .filterNot { fresh -> products.sortedByDescending { it.unitsSold }.take(8).any { it.id == fresh.id } }
+                    .take(8),
                 isLoading = false,
             )
         }

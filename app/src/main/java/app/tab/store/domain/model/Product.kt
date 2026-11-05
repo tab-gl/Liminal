@@ -84,7 +84,6 @@ data class Product(
             else -> ""
         }
 
-    val isOutOfStock: Boolean get() = stock <= 0
     val isPurchasable: Boolean get() = status == ProductStatus.ACTIVE
     val discountPercent: Int
         get() {

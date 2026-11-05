@@ -337,11 +337,17 @@ fun SproutlyImage(
             .background(MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
         if (url.isNullOrBlank()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                TablerIcon(TablerIcons.Image,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(26.dp),
+            // No artwork yet: an initial, not a broken-image glyph.
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    contentDescription?.trim()?.firstOrNull()?.uppercase()?.toString() ?: "·",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.55f),
                 )
             }
         } else {
@@ -619,19 +625,7 @@ fun ProductCard(
                         .aspectRatio(1f),
                     corner = 18.dp,
                 )
-                if (product.isOutOfStock) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(6.dp),
-                    ) {
-                        SproutlyTag(
-                            text = "UNAVAILABLE",
-                            container = MaterialTheme.colorScheme.surface,
-                            content = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                } else if (rank != null) {
+                if (rank != null) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -981,5 +975,32 @@ fun OfficialBadge(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onPrimary,
             )
         }
+    }
+}
+
+/**
+ * Stand-in artwork for a listing with no image yet.
+ *
+ * A grey rectangle with a broken-image glyph reads as an error. The app's initial
+ * on a tinted field reads as "no picture", which is the truth.
+ */
+@Composable
+fun InitialArt(
+    title: String,
+    modifier: Modifier = Modifier,
+    corner: Dp = 18.dp,
+) {
+    val letter = title.trim().firstOrNull()?.uppercase() ?: "·"
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(corner))
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            letter,
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.55f),
+        )
     }
 }

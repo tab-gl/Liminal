@@ -163,8 +163,8 @@ class OrderRepositoryImpl @Inject constructor(
                 firestore.collection(FirestorePaths.notificationItems(ownerId)).document()
                     .set(
                         mapOf(
-                            "title" to "New order",
-                            "body" to "Order #$shortId for ₹${subtotal / 100} needs your confirmation.",
+                            "title" to "New install",
+                            "body" to "$title was installed ($shortId).",
                             "type" to "ORDER",
                             "read" to false,
                             "deepLink" to "order/$orderId",

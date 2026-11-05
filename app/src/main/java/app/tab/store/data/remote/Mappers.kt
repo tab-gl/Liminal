@@ -17,8 +17,22 @@ import app.tab.store.domain.model.UserRole
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QueryDocumentSnapshot
 
-private fun DocumentSnapshot.long(key: String): Long =
-    (get(key) as? Number)?.toLong() ?: 0L
+/**
+ * Reads a millisecond value from either a number or a Firestore Timestamp.
+ *
+ * Order and notification documents are written with serverTimestamp(), which
+ * arrives as a Timestamp. Reading it with `as? Number` silently produced 0, and
+ * 0 renders as "—" in a list — which looked like a rendering bug, not a mapping
+ * one.
+ */
+private fun DocumentSnapshot.long(key: String): Long {
+    val value = get(key) ?: return 0L
+    return when (value) {
+        is Number -> value.toLong()
+        is com.google.firebase.Timestamp -> value.toDate().time
+        else -> 0L
+    }
+}
 
 private fun DocumentSnapshot.int(key: String): Int =
     (get(key) as? Number)?.toInt() ?: 0
