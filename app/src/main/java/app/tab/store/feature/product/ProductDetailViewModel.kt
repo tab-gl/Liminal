@@ -47,6 +47,7 @@ class ProductDetailViewModel @Inject constructor(
     private val auth: com.google.firebase.auth.FirebaseAuth,
     private val orderRepository: OrderRepository,
     private val wishlistRepository: WishlistRepository,
+    private val adminRepository: app.tab.store.domain.repository.AdminRepository,
 ) : ViewModel() {
 
     private val productId: String = savedStateHandle.get<String>("productId").orEmpty()
@@ -158,6 +159,29 @@ class ProductDetailViewModel @Inject constructor(
     }
 
     fun openInstallPermission() = appInstaller.requestPermission()
+
+    /** Admin: take a listing down, put it back, or clear a report. */
+    fun adminSetStatus(status: app.tab.store.domain.model.ProductStatus) {
+        viewModelScope.launch {
+            when (val result = adminRepository.setProductStatus(productId, status)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(message = "Listing is now ${status.name.lowercase()}.")
+                }
+            }
+        }
+    }
+
+    fun adminResolve(keepListed: Boolean) {
+        viewModelScope.launch {
+            when (val result = adminRepository.resolveReport(productId, keepListed)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(message = if (keepListed) "Report dismissed." else "Listing removed.")
+                }
+            }
+        }
+    }
 
     fun install() {
         val product = _uiState.value.product ?: return
