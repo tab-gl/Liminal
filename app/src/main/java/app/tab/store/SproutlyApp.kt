@@ -17,6 +17,8 @@ class SproutlyApp : Application(), Configuration.Provider {
 
     @Inject lateinit var workScheduler: app.tab.store.core.work.WorkScheduler
 
+    @Inject lateinit var crashLogger: app.tab.store.core.utils.CrashLogger
+
     override fun onCreate() {
         super.onCreate()
         // Before anything else: if this process dies, keep the reason.

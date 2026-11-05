@@ -5,7 +5,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -74,7 +73,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                             .clip(SproutlyRadii.pill)
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh),
                     ) {
-                        AnimatedVisibility(visible = active) {
+                        if (active) {
                             Box(
                                 Modifier
                                     .fillMaxWidth()
