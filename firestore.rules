@@ -271,7 +271,10 @@ service cloud.firestore {
 
       allow create: if isSeller()
         && request.resource.data.storeId == myStoreId()
-        && (request.resource.data.status != 'ACTIVE' || storeIsApproved())
+        && (request.resource.data.status != 'ACTIVE'
+            || storeIsApproved()
+            || (request.resource.data.get('scanScore', 100) <= 50
+                && request.resource.data.get('scanRisk', '') in ['LOW', 'MEDIUM']))
         && validProduct()
         && paidNeedsVerification();
 
@@ -285,9 +288,14 @@ service cloud.firestore {
         && unchanged('unitsSold')
         && unchanged('rating')
         && unchanged('ratingCount')
-        // Publishing is gated on the store being approved, so a developer cannot
-        // wave their own app through moderation.
-        && (request.resource.data.status != 'ACTIVE' || storeIsApproved())
+        // Publishing is gated on the store being approved — unless the build came
+        // back clean from Sprout Safe (score of 50 or below), in which case it may
+        // go live on its own. The score is client-reported, so this is a quality
+        // gate, not a security boundary: it shortens the queue for ordinary apps.
+        && (request.resource.data.status != 'ACTIVE'
+            || storeIsApproved()
+            || (request.resource.data.get('scanScore', 100) <= 50
+                && request.resource.data.get('scanRisk', '') in ['LOW', 'MEDIUM']))
         && validProduct()
         && paidNeedsVerification();
 
@@ -485,6 +493,15 @@ service cloud.firestore {
 
         // A seller's "new order" notice is written by the buyer who placed it.
         // Scoped to order notices with a bounded body.
+        // Admins resolve listings and tell the developer why.
+        allow create: if isSignedIn()
+          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM', 'MODERATION', 'RATING']
+          && request.resource.data.title is string
+          && request.resource.data.body is string
+          && request.resource.data.body.size() <= 200
+          && request.resource.data.deepLink is string
+          && (userId == uid() || isAdmin());
+
         allow create: if isSignedIn()
           && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM']
           && request.resource.data.title is string

@@ -211,6 +211,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 SearchScreen(
                     initialCategoryId = entry.arguments?.getString("categoryId"),
                     onProduct = { go(Routes.product(it)) },
+                    onStore = { go(Routes.store(it)) },
                 )
             }
             composable(

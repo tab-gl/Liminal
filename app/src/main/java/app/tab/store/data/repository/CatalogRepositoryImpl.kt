@@ -149,6 +149,26 @@ class CatalogRepositoryImpl @Inject constructor(
         DataResult.Failure(t.toUserMessage(), t)
     }
 
+    override suspend fun searchStores(
+        query: String,
+        limit: Int,
+    ): List<app.tab.store.domain.model.Store> = runCatching {
+        val text = query.trim()
+        if (text.isBlank()) {
+            // With no query, show the studios that actually have something.
+            firestore.collection(FirestorePaths.STORES)
+                .whereEqualTo("status", "ACTIVE")
+                .limit(limit.toLong())
+                .get().await()
+        } else {
+            firestore.collection(FirestorePaths.STORES)
+                .whereGreaterThanOrEqualTo("name", text)
+                .whereLessThan("name", text + "\uf8ff")
+                .limit(limit.toLong())
+                .get().await()
+        }
+    }.getOrNull()?.documents?.map { it.toStore() }.orEmpty()
+
     override fun observeReviews(
         productId: String,
     ): Flow<List<app.tab.store.domain.model.Review>> = callbackFlow {

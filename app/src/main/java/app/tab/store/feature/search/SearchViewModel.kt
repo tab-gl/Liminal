@@ -39,6 +39,9 @@ data class SearchUiState(
     val hasSearched: Boolean = false,
     val error: String? = null,
     val nextPageToken: String? = null,
+    /** Studios matching the same query. */
+    val stores: List<app.tab.store.domain.model.Store> = emptyList(),
+    val showDevelopers: Boolean = false,
 ) {
     val hasMore: Boolean get() = nextPageToken != null
     val isEmpty: Boolean get() = hasSearched && results.isEmpty() && !isLoading
@@ -112,7 +115,23 @@ class SearchViewModel @Inject constructor(
 
     fun runSearch(reset: Boolean) {
         searchJob?.cancel()
-        searchJob = viewModelScope.launch { fetch(_uiState.value, reset) }
+        searchJob = viewModelScope.launch {
+            fetch(_uiState.value, reset)
+            if (_uiState.value.showDevelopers) runStoreSearch()
+        }
+    }
+
+    /** Switches the results between apps and developers. */
+    fun showDevelopers(show: Boolean) {
+        _uiState.value = _uiState.value.copy(showDevelopers = show)
+        if (show) runStoreSearch()
+    }
+
+    private fun runStoreSearch() {
+        viewModelScope.launch {
+            val stores = catalogRepository.searchStores(_uiState.value.query)
+            _uiState.value = _uiState.value.copy(stores = stores)
+        }
     }
 
     private suspend fun fetch(state: SearchUiState, reset: Boolean) {

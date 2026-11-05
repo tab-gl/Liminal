@@ -577,3 +577,44 @@ describe("official studios", () => {
     );
   });
 });
+
+describe("editing a live listing", () => {
+  it("lets a developer change the name, description and pictures after publishing", async () => {
+    await assertSucceeds(
+      updateDoc(doc(dev(), "products", "app1"), {
+        title: "Notes, renamed",
+        description: "A better description",
+        screenshots: [{ url: "https://x/new.jpg", publicId: "n1" }],
+        apkUrl: "https://sproutly-apk-upload.example.workers.dev/apks/x/v2.apk",
+      }),
+    );
+  });
+
+  it("lets a developer unpublish", async () => {
+    await assertSucceeds(updateDoc(doc(dev(), "products", "app1"), { status: "DRAFT" }));
+  });
+
+  it("lets a clean scan publish without an approved store", async () => {
+    const reviewer = env.authenticatedContext(DEV2).firestore();
+    await assertSucceeds(
+      updateDoc(doc(reviewer, "products", "app-pending"), {
+        status: "ACTIVE",
+        scanRisk: "LOW",
+        scanScore: 20,
+        apkUrl: "https://sproutly-apk-upload.example.workers.dev/apks/x/app.apk",
+      }),
+    );
+  });
+
+  it("still refuses a risky scan on an unapproved store", async () => {
+    const reviewer = env.authenticatedContext(DEV2).firestore();
+    await assertFails(
+      updateDoc(doc(reviewer, "products", "app-pending"), {
+        status: "ACTIVE",
+        scanRisk: "HIGH",
+        scanScore: 80,
+        apkUrl: "https://sproutly-apk-upload.example.workers.dev/apks/x/app.apk",
+      }),
+    );
+  });
+});

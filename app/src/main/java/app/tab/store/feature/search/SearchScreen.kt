@@ -66,6 +66,7 @@ import app.tab.store.domain.repository.ProductSort
 fun SearchScreen(
     initialCategoryId: String?,
     onProduct: (String) -> Unit,
+    onStore: (String) -> Unit = {},
     viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -169,6 +170,10 @@ fun SearchScreen(
             Text(
                 text = when {
                     state.isLoading -> "Searching…"
+                    state.showDevelopers ->
+                        if (state.stores.isEmpty()) "No developers found"
+                        else "${state.stores.size} developer${if (state.stores.size == 1) "" else "s"}"
+
                     state.results.isEmpty() -> "No results yet"
                     else -> "${state.results.size} results"
                 },
@@ -201,6 +206,55 @@ fun SearchScreen(
                 else -> LazyColumn(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 ) {
+                    item {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            SproutlyChip(
+                                text = "Apps",
+                                selected = !state.showDevelopers,
+                                onClick = { viewModel.showDevelopers(false) },
+                            )
+                            SproutlyChip(
+                                text = "Developers",
+                                selected = state.showDevelopers,
+                                onClick = { viewModel.showDevelopers(true) },
+                            )
+                        }
+                    }
+                    if (state.showDevelopers) {
+                        items(state.stores, key = { "store-${it.id}" }) { store ->
+                            Surface(
+                                onClick = { onStore(store.id) },
+                                shape = SproutlyRadii.card,
+                                color = MaterialTheme.colorScheme.surface,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 3.dp),
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    SproutlyImage(
+                                        url = store.logoUrl,
+                                        contentDescription = store.name,
+                                        modifier = Modifier.size(44.dp),
+                                        corner = 12.dp,
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Column(Modifier.weight(1f)) {
+                                        Text(store.name, style = MaterialTheme.typography.titleSmall)
+                                        Text(
+                                            store.tagline.ifBlank { "Developer" },
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                        )
+                                    }
+                                    if (store.official) OfficialBadge()
+                                }
+                            }
+                        }
+                    } else {
                     items(state.results.chunked(2)) { row ->
                         Row(
                             modifier = Modifier
@@ -217,6 +271,7 @@ fun SearchScreen(
                             }
                             if (row.size == 1) Spacer(Modifier.weight(1f))
                         }
+                    }
                     }
                     if (state.hasMore) {
                         item {

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.ads.BannerAd
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.SproutlyRadii
@@ -49,6 +50,10 @@ fun OffersScreen(
             item {
                 OfferBanner(product = banner, onClick = { onProduct(banner.id) })
             }
+        }
+
+        item {
+            BannerAd()
         }
 
         item {

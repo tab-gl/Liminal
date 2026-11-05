@@ -62,6 +62,9 @@ interface CatalogRepository {
         pageSize: Int = 20,
         pageToken: String? = null,
     ): DataResult<ProductPage>
+    /** Finds developers by studio name. */
+    suspend fun searchStores(query: String, limit: Int = 20): List<app.tab.store.domain.model.Store>
+
     /** Ratings written by other people. */
     fun observeReviews(productId: String): Flow<List<app.tab.store.domain.model.Review>>
 
@@ -112,6 +115,9 @@ interface SellerRepository {
     suspend fun deleteProduct(productId: String): DataResult<Unit>
     suspend fun setStock(productId: String, stock: Int): DataResult<Unit>
     suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit>
+
+    /** Clears the flag once a moderator has looked, telling the developer. */
+    suspend fun resolveReport(productId: String, keepListed: Boolean): DataResult<Unit>
     fun observeStats(storeId: String): Flow<SellerStats>
 }
 
@@ -128,6 +134,9 @@ interface AdminRepository {
     suspend fun setUserRole(uid: String, role: app.tab.store.domain.model.UserRole): DataResult<Unit>
     fun observeReportedProducts(): Flow<List<Product>>
     suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit>
+
+    /** Clears the flag once a moderator has looked, telling the developer. */
+    suspend fun resolveReport(productId: String, keepListed: Boolean): DataResult<Unit>
     suspend fun createCategory(name: String, slug: String, iconKey: String): DataResult<Unit>
 
     /** Writes the standard app-store taxonomy; safe to run on a non-empty list. */

@@ -25,8 +25,8 @@ android {
         applicationId = "app.tab.store"
         minSdk = 24
         targetSdk = 36
-        versionCode = 34
-        versionName = "1.0.33"
+        versionCode = 35
+        versionName = "1.0.34"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -47,6 +47,17 @@ android {
 
         // Where builds are uploaded: the Sproutly R2 uploader Worker. Public URL,
         // no secret — the Worker authenticates the caller by Firebase ID token.
+        // AdMob. The defaults are Google's official test ids, so the banner works
+        // before you have an account; replace them with yours to serve real ads.
+        buildConfigField(
+            "String",
+            "ADMOB_BANNER_UNIT",
+            "\"${secret("admobBannerUnit", "SPROUTLY_ADMOB_BANNER_UNIT") ?: "ca-app-pub-3940256099942544/6300978111"}\"",
+        )
+        manifestPlaceholders["admobAppId"] =
+            secret("admobAppId", "SPROUTLY_ADMOB_APP_ID")
+                ?: "ca-app-pub-3940256099942544~3347511713"
+
         buildConfigField(
             "String",
             "APK_UPLOAD_URL",
@@ -176,6 +187,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.messaging)
+    implementation(libs.play.services.ads)
     implementation(libs.firebase.appcheck.playintegrity)
     debugImplementation(libs.firebase.appcheck.debug)
 

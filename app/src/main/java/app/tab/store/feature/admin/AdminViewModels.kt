@@ -182,6 +182,24 @@ class AdminProductsViewModel @Inject constructor(
         }
     }
 
+    /** Clears a report: keep the app, or take it down. */
+    fun resolve(product: Product, keepListed: Boolean) {
+        viewModelScope.launch {
+            when (val result = adminRepository.resolveReport(product.id, keepListed)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        message = if (keepListed) {
+                            "${product.title} stays up; the report is dismissed."
+                        } else {
+                            "${product.title} was removed and the developer told."
+                        },
+                    )
+                }
+            }
+        }
+    }
+
     fun setStatus(product: Product, status: ProductStatus) {
         viewModelScope.launch {
             val res = adminRepository.setProductStatus(product.id, status)

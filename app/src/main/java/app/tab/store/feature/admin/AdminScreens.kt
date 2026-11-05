@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -417,11 +418,25 @@ fun AdminUsersScreen(
                 subtitle = "${state.users.size} accounts",
                 onBack = onBack,
             )
+            var query by remember { mutableStateOf("") }
+            SproutlyTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = "Search people",
+                placeholder = "Name or email",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+            )
+            val visible = state.users.filter {
+                query.isBlank() ||
+                    it.displayName.contains(query, ignoreCase = true) ||
+                    it.email.contains(query, ignoreCase = true)
+            }
+
             LazyColumn(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(state.users, key = { it.uid }) { user ->
+                items(visible, key = { it.uid }) { user ->
                     Surface(
                         shape = SproutlyRadii.card,
                         color = MaterialTheme.colorScheme.surface,
@@ -538,10 +553,15 @@ fun AdminProductsScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
+                                // Resolving clears the flag and tells the developer
+                                // either way, so the queue actually empties.
+                                TextButton(onClick = { viewModel.resolve(product, keepListed = true) }) {
+                                    Text("Keep")
+                                }
                                 TextButton(
-                                    onClick = { viewModel.setStatus(product, ProductStatus.BLOCKED) },
+                                    onClick = { viewModel.resolve(product, keepListed = false) },
                                 ) {
-                                    Text("Block", color = MaterialTheme.colorScheme.error)
+                                    Text("Remove", color = MaterialTheme.colorScheme.error)
                                 }
                                 TextButton(
                                     onClick = { viewModel.setStatus(product, ProductStatus.ACTIVE) },

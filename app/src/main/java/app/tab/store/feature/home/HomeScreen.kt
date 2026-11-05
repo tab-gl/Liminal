@@ -67,6 +67,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.BrandWordmark
+import app.tab.store.core.ads.BannerAd
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.LoadingColumn
 import app.tab.store.core.designsystem.ProductCard
@@ -365,6 +366,13 @@ fun HomeScreen(
                         }
                     }
                 }
+            }
+
+            item {
+                // An ad, below the content that matters, never over a control.
+                BannerAd(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                )
             }
 
             item {

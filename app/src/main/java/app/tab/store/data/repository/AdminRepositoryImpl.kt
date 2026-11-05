@@ -165,6 +165,43 @@ class AdminRepositoryImpl @Inject constructor(
             .snapshotFlow()
             .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
 
+    override suspend fun resolveReport(productId: String, keepListed: Boolean): DataResult<Unit> =
+        firestoreResult {
+            val doc = products.document(productId)
+            val product = doc.get().await()
+            val owner = product.getString("storeId").orEmpty()
+            doc.update(
+                mapOf(
+                    "reported" to false,
+                    "reportReason" to "",
+                    "status" to if (keepListed) "ACTIVE" else "BLOCKED",
+                    "moderatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    "updatedAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                ),
+            ).await()
+
+            // The developer hears the decision either way.
+            val storeOwner = firestore.collection(FirestorePaths.STORES).document(owner)
+                .get().await().getString("ownerId").orEmpty()
+            if (storeOwner.isNotBlank()) {
+                firestore.collection(FirestorePaths.NOTIFICATIONS).document(storeOwner)
+                    .collection("items").document().set(
+                        mapOf(
+                            "type" to "MODERATION",
+                            "title" to if (keepListed) "Your app is staying up" else "Your app was removed",
+                            "body" to if (keepListed) {
+                                "A report about ${product.getString("title").orEmpty()} was reviewed and dismissed."
+                            } else {
+                                "A report about ${product.getString("title").orEmpty()} was upheld, so it is no longer listed."
+                            },
+                            "deepLink" to "product/$productId",
+                            "read" to false,
+                            "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                        ),
+                    ).await()
+            }
+        }
+
     override suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit> =
         firestoreResult {
             val product = products.document(productId).get().await()

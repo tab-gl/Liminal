@@ -188,6 +188,7 @@ fun SellerProductsScreen(
                 ) {
                     items(state.visible, key = { it.id }) { product ->
                         Surface(
+                            onClick = { onEdit(product.id) },
                             shape = SproutlyRadii.card,
                             color = MaterialTheme.colorScheme.surface,
                             modifier = Modifier.fillMaxWidth(),
@@ -233,6 +234,32 @@ fun SellerProductsScreen(
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
                                         }
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            // Unpublishing keeps the listing and its
+                                            // reviews; it just stops being shown.
+                                            if (product.status == ProductStatus.ACTIVE) {
+                                                viewModel.unpublish(product)
+                                            } else {
+                                                viewModel.republish(product)
+                                            }
+                                        },
+                                    ) {
+                                        TablerIcon(
+                                            if (product.status == ProductStatus.ACTIVE) {
+                                                TablerIcons.Close
+                                            } else {
+                                                TablerIcons.Tick
+                                            },
+                                            contentDescription = if (product.status == ProductStatus.ACTIVE) {
+                                                "Unpublish"
+                                            } else {
+                                                "Publish"
+                                            },
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(19.dp),
+                                        )
                                     }
                                     IconButton(onClick = { offerFor = product }) {
                                         TablerIcon(

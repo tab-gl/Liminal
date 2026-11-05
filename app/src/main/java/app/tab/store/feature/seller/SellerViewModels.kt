@@ -216,6 +216,36 @@ class SellerProductsViewModel @Inject constructor(
         viewModelScope.launch { sellerRepository.setStock(product.id, stock) }
     }
 
+    /** Takes a live app off the store, keeping everything about it. */
+    fun unpublish(product: Product) {
+        viewModelScope.launch {
+            val result = sellerRepository.upsertProduct(product.copy(status = ProductStatus.DRAFT))
+            _uiState.update {
+                it.copy(
+                    message = when (result) {
+                        is DataResult.Failure -> result.message
+                        is DataResult.Success -> "${product.title} is no longer listed."
+                    },
+                )
+            }
+        }
+    }
+
+    /** Puts an app back on the store, if the store is allowed to publish. */
+    fun republish(product: Product) {
+        viewModelScope.launch {
+            val result = sellerRepository.upsertProduct(product.copy(status = ProductStatus.ACTIVE))
+            _uiState.update {
+                it.copy(
+                    message = when (result) {
+                        is DataResult.Failure -> result.message
+                        is DataResult.Success -> "${product.title} is live again."
+                    },
+                )
+            }
+        }
+    }
+
     /**
      * Puts an offer on an existing app.
      *
