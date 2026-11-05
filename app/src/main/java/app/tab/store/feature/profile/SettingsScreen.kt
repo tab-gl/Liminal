@@ -117,6 +117,7 @@ private fun SettingsContent(
     onClearCache: () -> Unit,
     onFeedback: () -> Unit,
 ) {
+    val lastCrash = remember { app.tab.store.core.utils.CrashLogHolder.last }
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
                 shape = SproutlyRadii.card,
