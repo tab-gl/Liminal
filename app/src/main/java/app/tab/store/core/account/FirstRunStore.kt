@@ -17,7 +17,13 @@ class FirstRunStore @Inject constructor(
 
     fun markDone() = prefs.edit { putBoolean(KEY, true) }
 
+    /** The tab someone was last on, so opening the app returns them there. */
+    fun lastTab(): String? = prefs.getString(TAB_KEY, null)
+
+    fun rememberTab(route: String) = prefs.edit { putString(TAB_KEY, route) }
+
     private companion object {
         const val KEY = "onboarded"
+        const val TAB_KEY = "last_tab"
     }
 }

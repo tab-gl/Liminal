@@ -79,7 +79,7 @@ class AppInstaller @Inject constructor(
      * error body or a half-finished transfer must never reach the installer, which
      * would only answer "There was a problem parsing the package".
      */
-    private fun download(url: String, fileName: String): File {
+    private fun download(url: String, fileName: String, onProgress: (Float) -> Unit): File {
         val dir = File(context.cacheDir, "apks").apply { mkdirs() }
         val safe = fileName.replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "app.apk" }
             .let { if (it.endsWith(".apk", ignoreCase = true)) it else "$it.apk" }

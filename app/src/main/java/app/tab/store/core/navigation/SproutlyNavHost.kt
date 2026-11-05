@@ -136,7 +136,10 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
         launchSingleTop = true
     }
 
+    val tabRoutes = (primaryTabs + utilityTabs).map { it.route }
+
     fun goTab(route: String) = navController.navigate(route) {
+        firstRun.rememberTab(route)
         popUpTo(Routes.HOME) { saveState = true }
         launchSingleTop = true
         restoreState = true
@@ -163,7 +166,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     // away from Profile or the account switcher.
                     // First run after signing in: the two opening screens.
                     !firstRun.isDone() -> Routes.ONBOARDING
-                    else -> Routes.HOME
+                    // Back where they were, not always the storefront.
+                    else -> firstRun.lastTab()?.takeIf { it in tabRoutes } ?: Routes.HOME
                 }
             },
             // Edge-to-edge is on, so the content has to clear the status bar

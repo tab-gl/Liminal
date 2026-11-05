@@ -24,6 +24,8 @@ data class ProductDetailUiState(
     val quantity: Int = 1,
     val isWishlisted: Boolean = false,
     val isInstalling: Boolean = false,
+    /** 0..1 while the build is downloading; -1 when the size is unknown. */
+    val downloadProgress: Float = 0f,
     val message: String? = null,
     val navigateToLibrary: Boolean = false,
     /** True when the device must allow Sproutly as an install source first. */
@@ -147,6 +149,7 @@ class ProductDetailViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isInstalling = false,
+                    downloadProgress = 0f,
                     message = when (outcome) {
                         is AppInstaller.Outcome.Launched -> null
                         is AppInstaller.Outcome.NeedsPermission ->

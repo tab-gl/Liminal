@@ -119,14 +119,44 @@ fun StoreScreen(
         }
         item {
             Box {
-                SproutlyImage(
-                    url = store?.bannerUrl,
-                    contentDescription = store?.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(190.dp),
-                    corner = 0.dp,
-                )
+                if (store?.bannerUrl.isNullOrBlank()) {
+                    // No artwork uploaded: the studio's own masthead rather than a
+                    // blank rectangle.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(190.dp)
+                            .background(
+                                androidx.compose.ui.graphics.Brush.linearGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.primaryContainer,
+                                        MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    ),
+                                ),
+                            ),
+                    ) {
+                        Text(
+                            store?.name.orEmpty().ifBlank { "Developer" }
+                                .split(" ").take(2).joinToString(" ") { word ->
+                                    word.firstOrNull()?.uppercase()?.toString().orEmpty()
+                                },
+                            style = MaterialTheme.typography.displayLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.35f),
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(20.dp),
+                        )
+                    }
+                } else {
+                    SproutlyImage(
+                        url = store?.bannerUrl,
+                        contentDescription = store?.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(190.dp),
+                        corner = 0.dp,
+                    )
+                }
                 Surface(
                     onClick = onBack,
                     shape = CircleShape,
@@ -200,7 +230,11 @@ fun StoreScreen(
                     )
                 }
                 Spacer(Modifier.height(18.dp))
-                Text("More from this developer", style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    if (state.products.isEmpty()) "Apps"
+                    else "Apps (${state.products.size})",
+                    style = MaterialTheme.typography.headlineSmall,
+                )
                 Spacer(Modifier.height(6.dp))
             }
         }

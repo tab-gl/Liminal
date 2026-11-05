@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -453,11 +455,36 @@ fun ProductDetailScreen(
                     Spacer(Modifier.height(24.dp))
                     Spacer(Modifier.height(20.dp))
                     SproutlyButton(
-                        text = "Install",
+                        text = when {
+                            !state.isInstalling -> "Install"
+                            state.downloadProgress > 0f ->
+                                "Downloading ${(state.downloadProgress * 100).toInt()}%"
+                            else -> "Preparing…"
+                        },
                         onClick = viewModel::installApp,
                         enabled = state.canInstall,
                         loading = state.isInstalling,
                     )
+                    if (state.isInstalling) {
+                        Spacer(Modifier.height(8.dp))
+                        LinearProgressIndicator(
+                            progress = { state.downloadProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(SproutlyRadii.pill),
+                        )
+                    }
+                    if (state.needsInstallPermission) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Android needs permission to install apps from Sproutly.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        TextButton(onClick = viewModel::openInstallPermission) {
+                            Text("Open settings")
+                        }
+                    }
             if (product.screenshots.isNotEmpty()) {
                 Spacer(Modifier.height(22.dp))
                 Text("Screenshots", style = MaterialTheme.typography.titleSmall)

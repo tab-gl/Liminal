@@ -66,7 +66,16 @@ class OrderRepositoryImpl @Inject constructor(
     override suspend fun install(productId: String): DataResult<String> {
         val uid = uid ?: return DataResult.Failure("Sign in to install apps.")
         val productRef = firestore.collection(FirestorePaths.PRODUCTS).document(productId)
-        val orderRef = orders.document()
+        // One library entry per app. Installing the same app again refreshes the
+        // record instead of adding another row to "My apps".
+        val existing = runCatching {
+            orders.whereEqualTo("buyerId", uid)
+                .whereArrayContains("productIds", productId)
+                .limit(1)
+                .get().await()
+                .documents.firstOrNull()
+        }.getOrNull()
+        val orderRef = existing?.reference ?: orders.document()
         var item: Map<String, Any?> = emptyMap()
         return try {
             val orderId = firestore.runTransaction { tx ->
@@ -102,6 +111,7 @@ class OrderRepositoryImpl @Inject constructor(
                         "buyerName" to (auth.currentUser?.displayName
                             ?: auth.currentUser?.email?.substringBefore("@").orEmpty()),
                         "items" to listOf(item),
+                        "productIds" to listOf(productId),
                         "subtotal" to price,
                         "shipping" to 0L,
                         "total" to price,
@@ -127,13 +137,15 @@ class OrderRepositoryImpl @Inject constructor(
                     ),
                 )
 
-                tx.update(
-                    productRef,
-                    mapOf(
-                        "unitsSold" to ((snap.get("unitsSold") as? Number)?.toInt() ?: 0) + 1,
-                        "updatedAt" to FieldValue.serverTimestamp(),
-                    ),
-                )
+                if (existing == null) {
+                    tx.update(
+                        productRef,
+                        mapOf(
+                            "unitsSold" to ((snap.get("unitsSold") as? Number)?.toInt() ?: 0) + 1,
+                            "updatedAt" to FieldValue.serverTimestamp(),
+                        ),
+                    )
+                }
                 orderRef.id
             }.await()
 

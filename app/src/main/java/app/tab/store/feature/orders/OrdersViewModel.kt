@@ -32,7 +32,12 @@ class OrdersViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             orderRepository.observeBuyerOrders().collect { orders ->
-                _uiState.value = OrdersUiState(orders = orders, isLoading = false)
+                // Older records may repeat the same app; the library shows one row
+                // per app, newest first.
+                val collapsed = orders
+                    .sortedByDescending { it.placedAt }
+                    .distinctBy { order -> order.items.firstOrNull()?.productId ?: order.id }
+                _uiState.value = OrdersUiState(orders = collapsed, isLoading = false)
             }
         }
     }
