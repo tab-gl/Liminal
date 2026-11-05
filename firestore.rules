@@ -503,7 +503,7 @@ service cloud.firestore {
           && (userId == uid() || isAdmin());
 
         allow create: if isSignedIn()
-          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM', 'UPDATE']
+          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM']
           && request.resource.data.title is string
           && request.resource.data.body is string
           && request.resource.data.body.size() <= 200

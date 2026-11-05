@@ -139,6 +139,8 @@ fun DocumentSnapshot.toOrder(): Order {
             quantity = (map["quantity"] as? Number)?.toInt() ?: 0,
             storeId = map["storeId"] as? String ?: "",
             storeName = map["storeName"] as? String ?: "",
+            versionCode = (map["versionCode"] as? Number)?.toInt() ?: 0,
+            versionName = map["versionName"] as? String ?: "",
         )
     }
     val rawTimeline = get("timeline") as? List<Map<String, Any?>> ?: emptyList()

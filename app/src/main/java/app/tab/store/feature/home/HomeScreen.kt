@@ -69,6 +69,7 @@ import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.BrandWordmark
 import app.tab.store.core.ads.BannerAd
 import app.tab.store.core.designsystem.EmptyState
+import app.tab.store.core.utils.InstallCount
 import app.tab.store.core.designsystem.LoadingColumn
 import app.tab.store.core.designsystem.ProductCard
 import app.tab.store.core.designsystem.ProductRowCard
@@ -132,7 +133,7 @@ private fun heroSlides(
         slides += HeroSlide(
             eyebrow = "Top of the charts",
             title = app.title,
-            body = app.tab.store.core.utils.InstallCount.phrase(app.unitsSold),
+            body = InstallCount.phrase(app.unitsSold),
             cta = "Open",
             onClick = { onProduct(app.id) },
         )

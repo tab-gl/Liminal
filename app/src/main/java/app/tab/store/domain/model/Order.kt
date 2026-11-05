@@ -15,6 +15,9 @@ data class OrderItem(
     val quantity: Int,
     val storeId: String,
     val storeName: String,
+    /** The build that was installed, so an update can be recognised later. */
+    val versionCode: Int = 0,
+    val versionName: String = "",
 ) {
     val lineTotal: Long get() = unitPrice * quantity
 }
