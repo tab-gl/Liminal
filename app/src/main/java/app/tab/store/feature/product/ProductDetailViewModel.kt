@@ -128,58 +128,57 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
-    /** Get / Install: writes the install record and opens the library. */
     /**
-     * Install does both things: it records the app in the library and hands the
-     * build to the system installer. The button used to only record it, which is
-     * why installing felt like nothing happened.
+     * Install downloads the build, hands it to the system installer, and records
+     * the app in the library once the installer has opened. Nothing is recorded
+     * for a build that could not be fetched.
      */
     fun installApp() {
         val product = _uiState.value.product ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isInstalling = true) }
-            when (val recorded = orderRepository.install(product.id)) {
-                is DataResult.Failure -> _uiState.update {
-                    it.copy(isInstalling = false, message = recorded.message)
-                }
-                is DataResult.Success -> {
-                    _uiState.update { it.copy(isInstalling = false) }
-                    installBuild()
-                }
-            }
-        }
-    }
-
-    /**
-     * Downloads the build and opens the installer, asking for the install-source
-     * permission first when the device has not granted it.
-     */
-    fun installBuild() {
-        val product = _uiState.value.product ?: return
-        val url = product.flavours.getOrNull(_uiState.value.chosenFlavour)?.apkUrl
-            ?.takeIf { it.isNotBlank() }
-            ?: product.apkUrl
-        if (url.isNullOrBlank()) {
+        if (_uiState.value.isInstalling) return
+        val build = pickBuild(product)
+        if (build == null) {
             _uiState.update { it.copy(message = "This app has no build attached yet.") }
             return
         }
         viewModelScope.launch {
-            _uiState.update { it.copy(isInstalling = true) }
-            val outcome = appInstaller.downloadAndInstall(url, "${product.title}.apk")
+            _uiState.update { it.copy(isInstalling = true, message = null) }
+            val outcome = appInstaller.downloadAndInstall(build.apkUrl, "${product.title}-${build.name}.apk")
             _uiState.update {
                 it.copy(
                     isInstalling = false,
                     message = when (outcome) {
                         is AppInstaller.Outcome.Launched -> null
                         is AppInstaller.Outcome.NeedsPermission ->
-                            "Allow Sproutly to install apps, then tap Install again."
+                            "Allow Sproutly to install apps, then come back to finish."
                         is AppInstaller.Outcome.Failed -> outcome.message
-                        else -> null
                     },
                     needsInstallPermission = outcome is AppInstaller.Outcome.NeedsPermission,
                 )
             }
-            if (outcome is AppInstaller.Outcome.NeedsPermission) appInstaller.requestPermission()
+            when (outcome) {
+                is AppInstaller.Outcome.Launched -> {
+                    // A failed record must not undo an install that already started.
+                    (orderRepository.install(product.id) as? DataResult.Failure)?.let { failure ->
+                        _uiState.update { it.copy(message = failure.message) }
+                    }
+                }
+                is AppInstaller.Outcome.NeedsPermission -> appInstaller.requestPermission()
+                is AppInstaller.Outcome.Failed -> Unit
+            }
+        }
+    }
+
+    private fun pickBuild(product: Product): app.tab.store.domain.model.Flavour? {
+        val builds = product.builds
+        return builds.getOrNull(_uiState.value.chosenFlavour) ?: builds.firstOrNull()
+    }
+
+    /** Called when the screen returns to the foreground, e.g. from the permission page. */
+    fun onResumed() {
+        if (_uiState.value.needsInstallPermission && appInstaller.canInstall()) {
+            _uiState.update { it.copy(needsInstallPermission = false) }
+            installApp()
         }
     }
 
@@ -205,25 +204,6 @@ class ProductDetailViewModel @Inject constructor(
                 is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
                 is DataResult.Success -> _uiState.update {
                     it.copy(message = if (keepListed) "Report dismissed." else "Listing removed.")
-                }
-            }
-        }
-    }
-
-    fun install() {
-        val product = _uiState.value.product ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isInstalling = true) }
-            when (val res = orderRepository.install(product.id)) {
-                is DataResult.Failure -> _uiState.update {
-                    it.copy(isInstalling = false, message = res.message)
-                }
-                is DataResult.Success -> _uiState.update {
-                    it.copy(
-                        isInstalling = false,
-                        message = "${product.title} added to your library",
-                        navigateToLibrary = true,
-                    )
                 }
             }
         }

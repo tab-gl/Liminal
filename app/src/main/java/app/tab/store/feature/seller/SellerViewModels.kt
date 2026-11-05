@@ -352,8 +352,11 @@ data class ProductEditorUiState(
     /** False when this build has no uploader URL, so paste-a-link is the way. */
     val apkUploadEnabled: Boolean = true,
     /** Sprout Safe result for the picked build. */
-    /** Extra builds: a name and a link each. */
+    /** Extra builds: a name and a build each, uploaded or linked. */
     val flavours: List<app.tab.store.domain.model.Flavour> = emptyList(),
+    /** Index of the flavour whose APK is uploading, or -1. */
+    val uploadingFlavour: Int = -1,
+    val flavourProgress: Float = 0f,
     val scanRisk: String = "",
     val scanScore: Int = 0,
     val scanPermissions: List<String> = emptyList(),
@@ -381,6 +384,21 @@ data class ProductEditorUiState(
     val effectivePrice: Long
         get() = if (isFree) 0L else Money.toPaise(priceRupees) ?: 0L
 
+    /** Why the extra builds cannot be saved yet, or null when they are fine. */
+    val flavourError: String?
+        get() {
+            val filled = flavours.filter { it.apkUrl.isNotBlank() }
+            if (filled.any { it.name.isBlank() }) return "Give every extra build a name."
+            if (filled.any { !it.apkUrl.trim().startsWith("https://", ignoreCase = true) }) {
+                return "Build links must start with https://"
+            }
+            val names = filled.map { it.name.trim().lowercase() }
+            if (names.toSet().size != names.size || "standard" in names) {
+                return "Each build needs its own name."
+            }
+            return null
+        }
+
     val hasBuild: Boolean
         get() = !apkUrl.isNullOrBlank() || apkLink.trim().length > 8
 
@@ -400,6 +418,8 @@ data class ProductEditorUiState(
         get() = title.trim().length >= 3 &&
             categoryId.isNotBlank() &&
             hasBuild &&
+            flavourError == null &&
+            uploadingFlavour < 0 &&
             !needsVerification &&
             (isFree || effectivePrice > 0) &&
             !isSaving && !isUploading && !isUploadingApk
@@ -522,8 +542,49 @@ class SellerProductEditViewModel @Inject constructor(
             next[index] = current.copy(
                 name = name ?: current.name,
                 apkUrl = url ?: current.apkUrl,
+                // A pasted link replaces an uploaded build, so its size is stale.
+                sizeBytes = if (url != null && url != current.apkUrl) 0L else current.sizeBytes,
             )
             state.copy(flavours = next)
+        }
+    }
+
+    /** Uploads a build for one flavour and fills in its version from the build itself. */
+    fun onFlavourApkPicked(index: Int, bytes: ByteArray, fileName: String) {
+        if (bytes.isEmpty() || _uiState.value.flavours.getOrNull(index) == null) return
+        viewModelScope.launch {
+            val report = apkScanner.scan(bytes, fileName)
+            _uiState.update { it.copy(uploadingFlavour = index, flavourProgress = 0f, error = null) }
+            apkStorage.upload(bytes, fileName) { progress ->
+                _uiState.update { it.copy(flavourProgress = progress) }
+            }.collect { result ->
+                result.fold(
+                    onSuccess = { uploaded ->
+                        _uiState.update { state ->
+                            val next = state.flavours.toMutableList()
+                            val current = next.getOrNull(index)
+                            if (current != null) {
+                                next[index] = current.copy(
+                                    apkUrl = uploaded.url,
+                                    sizeBytes = uploaded.sizeBytes,
+                                    versionName = report?.versionName ?: current.versionName,
+                                    versionCode = report?.versionCode?.toInt() ?: current.versionCode,
+                                )
+                            }
+                            state.copy(flavours = next, uploadingFlavour = -1, flavourProgress = 0f)
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(
+                                uploadingFlavour = -1,
+                                flavourProgress = 0f,
+                                error = error.message ?: "The upload failed.",
+                            )
+                        }
+                    },
+                )
+            }
         }
     }
 
@@ -781,7 +842,9 @@ class SellerProductEditViewModel @Inject constructor(
                 stock = state.stock.toIntOrNull() ?: 0,
                 apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
                 apkSizeBytes = state.apkSizeBytes,
-                flavours = state.flavours.filter { it.apkUrl.isNotBlank() },
+                flavours = state.flavours
+                    .filter { it.apkUrl.isNotBlank() }
+                    .map { it.copy(name = it.name.trim(), apkUrl = it.apkUrl.trim()) },
                 promoHeadline = state.promoHeadline.trim(),
                 promoBody = state.promoBody.trim(),
                 promoImageUrl = state.promoImageUrl,

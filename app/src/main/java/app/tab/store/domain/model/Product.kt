@@ -20,6 +20,7 @@ data class Flavour(
     val apkUrl: String = "",
     val versionName: String = "",
     val versionCode: Int = 0,
+    val sizeBytes: Long = 0L,
 )
 
 data class Product(
@@ -75,6 +76,25 @@ data class Product(
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
 ) {
+    /**
+     * Every installable build: the main one first, then the extra flavours.
+     * Install and the build picker both read this, so the main build is always
+     * reachable even when flavours exist.
+     */
+    val builds: List<Flavour>
+        get() {
+            val main = apkUrl?.takeIf { it.isNotBlank() }?.let {
+                Flavour(
+                    name = "Standard",
+                    apkUrl = it,
+                    versionName = versionName,
+                    versionCode = versionCode,
+                    sizeBytes = apkSizeBytes ?: 0L,
+                )
+            }
+            return listOfNotNull(main) + flavours.filter { it.apkUrl.isNotBlank() }
+        }
+
     val primaryImage: String? get() = images.firstOrNull()?.url
     val isFree: Boolean get() = price <= 0L
 

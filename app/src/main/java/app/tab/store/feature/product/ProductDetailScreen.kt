@@ -103,6 +103,10 @@ fun ProductDetailScreen(
             viewModel.consumeMessage()
         }
     }
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+        viewModel.onResumed()
+    }
+
     LaunchedEffect(state.navigateToLibrary) {
         if (state.navigateToLibrary) {
             viewModel.consumeNavigation()
@@ -390,14 +394,14 @@ fun ProductDetailScreen(
                         }
                     }
 
-                    if (product.flavours.isNotEmpty()) {
+                    if (product.builds.size > 1) {
                         Spacer(Modifier.height(14.dp))
                         Text("Builds", style = MaterialTheme.typography.titleSmall)
                         Spacer(Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            product.flavours.forEachIndexed { index, flavour ->
+                            product.builds.forEachIndexed { index, build ->
                                 SproutlyChip(
-                                    text = flavour.name.ifBlank { "Build ${index + 1}" },
+                                    text = build.name.ifBlank { "Build ${index + 1}" },
                                     selected = state.chosenFlavour == index,
                                     onClick = { viewModel.chooseFlavour(index) },
                                 )

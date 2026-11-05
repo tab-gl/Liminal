@@ -201,6 +201,23 @@ service cloud.firestore {
         return resource.data.status == 'ACTIVE';
       }
 
+      // One extra build: a name and a direct https link.
+      function validFlavour(f) {
+        return f is map
+          && f.name is string && f.name.size() > 0 && f.name.size() <= 30
+          && f.apkUrl is string && f.apkUrl.matches('https://.*')
+          && f.apkUrl.size() <= 2000;
+      }
+
+      // Rules have no loops, so each of the four allowed slots is checked.
+      function validFlavours(l) {
+        return l is list && l.size() <= 4
+          && (l.size() < 1 || validFlavour(l[0]))
+          && (l.size() < 2 || validFlavour(l[1]))
+          && (l.size() < 3 || validFlavour(l[2]))
+          && (l.size() < 4 || validFlavour(l[3]));
+      }
+
       function validProduct() {
         return request.resource.data.title is string
           && request.resource.data.title.size() >= 3
@@ -224,8 +241,7 @@ service cloud.firestore {
           && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED']
           // Extra builds, if any: a name and a real link each, at most four.
           && (!request.resource.data.keys().hasAny(['flavours'])
-              || (request.resource.data.flavours is list
-                  && request.resource.data.flavours.size() <= 4))
+              || validFlavours(request.resource.data.flavours))
           // The badge is copied from the store, so a seller cannot claim it.
           && request.resource.data.get('official', false)
              == storeDoc(request.resource.data.storeId).get('official', false)

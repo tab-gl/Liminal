@@ -660,6 +660,24 @@ describe("flavours", () => {
     );
   });
 
+  it("refuses a build whose link is not https", async () => {
+    await assertFails(
+      setDoc(doc(dev(), "products", "bad-link"), product({
+        status: "DRAFT",
+        flavours: [{ name: "Lite", apkUrl: "http://x/lite.apk", versionName: "1.0", versionCode: 1 }],
+      })),
+    );
+  });
+
+  it("refuses a build with no name", async () => {
+    await assertFails(
+      setDoc(doc(dev(), "products", "no-name"), product({
+        status: "DRAFT",
+        flavours: [{ name: "", apkUrl: "https://x/lite.apk", versionName: "1.0", versionCode: 1 }],
+      })),
+    );
+  });
+
   it("refuses more than four builds", async () => {
     await assertFails(
       setDoc(doc(dev(), "products", "too-many"), product({

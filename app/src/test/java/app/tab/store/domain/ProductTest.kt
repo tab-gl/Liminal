@@ -1,5 +1,6 @@
 package app.tab.store.domain
 
+import app.tab.store.domain.model.Flavour
 import app.tab.store.domain.model.Product
 import app.tab.store.domain.model.ProductImage
 import app.tab.store.domain.model.ProductStatus
@@ -49,5 +50,23 @@ class ProductTest {
         assertNull(Product().primaryImage)
         val withImage = Product(images = listOf(ProductImage("https://cdn/x.jpg", "sproutly/x")))
         assertEquals("https://cdn/x.jpg", withImage.primaryImage)
+    }
+
+    @Test
+    fun `main build comes first and flavours follow`() {
+        val product = Product(
+            apkUrl = "https://x/main.apk",
+            flavours = listOf(
+                Flavour(name = "Lite", apkUrl = "https://x/lite.apk"),
+                Flavour(name = "Empty", apkUrl = ""),
+            ),
+        )
+        assertEquals(listOf("Standard", "Lite"), product.builds.map { it.name })
+    }
+
+    @Test
+    fun `an app with only flavours still installs`() {
+        val product = Product(flavours = listOf(Flavour(name = "Pro", apkUrl = "https://x/pro.apk")))
+        assertEquals("https://x/pro.apk", product.builds.first().apkUrl)
     }
 }

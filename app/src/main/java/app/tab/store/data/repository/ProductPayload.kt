@@ -47,6 +47,7 @@ internal fun productPayload(product: Product): MutableMap<String, Any?> {
                 "apkUrl" to it.apkUrl,
                 "versionName" to it.versionName,
                 "versionCode" to it.versionCode,
+                "sizeBytes" to it.sizeBytes,
             )
         },
         "apkSizeBytes" to product.apkSizeBytes,

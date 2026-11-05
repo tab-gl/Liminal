@@ -49,6 +49,9 @@ class AppInstaller @Inject constructor(
     }
 
     suspend fun downloadAndInstall(url: String, fileName: String): Outcome = withContext(Dispatchers.IO) {
+        if (!url.startsWith("https://", ignoreCase = true)) {
+            return@withContext Outcome.Failed("This build link is not a secure direct download.")
+        }
         if (!canInstall()) return@withContext Outcome.NeedsPermission
 
         val file = runCatching { download(url, fileName) }.getOrElse { error ->
@@ -70,21 +73,58 @@ class AppInstaller @Inject constructor(
         }
     }
 
+    /**
+     * Fetches the build into a partial file and only moves it into place once it
+     * is proven to be an installable package. A link that returns a web page, an
+     * error body or a half-finished transfer must never reach the installer, which
+     * would only answer "There was a problem parsing the package".
+     */
     private fun download(url: String, fileName: String): File {
         val dir = File(context.cacheDir, "apks").apply { mkdirs() }
         val safe = fileName.replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "app.apk" }
+            .let { if (it.endsWith(".apk", ignoreCase = true)) it else "$it.apk" }
         val file = File(dir, safe)
+        val part = File(dir, "$safe.part")
+        part.delete()
 
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             connectTimeout = 30_000
             readTimeout = 180_000
             instanceFollowRedirects = true
         }
-        connection.inputStream.use { input ->
-            file.outputStream().use { output -> input.copyTo(output, 64 * 1024) }
+        try {
+            val code = connection.responseCode
+            if (code !in 200..299) error("The download failed (HTTP $code).")
+            val type = connection.contentType.orEmpty().lowercase()
+            if (type.startsWith("text/html")) {
+                error("This link opens a web page, not a build. Use a direct link to the APK.")
+            }
+            connection.inputStream.use { input ->
+                part.outputStream().use { output -> input.copyTo(output, 64 * 1024) }
+            }
+        } catch (e: Exception) {
+            part.delete()
+            throw e
+        } finally {
+            connection.disconnect()
         }
-        connection.disconnect()
-        if (file.length() == 0L) error("The build came back empty.")
+
+        if (part.length() == 0L) {
+            part.delete()
+            error("The build came back empty.")
+        }
+        // An APK is a ZIP: it starts with "PK".
+        val isZip = part.inputStream().use { it.read() == 0x50 && it.read() == 0x4B }
+        val parsed = if (isZip) context.packageManager.getPackageArchiveInfo(part.path, 0) else null
+        if (parsed == null) {
+            part.delete()
+            error("That file is not a valid Android build.")
+        }
+        file.delete()
+        if (!part.renameTo(file)) {
+            part.delete()
+            error("The build could not be saved.")
+        }
         return file
     }
 }

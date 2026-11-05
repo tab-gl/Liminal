@@ -123,6 +123,7 @@ fun DocumentSnapshot.toProduct(): Product {
                     apkUrl = map["apkUrl"] as? String ?: "",
                     versionName = map["versionName"] as? String ?: "",
                     versionCode = (map["versionCode"] as? Number)?.toInt() ?: 0,
+                    sizeBytes = (map["sizeBytes"] as? Number)?.toLong() ?: 0L,
                 )
             }
         },

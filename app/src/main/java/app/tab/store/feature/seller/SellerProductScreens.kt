@@ -676,13 +676,18 @@ fun SellerProductEditScreen(
                         Spacer(Modifier.width(8.dp))
                         TextButton(onClick = { viewModel.removeFlavour(index) }) { Text("Remove") }
                     }
-                    SproutlyTextField(
-                        value = flavour.apkUrl,
-                        onValueChange = { viewModel.updateFlavour(index, url = it) },
-                        label = "Build link",
-                        placeholder = "https://…",
-                        keyboardType = KeyboardType.Uri,
+                    FlavourBuildRow(
+                        flavour = flavour,
+                        uploading = state.uploadingFlavour == index,
+                        progress = state.flavourProgress,
+                        uploadEnabled = state.apkUploadEnabled,
+                        onLink = { viewModel.updateFlavour(index, url = it) },
+                        onPicked = { bytes, name -> viewModel.onFlavourApkPicked(index, bytes, name) },
                     )
+                    Spacer(Modifier.height(8.dp))
+                }
+                state.flavourError?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 }
                 if (state.flavours.size < 4) {
                     TextButton(onClick = viewModel::addFlavour) { Text("Add another build") }
@@ -903,6 +908,47 @@ private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
                 text = { Text("Paid") },
                 onClick = { onChange(false); expanded = false },
             )
+        }
+    }
+}
+
+/** One extra build: upload an APK or paste a direct link. */
+@Composable
+private fun FlavourBuildRow(
+    flavour: app.tab.store.domain.model.Flavour,
+    uploading: Boolean,
+    progress: Float,
+    uploadEnabled: Boolean,
+    onLink: (String) -> Unit,
+    onPicked: (ByteArray, String) -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val picker = rememberApkPicker { uri ->
+        if (uri != null) {
+            scope.launch {
+                val bytes = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                }
+                if (bytes != null) {
+                    onPicked(bytes, uri.lastPathSegment?.substringAfterLast('/') ?: "app.apk")
+                }
+            }
+        }
+    }
+    SproutlyTextField(
+        value = flavour.apkUrl,
+        onValueChange = onLink,
+        label = "Build link",
+        placeholder = "https://…",
+        keyboardType = KeyboardType.Uri,
+    )
+    if (uploading) {
+        Spacer(Modifier.height(6.dp))
+        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+    } else if (uploadEnabled) {
+        TextButton(onClick = { picker.launch(APK_MIME_TYPES) }) {
+            Text(if (flavour.sizeBytes > 0) "Replace APK · ${formatBytes(flavour.sizeBytes)}" else "Upload APK instead")
         }
     }
 }
