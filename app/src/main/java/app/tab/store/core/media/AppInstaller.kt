@@ -48,15 +48,26 @@ class AppInstaller @Inject constructor(
         runCatching { context.startActivity(intent) }
     }
 
-    suspend fun downloadAndInstall(url: String, fileName: String): Outcome = withContext(Dispatchers.IO) {
+    suspend fun downloadAndInstall(
+        url: String,
+        fileName: String,
+        onProgress: (Float) -> Unit = {},
+    ): Outcome = withContext(Dispatchers.IO) {
         if (!url.startsWith("https://", ignoreCase = true)) {
             return@withContext Outcome.Failed("This build link is not a secure direct download.")
         }
         if (!canInstall()) return@withContext Outcome.NeedsPermission
 
-        val file = runCatching { download(url, fileName) }.getOrElse { error ->
+        val file = runCatching { download(url, fileName, onProgress) }.getOrElse { error ->
+            // Never surface the raw URL: a failed download used to print the whole
+            // link, which read like the app handing out a file path.
             return@withContext Outcome.Failed(
-                error.message ?: "The build could not be downloaded.",
+                when (error) {
+                    is java.net.UnknownHostException -> "No connection to the build server."
+                    is java.net.SocketTimeoutException -> "The build server took too long."
+                    is java.io.FileNotFoundException -> "The build link is broken."
+                    else -> "The build could not be downloaded."
+                },
             )
         }
 
