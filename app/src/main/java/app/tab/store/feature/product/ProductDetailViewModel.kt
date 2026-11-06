@@ -174,6 +174,12 @@ class ProductDetailViewModel @Inject constructor(
                         _uiState.update { it.copy(message = failure.message) }
                     }
                 }
+                is AppInstaller.Outcome.Installed -> {
+                    // Silent install through Shizuku: record it straight away.
+                    (orderRepository.install(product.id) as? DataResult.Failure)?.let { failure ->
+                        _uiState.update { it.copy(message = failure.message) }
+                    }
+                }
                 is AppInstaller.Outcome.NeedsPermission -> appInstaller.requestPermission()
                 is AppInstaller.Outcome.Failed -> Unit
             }

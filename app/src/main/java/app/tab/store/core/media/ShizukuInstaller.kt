@@ -41,11 +41,20 @@ class ShizukuInstaller {
     suspend fun install(apkPath: String): String? = withContext(Dispatchers.IO) {
         if (!hasPermission()) return@withContext null
         runCatching {
-            val process = Shizuku.newProcess(
+            // newProcess is hidden in the public API; it is the documented route
+            // for shell commands through Shizuku, reached reflectively.
+            val method = Shizuku::class.java.getDeclaredMethod(
+                "newProcess",
+                Array<String>::class.java,
+                Array<String>::class.java,
+                String::class.java,
+            ).apply { isAccessible = true }
+            val process = method.invoke(
+                null,
                 arrayOf("pm", "install", "-r", "-g", apkPath),
                 null,
                 null,
-            )
+            ) as rikka.shizuku.ShizukuRemoteProcess
             val output = process.inputStream.bufferedReader().readText() +
                 process.errorStream.bufferedReader().readText()
             val exit = process.waitFor()
