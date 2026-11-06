@@ -55,6 +55,7 @@ internal fun productPayload(product: Product): MutableMap<String, Any?> {
         "versionCode" to product.versionCode,
         "releaseNotes" to product.releaseNotes,
         "official" to product.official,
+        "featured" to product.featured,
         "scanRisk" to product.scanRisk,
         "scanScore" to product.scanScore,
         "scanPermissions" to product.scanPermissions,

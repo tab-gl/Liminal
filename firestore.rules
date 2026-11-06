@@ -308,6 +308,8 @@ service cloud.firestore {
         && unchanged('unitsSold')
         && unchanged('rating')
         && unchanged('ratingCount')
+        // Being on the front page is the store's call, not the seller's.
+        && unchanged('featured')
         // Publishing is gated on the store being approved — unless the build came
         // back clean from Sprout Safe (score of 50 or below), in which case it may
         // go live on its own. The score is client-reported, so this is a quality
