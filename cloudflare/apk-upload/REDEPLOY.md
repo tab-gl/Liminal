@@ -1,5 +1,29 @@
 # Redeploying the Worker without wrangler
 
+## Why you saw Error 1101
+
+Two different things are going on, and only one of them is a real problem.
+
+**The Preview pane has no bindings.** In the dashboard editor, the URL it shows is
+`<hash>-quick-edit.devprod.workers.dev`. That runs in the *preview* environment,
+and your R2 binding is attached to **Production** only — the "Previews Base" chip
+next to Bindings is greyed out. So `env.APKS` is undefined there, the old script
+touches it, and the preview answers 1101. **That is not your production URL** and
+it will keep failing no matter what you paste.
+
+**Production is running an old version.** The version dropdown reads
+`abd992e9 (Active) Latest`. That build still generates `/apks/apks/…` links,
+which is why installs fail in the app.
+
+Test with the production URL, in a normal Chrome tab — not the preview pane:
+
+```
+https://sproutly-apk-upload.aceyash-dev.workers.dev/health
+```
+
+The script in this folder also catches every exception now, so even a broken
+deployment answers with JSON saying what broke instead of Error 1101.
+
 The version running on Cloudflare is the **old** one: it answers download URLs of
 the form `/apks/apks/…`, which never resolves. The corrected script is
 `src/index.js`. It has to be pasted in, because wrangler will not run on arm32 and

@@ -51,6 +51,29 @@ function safeName(name) {
 
 export default {
   async fetch(request, env) {
+    try {
+      return await handle(request, env);
+    } catch (error) {
+      // Error 1101 (an uncaught exception) tells a person nothing and cannot be
+      // read from a phone. Every failure becomes JSON that says what broke.
+      return json(
+        {
+          error: "Worker threw an exception.",
+          message: String(error && error.message ? error.message : error),
+          stack: String(error && error.stack ? error.stack : "").split("\n").slice(0, 4),
+          hint:
+            "If this mentions APKS, the R2 binding is missing on this version. " +
+            "If it mentions FIREBASE_API_KEY, the secret is missing. " +
+            "Note that the dashboard Preview pane has no bindings — test the " +
+            "production URL in a normal tab.",
+        },
+        500,
+      );
+    }
+  },
+};
+
+async function handle(request, env) {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
@@ -166,5 +189,4 @@ export default {
     }
 
     return json({ error: "Not found." }, 404);
-  },
-};
+}
