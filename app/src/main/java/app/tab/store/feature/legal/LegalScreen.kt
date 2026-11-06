@@ -42,8 +42,8 @@ fun LegalScreen(startOnTerms: Boolean, onBack: () -> Unit) {
 
             Column(Modifier.padding(horizontal = 20.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SkChip("Privacy", selected = !showTerms) { showTerms = false }
-                    SkChip("Terms", selected = showTerms) { showTerms = true }
+                    SkChip(text = "Privacy", selected = !showTerms, onClick = { showTerms = false })
+                    SkChip(text = "Terms", selected = showTerms, onClick = { showTerms = true })
                 }
                 Spacer(Modifier.height(18.dp))
             }
