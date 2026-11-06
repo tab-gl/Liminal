@@ -327,7 +327,7 @@ fun SproutlyImage(
     url: String?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    corner: Dp = 18.dp,
+    corner: Dp = 24.dp,
     contentScale: ContentScale = ContentScale.Crop,
 ) {
     val shape = RoundedCornerShape(corner)
@@ -988,7 +988,7 @@ fun OfficialBadge(modifier: Modifier = Modifier) {
 fun InitialArt(
     title: String,
     modifier: Modifier = Modifier,
-    corner: Dp = 18.dp,
+    corner: Dp = 24.dp,
 ) {
     val letter = title.trim().firstOrNull()?.uppercase() ?: "·"
     Box(

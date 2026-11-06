@@ -180,12 +180,13 @@ class CatalogRepositoryImpl @Inject constructor(
                     return@addSnapshotListener
                 }
                 trySend(
-                    snapshot?.documents.orEmpty().map { doc ->
+                    snapshot?.documents.orEmpty().mapNotNull { doc ->
+                        runCatching {
                     app.tab.store.domain.model.Review(
                         reviewerId = doc.id,
-                        reviewerName = doc.getString("reviewerName").orEmpty(),
+                        reviewerName = doc.stringOr("reviewerName"),
                         rating = (doc.get("rating") as? Number)?.toInt() ?: 0,
-                        text = doc.getString("text").orEmpty(),
+                        text = doc.stringOr("text"),
                         // createdAt is a server timestamp, and getLong() throws on a
                         // Timestamp — that was the crash when a review was added.
                         createdAt = (doc.get("createdAt") as? com.google.firebase.Timestamp)
@@ -193,6 +194,7 @@ class CatalogRepositoryImpl @Inject constructor(
                             ?: (doc.get("createdAt") as? Number)?.toLong()
                             ?: 0L,
                     )
+                        }.getOrNull()
                     },
                 )
             }

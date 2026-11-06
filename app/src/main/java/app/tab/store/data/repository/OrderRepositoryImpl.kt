@@ -81,13 +81,13 @@ class OrderRepositoryImpl @Inject constructor(
             val orderId = firestore.runTransaction { tx ->
                 val snap = tx.get(productRef)
                 if (!snap.exists()) error("That app is no longer available.")
-                if (snap.getString("status") != "ACTIVE") error("That app is not published.")
+                if (snap.stringOr("status") != "ACTIVE") error("That app is not published.")
 
                 @Suppress("UNCHECKED_CAST")
                 val images = snap.get("images") as? List<Map<String, Any?>>
-                val title = snap.getString("title").orEmpty()
+                val title = snap.stringOr("title")
                 val price = (snap.get("price") as? Number)?.toLong() ?: 0L
-                val storeId = snap.getString("storeId").orEmpty()
+                val storeId = snap.stringOr("storeId")
                 val now = System.currentTimeMillis()
 
                 item = mapOf(
@@ -97,11 +97,11 @@ class OrderRepositoryImpl @Inject constructor(
                     "unitPrice" to price,
                     "quantity" to 1,
                     "storeId" to storeId,
-                    "storeName" to snap.getString("storeName").orEmpty(),
+                    "storeName" to snap.stringOr("storeName"),
                     // What was actually installed, so a later build can be
                     // recognised as an update rather than a second install.
                     "versionCode" to ((snap.get("versionCode") as? Number)?.toInt() ?: 0),
-                    "versionName" to snap.getString("versionName").orEmpty(),
+                    "versionName" to snap.stringOr("versionName"),
                 )
 
                 tx.set(
@@ -179,7 +179,7 @@ class OrderRepositoryImpl @Inject constructor(
         storeIds.forEach { storeId ->
             runCatching {
                 val store = firestore.collection(FirestorePaths.STORES).document(storeId).get().await()
-                val ownerId = store.getString("ownerId") ?: return@forEach
+                val ownerId = store.stringOr("ownerId") ?: return@forEach
                 firestore.collection(FirestorePaths.notificationItems(ownerId)).document()
                     .set(
                         mapOf(
@@ -203,7 +203,7 @@ class OrderRepositoryImpl @Inject constructor(
             firestore.runTransaction { tx ->
                 val snap = tx.get(ref)
                 if (!snap.exists()) error("That order no longer exists.")
-                val status = snap.getString("status").orEmpty()
+                val status = snap.stringOr("status")
                 if (status != OrderStatus.PENDING.name && status != OrderStatus.CONFIRMED.name) {
                     error("This order can no longer be cancelled.")
                 }

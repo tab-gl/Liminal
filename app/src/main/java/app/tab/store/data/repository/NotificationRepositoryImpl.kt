@@ -50,7 +50,7 @@ class NotificationRepositoryImpl @Inject constructor(
     override suspend fun markAllRead(): DataResult<Unit> {
         val ref = uid?.let { items(it) } ?: return DataResult.Failure("Sign in to see notifications.")
         return firestoreResult {
-            ref.get().await().documents.filter { it.getBoolean("read") != true }
+            ref.get().await().documents.filter { it.booleanOr("read") != true }
                 .forEach { it.reference.update("read", true).await() }
         }
     }

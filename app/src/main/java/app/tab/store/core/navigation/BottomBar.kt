@@ -126,7 +126,7 @@ private fun PillGroup(
     )
 
     Surface(
-        shape = RoundedCornerShape(30.dp),
+        shape = RoundedCornerShape(36.dp),
         color = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
         shadowElevation = 12.dp,
@@ -144,7 +144,7 @@ private fun PillGroup(
                         .size(width = indicatorWidth, height = 46.dp)
                         .background(
                             MaterialTheme.colorScheme.primaryContainer,
-                            RoundedCornerShape(24.dp),
+                            RoundedCornerShape(30.dp),
                         ),
                 )
             }
@@ -192,7 +192,7 @@ private fun FloatingTab(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(30.dp),
         color = Color.Transparent,
         contentColor = content,
         modifier = modifier.onGloballyPositioned { coords ->

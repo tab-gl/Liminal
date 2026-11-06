@@ -40,10 +40,21 @@ private fun DocumentSnapshot.int(key: String): Int =
 private fun DocumentSnapshot.double(key: String): Double =
     (get(key) as? Number)?.toDouble() ?: 0.0
 
-private fun DocumentSnapshot.str(key: String): String = getString(key).orEmpty()
+/**
+ * Reads a string without trusting the stored type.
+ *
+ * getString()/getLong()/getBoolean() throw when the field holds another type — a
+ * Timestamp where a number was expected is exactly how the app crashed on a
+ * document that also carries server timestamps. get() returns whatever is there
+ * and a cast is a null, never an exception.
+ */
+private fun DocumentSnapshot.str(key: String): String = (get(key) as? String).orEmpty()
 
 private fun DocumentSnapshot.strOrNull(key: String): String? =
-    getString(key)?.takeIf { it.isNotBlank() }
+    (get(key) as? String)?.takeIf { it.isNotBlank() }
+
+private fun DocumentSnapshot.bool(key: String, fallback: Boolean = false): Boolean =
+    (get(key) as? Boolean) ?: fallback
 
 fun DocumentSnapshot.toUser(): User = User(
     uid = id,
@@ -71,9 +82,9 @@ fun DocumentSnapshot.toStore(): Store = Store(
     status = StoreStatus.from(str("status")),
     rating = double("rating"),
     ratingCount = int("ratingCount"),
-        verified = getBoolean("verified") ?: false,
-        official = getBoolean("official") ?: false,
-        verificationStatus = getString("verificationStatus") ?: "NONE",
+        verified = bool("verified"),
+        official = bool("official"),
+        verificationStatus = str("verificationStatus").ifBlank { "NONE" },
     productCount = int("productCount"),
     createdAt = long("createdAt"),
 )
@@ -104,12 +115,12 @@ fun DocumentSnapshot.toProduct(): Product {
         price = long("price"),
         compareAtPrice = (get("compareAtPrice") as? Number)?.toLong(),
         offerEndsAt = (get("offerEndsAt") as? Number)?.toLong(),
-        offerKind = getString("offerKind") ?: "PRICE_DROP",
-        promoCode = getString("promoCode") ?: "",
-        promoHeadline = getString("promoHeadline") ?: "",
-        promoBody = getString("promoBody") ?: "",
-        promoImageUrl = getString("promoImageUrl"),
-        currency = getString("currency") ?: "INR",
+        offerKind = str("offerKind").ifBlank { "PRICE_DROP" },
+        promoCode = str("promoCode").ifBlank { "" },
+        promoHeadline = str("promoHeadline").ifBlank { "" },
+        promoBody = str("promoBody").ifBlank { "" },
+        promoImageUrl = strOrNull("promoImageUrl"),
+        currency = str("currency").ifBlank { "INR" },
         stock = int("stock"),
         status = ProductStatus.from(str("status")),
         rating = double("rating"),
@@ -127,12 +138,12 @@ fun DocumentSnapshot.toProduct(): Product {
                 )
             }
         },
-        versionName = getString("versionName") ?: "",
+        versionName = str("versionName").ifBlank { "" },
         versionCode = int("versionCode"),
-        releaseNotes = getString("releaseNotes") ?: "",
-        official = getBoolean("official") ?: false,
-        reported = getBoolean("reported") ?: false,
-        scanRisk = getString("scanRisk") ?: "",
+        releaseNotes = str("releaseNotes").ifBlank { "" },
+        official = bool("official"),
+        reported = bool("reported"),
+        scanRisk = str("scanRisk").ifBlank { "" },
         scanScore = int("scanScore"),
         scanPermissions = (get("scanPermissions") as? List<*>)?.filterIsInstance<String>().orEmpty(),
         scanWarnings = (get("scanWarnings") as? List<*>)?.filterIsInstance<String>().orEmpty(),
@@ -147,7 +158,7 @@ fun DocumentSnapshot.toCategory(): Category = Category(
     id = id,
     name = str("name"),
     slug = str("slug"),
-    iconKey = getString("iconKey") ?: "leaf",
+    iconKey = str("iconKey").ifBlank { "leaf" },
     order = int("order"),
     productCount = int("productCount"),
     imageUrl = strOrNull("imageUrl"),
@@ -198,7 +209,7 @@ fun DocumentSnapshot.toNotification(): AppNotification = AppNotification(
     title = str("title"),
     body = str("body"),
     type = runCatching { NotificationType.valueOf(str("type")) }.getOrDefault(NotificationType.SYSTEM),
-    read = getBoolean("read") ?: false,
+    read = bool("read"),
     deepLink = strOrNull("deepLink"),
     createdAt = long("createdAt"),
 )

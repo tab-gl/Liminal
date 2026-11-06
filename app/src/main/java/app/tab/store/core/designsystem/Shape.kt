@@ -13,18 +13,18 @@ import androidx.compose.ui.unit.dp
  * set, so cards and sheets read as soft objects rather than boxes.
  */
 val SproutlyShapes = Shapes(
-    extraSmall = RoundedCornerShape(14.dp),
-    small = RoundedCornerShape(18.dp),
-    medium = RoundedCornerShape(24.dp),
-    large = RoundedCornerShape(32.dp),
-    extraLarge = RoundedCornerShape(40.dp),
+    extraSmall = RoundedCornerShape(20.dp),
+    small = RoundedCornerShape(24.dp),
+    medium = RoundedCornerShape(30.dp),
+    large = RoundedCornerShape(38.dp),
+    extraLarge = RoundedCornerShape(48.dp),
 )
 
 object SproutlyRadii {
-    val card = RoundedCornerShape(30.dp)
-    val hero = RoundedCornerShape(40.dp)
+    val card = RoundedCornerShape(36.dp)
+    val hero = RoundedCornerShape(48.dp)
     val pill = RoundedCornerShape(percent = 50)
-    val sheet = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp)
-    val thumb = RoundedCornerShape(22.dp)
-    val nav = RoundedCornerShape(30.dp)
+    val sheet = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+    val thumb = RoundedCornerShape(26.dp)
+    val nav = RoundedCornerShape(36.dp)
 }

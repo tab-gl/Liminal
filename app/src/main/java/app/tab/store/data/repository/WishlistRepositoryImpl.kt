@@ -37,18 +37,18 @@ class WishlistRepositoryImpl @Inject constructor(
         if (uid == null) return@flatMapLatest flowOf(emptyList())
         items(uid).snapshotFlow().map { snap ->
             snap.documents.mapNotNull { doc ->
-                val productId = doc.getString("productId") ?: return@mapNotNull null
+                val productId = doc.stringOr("productId") ?: return@mapNotNull null
                 Product(
                     id = productId,
-                    storeId = doc.getString("storeId").orEmpty(),
-                    storeName = doc.getString("storeName").orEmpty(),
-                    title = doc.getString("title").orEmpty(),
+                    storeId = doc.stringOr("storeId"),
+                    storeName = doc.stringOr("storeName"),
+                    title = doc.stringOr("title"),
                     price = (doc.get("price") as? Number)?.toLong() ?: 0L,
                     compareAtPrice = (doc.get("compareAtPrice") as? Number)?.toLong(),
                     stock = (doc.get("stock") as? Number)?.toInt() ?: 0,
-                    status = app.tab.store.domain.model.ProductStatus.from(doc.getString("status")),
+                    status = app.tab.store.domain.model.ProductStatus.from(doc.stringOr("status")),
                     images = listOfNotNull(
-                        doc.getString("imageUrl")?.let {
+                        doc.stringOr("imageUrl")?.let {
                             app.tab.store.domain.model.ProductImage(it, null)
                         },
                     ),

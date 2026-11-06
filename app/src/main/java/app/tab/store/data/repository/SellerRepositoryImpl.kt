@@ -54,7 +54,7 @@ class SellerRepositoryImpl @Inject constructor(
         } else {
             firestore.collection(FirestorePaths.USERS).document(uid)
                 .snapshotFlow()
-                .map { it.getString("storeId") }.orFallback(null)
+                .map { it.stringOr("storeId") }.orFallback(null)
         }
     }
 
@@ -81,7 +81,7 @@ class SellerRepositoryImpl @Inject constructor(
             val userRef = firestore.collection(FirestorePaths.USERS).document(uid)
             // An admin (or an existing developer opening a second profile) must
             // not be demoted to SELLER: only a shopper is promoted.
-            val currentRole = userRef.get().await().getString("role")
+            val currentRole = userRef.get().await().stringOr("role")
             val promote = currentRole == null || currentRole.equals("CUSTOMER", ignoreCase = true)
 
             val batch = firestore.batch()
@@ -226,7 +226,7 @@ class SellerRepositoryImpl @Inject constructor(
                 val items = doc.get("items") as? List<Map<String, Any?>> ?: emptyList()
                 val mine = items.filter { it["storeId"] == storeId }
                 Triple(
-                    doc.getString("status").orEmpty(),
+                    doc.stringOr("status"),
                     (doc.get("placedAt") as? Number)?.toLong() ?: 0L,
                     mine,
                 )

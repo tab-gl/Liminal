@@ -65,7 +65,7 @@ class AdminRepositoryImpl @Inject constructor(
             .get()
             .await()
         val gmv = recent.documents
-            .filter { it.getString("status") != "CANCELLED" }
+            .filter { it.stringOr("status") != "CANCELLED" }
             .sumOf { (it.get("total") as? Number)?.toLong() ?: 0L }
 
         AdminOverview(
@@ -137,12 +137,12 @@ class AdminRepositoryImpl @Inject constructor(
                 if (!target.exists()) {
                     return DataResult.Failure("This user profile no longer exists.")
                 }
-                val storeId = target.getString("storeId")
+                val storeId = target.stringOr("storeId")
                     ?: return DataResult.Failure(
                         "This user must create a store before becoming a seller.",
                     )
                 val store = stores.document(storeId).get().await()
-                if (!store.exists() || store.getString("ownerId") != uid) {
+                if (!store.exists() || store.stringOr("ownerId") != uid) {
                     return DataResult.Failure("This user does not own the linked store.")
                 }
             }
@@ -169,7 +169,7 @@ class AdminRepositoryImpl @Inject constructor(
         firestoreResult {
             val doc = products.document(productId)
             val product = doc.get().await()
-            val owner = product.getString("storeId").orEmpty()
+            val owner = product.stringOr("storeId")
             doc.update(
                 mapOf(
                     "reported" to false,
@@ -182,7 +182,7 @@ class AdminRepositoryImpl @Inject constructor(
 
             // The developer hears the decision either way.
             val storeOwner = firestore.collection(FirestorePaths.STORES).document(owner)
-                .get().await().getString("ownerId").orEmpty()
+                .get().await().stringOr("ownerId")
             if (storeOwner.isNotBlank()) {
                 firestore.collection(FirestorePaths.NOTIFICATIONS).document(storeOwner)
                     .collection("items").document().set(
@@ -190,9 +190,9 @@ class AdminRepositoryImpl @Inject constructor(
                             "type" to "MODERATION",
                             "title" to if (keepListed) "Your app is staying up" else "Your app was removed",
                             "body" to if (keepListed) {
-                                "A report about ${product.getString("title").orEmpty()} was reviewed and dismissed."
+                                "A report about ${product.stringOr("title")} was reviewed and dismissed."
                             } else {
-                                "A report about ${product.getString("title").orEmpty()} was upheld, so it is no longer listed."
+                                "A report about ${product.stringOr("title")} was upheld, so it is no longer listed."
                             },
                             "deepLink" to "product/$productId",
                             "read" to false,
@@ -205,7 +205,7 @@ class AdminRepositoryImpl @Inject constructor(
     override suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit> =
         firestoreResult {
             val product = products.document(productId).get().await()
-            val title = product.getString("title").orEmpty()
+            val title = product.stringOr("title")
             products.document(productId).update(
                 mapOf(
                     "status" to status.name,
@@ -217,11 +217,11 @@ class AdminRepositoryImpl @Inject constructor(
             // Tell the developer, in the app, that a decision was made. The
             // rules allow an admin (and a buyer, for installs) to post a bounded
             // notice into someone's inbox.
-            val storeId = product.getString("storeId").orEmpty()
+            val storeId = product.stringOr("storeId")
             if (storeId.isNotBlank()) {
                 runCatching {
                     val ownerId = firestore.collection(FirestorePaths.STORES)
-                        .document(storeId).get().await().getString("ownerId").orEmpty()
+                        .document(storeId).get().await().stringOr("ownerId")
                     if (ownerId.isNotBlank()) {
                         firestore.collection(FirestorePaths.notificationItems(ownerId))
                             .add(
