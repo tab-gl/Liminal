@@ -165,7 +165,7 @@ fun SkSpinner(size: Dp = 20.dp, color: Color = Sk.colors.olive) {
     val angle by transition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable<Float>(
             animation = tween(900, easing = androidx.compose.animation.core.LinearEasing),
         ),
         label = "angle",
@@ -258,7 +258,7 @@ fun SkProgress(progress: Float?, modifier: Modifier = Modifier) {
             val shift by transition.animateFloat(
                 initialValue = 0f,
                 targetValue = 1f,
-                animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                animationSpec = androidx.compose.animation.core.infiniteRepeatable<Float>(
                     animation = tween(1100, easing = androidx.compose.animation.core.LinearEasing),
                 ),
                 label = "shift",
