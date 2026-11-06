@@ -150,8 +150,10 @@ fun ProductDetailScreen(
                         SproutlyImage(
                             url = product.images.getOrNull(page)?.url,
                             contentDescription = product.title,
-                            modifier = Modifier.fillMaxSize(),
-                            corner = 0.dp,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 12.dp),
+                            corner = 32.dp,
                         )
                     }
                     Row(
@@ -473,6 +475,31 @@ fun ProductDetailScreen(
                                 .fillMaxWidth()
                                 .clip(SproutlyRadii.pill),
                         )
+                    }
+                    if (state.installedPackage != null && !state.isInstalling) {
+                        Spacer(Modifier.height(10.dp))
+                        Surface(
+                            shape = SproutlyRadii.card,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.padding(14.dp)) {
+                                Text(
+                                    "Android is installing it",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                                Text(
+                                    "Tap Install on the Android prompt, then open it here.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                TextButton(onClick = viewModel::openInstalledApp) {
+                                    Text("Open the app")
+                                }
+                            }
+                        }
                     }
                     if (state.needsInstallPermission) {
                         Spacer(Modifier.height(8.dp))

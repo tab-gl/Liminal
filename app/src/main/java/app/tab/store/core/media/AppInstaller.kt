@@ -27,13 +27,29 @@ class AppInstaller @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
     sealed interface Outcome {
-        /** The build is on disk and the system installer was opened. */
-        data object Launched : Outcome
+        /**
+         * The build is on disk and the system installer was opened. Carries the
+         * package name so the app can offer "Open" once Android finishes.
+         */
+        data class Launched(val packageName: String?) : Outcome
 
         /** The person must allow this app as an install source first. */
         data object NeedsPermission : Outcome
 
         data class Failed(val message: String) : Outcome
+    }
+
+    /** Set by download() so Launched can report which app was installed. */
+    private var installedPackage: String? = null
+
+    /** Opens an installed app, if it has a launcher entry. */
+    fun openInstalled(packageName: String): Boolean {
+        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            ?: return false
+        return runCatching {
+            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            true
+        }.getOrDefault(false)
     }
 
     /** True when this app may currently install packages. */
@@ -76,7 +92,7 @@ class AppInstaller @Inject constructor(
         }
         return@withContext runCatching {
             context.startActivity(intent)
-            Outcome.Launched
+            Outcome.Launched(installedPackage)
         }.getOrElse {
             Outcome.Failed("No installer is available on this device.")
         }
@@ -156,6 +172,7 @@ class AppInstaller @Inject constructor(
         // An APK is a ZIP: it starts with "PK".
         val isZip = part.inputStream().use { it.read() == 0x50 && it.read() == 0x4B }
         val parsed = if (isZip) context.packageManager.getPackageArchiveInfo(part.path, 0) else null
+        installedPackage = parsed?.packageName
         if (parsed == null) {
             part.delete()
             error("That file is not a valid Android build.")

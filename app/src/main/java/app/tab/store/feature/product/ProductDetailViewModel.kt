@@ -32,6 +32,8 @@ data class ProductDetailUiState(
     val needsInstallPermission: Boolean = false,
     /** Which build of the app to install, when it ships more than one. */
     val chosenFlavour: Int = 0,
+    /** Set once the system installer has been handed the build. */
+    val installedPackage: String? = null,
     /** What everyone else rated this app, and what you rated it. */
     val rating: app.tab.store.domain.model.RatingSummary =
         app.tab.store.domain.model.RatingSummary(),
@@ -150,8 +152,10 @@ class ProductDetailViewModel @Inject constructor(
                 it.copy(
                     isInstalling = false,
                     downloadProgress = 0f,
+                    installedPackage = (outcome as? AppInstaller.Outcome.Launched)?.packageName
+                        ?: it.installedPackage,
                     message = when (outcome) {
-                        is AppInstaller.Outcome.Launched -> null
+                        is AppInstaller.Outcome.Launched -> "Android is installing it now."
                         is AppInstaller.Outcome.NeedsPermission ->
                             "Allow Sproutly to install apps, then come back to finish."
                         is AppInstaller.Outcome.Failed -> outcome.message
@@ -188,6 +192,14 @@ class ProductDetailViewModel @Inject constructor(
     fun chooseFlavour(index: Int) = _uiState.update { it.copy(chosenFlavour = index) }
 
     fun openInstallPermission() = appInstaller.requestPermission()
+
+    /** Opens the app once Android has finished installing it. */
+    fun openInstalledApp() {
+        val pkg = _uiState.value.installedPackage ?: return
+        if (!appInstaller.openInstalled(pkg)) {
+            _uiState.update { it.copy(message = "Not installed yet — finish the Android prompt.") }
+        }
+    }
 
     /** Admin: take a listing down, put it back, or clear a report. */
     fun adminSetStatus(status: app.tab.store.domain.model.ProductStatus) {

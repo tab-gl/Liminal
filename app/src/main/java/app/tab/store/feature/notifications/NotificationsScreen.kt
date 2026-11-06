@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.TablerIcons
 import app.tab.store.core.designsystem.TablerIcon
 import app.tab.store.core.designsystem.EmptyState
@@ -54,6 +55,8 @@ import kotlinx.coroutines.launch
 
 data class NotificationsUiState(
     val items: List<AppNotification> = emptyList(),
+    /** Apps this person installed recently — the useful half of this screen. */
+    val installs: List<app.tab.store.domain.model.Order> = emptyList(),
     val unread: Int = 0,
     val isLoading: Boolean = true,
 )
@@ -61,6 +64,7 @@ data class NotificationsUiState(
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
+    private val orderRepository: app.tab.store.domain.repository.OrderRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NotificationsUiState())
@@ -69,11 +73,22 @@ class NotificationsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             notificationRepository.observeNotifications().collect { items ->
-                _uiState.value = NotificationsUiState(
+                _uiState.value = _uiState.value.copy(
                     items = items,
                     unread = items.count { !it.read },
                     isLoading = false,
                 )
+            }
+        }
+        // What you installed, newest first — a live feed rather than a list of
+        // "orders" that never described anything.
+        viewModelScope.launch {
+            orderRepository.observeBuyerOrders().collect { orders ->
+                val recent = orders
+                    .sortedByDescending { it.placedAt }
+                    .distinctBy { it.items.firstOrNull()?.productId ?: it.id }
+                    .take(6)
+                _uiState.value = _uiState.value.copy(installs = recent)
             }
         }
     }
@@ -108,10 +123,10 @@ fun NotificationsScreen(
                 }
             },
         )
-        if (!state.isLoading && state.items.isEmpty()) {
+        if (!state.isLoading && state.items.isEmpty() && state.installs.isEmpty()) {
             EmptyState(
-                title = "You are all caught up",
-                message = "Order updates and store news will land here.",
+                title = "Nothing yet",
+                message = "Install an app and it shows up here.",
                 icon = TablerIcons.Notification,
             )
         } else {
@@ -122,6 +137,33 @@ fun NotificationsScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                if (state.installs.isNotEmpty()) {
+                    item {
+                        Text(
+                            "Recently installed",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                        )
+                    }
+                    items(state.installs, key = { "install-${it.id}" }) { order ->
+                        val app = order.items.firstOrNull()
+                        InstallRow(
+                            title = app?.title ?: "An app",
+                            imageUrl = app?.imageUrl,
+                            version = app?.versionName.orEmpty(),
+                            when_ = order.placedAt,
+                            onClick = { app?.let { onOpen("product/${it.productId}") } },
+                        )
+                    }
+                    item {
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            "Updates",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                    }
+                }
                 items(state.items, key = { it.id }) { item ->
                     NotificationRow(
                         item = item,
@@ -180,6 +222,53 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+    }
+}
+
+/** One recently installed app, with its version and when. */
+@Composable
+private fun InstallRow(
+    title: String,
+    imageUrl: String?,
+    version: String,
+    when_: Long,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.card,
+        color = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SproutlyImage(
+                url = imageUrl,
+                contentDescription = title,
+                modifier = Modifier.size(44.dp),
+                corner = 14.dp,
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    listOfNotNull(
+                        version.takeIf { it.isNotBlank() }?.let { "v$it" },
+                        DateFormatters.relative(when_),
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            TablerIcon(
+                TablerIcons.ChevronRight,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

@@ -362,6 +362,13 @@ fun SellerDashboardScreen(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Bento(
+                    icon = TablerIcons.Receipt,
+                    label = "Installs",
+                    detail = "Who and when",
+                    modifier = Modifier.weight(1f),
+                    onClick = onOrders,
+                )
+                Bento(
                     icon = TablerIcons.Store,
                     label = "Your store page",
                     detail = "What people see",

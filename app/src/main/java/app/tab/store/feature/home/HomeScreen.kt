@@ -201,7 +201,7 @@ fun HomeScreen(
                         .padding(start = 20.dp, end = 12.dp, top = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    BrandWordmark()
+                    BrandWordmark(animateLeaf = true, leafKey = "home")
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = onNotifications) {
                         BadgedBox(

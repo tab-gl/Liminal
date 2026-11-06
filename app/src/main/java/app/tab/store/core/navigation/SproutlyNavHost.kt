@@ -1,6 +1,9 @@
 package app.tab.store.core.navigation
 
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -75,11 +78,18 @@ import app.tab.store.feature.seller.SellerStoreEditScreen
 import app.tab.store.feature.store.StoreScreen
 import app.tab.store.feature.wishlist.WishlistScreen
 
+// Destinations cross-fade and drift a little, so a tab change reads as movement
+// rather than a swap. The drift is small on purpose: a big slide on every tap
+// feels slow by the third one.
 private val enter: androidx.compose.animation.EnterTransition =
-    fadeIn(tween(220)) + slideInHorizontally(tween(260)) { it / 12 }
+    fadeIn(tween(260)) +
+        slideInHorizontally(spring(dampingRatio = 0.9f, stiffness = 520f)) { it / 16 } +
+        scaleIn(tween(260), initialScale = 0.98f)
 
 private val exit: androidx.compose.animation.ExitTransition =
-    fadeOut(tween(160)) + slideOutHorizontally(tween(200)) { -it / 12 }
+    fadeOut(tween(180)) +
+        slideOutHorizontally(tween(200)) { -it / 20 } +
+        scaleOut(tween(200), targetScale = 0.99f)
 
 @Composable
 fun SproutlyNavHost(

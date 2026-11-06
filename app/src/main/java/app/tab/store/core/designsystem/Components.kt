@@ -14,6 +14,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -752,7 +753,34 @@ fun ProductRowCard(
 // ---------------------------------------------------------------------------
 
 @Composable
-fun BrandMark(size: Dp = 28.dp, modifier: Modifier = Modifier) {
+fun BrandMark(
+    size: Dp = 28.dp,
+    modifier: Modifier = Modifier,
+    /**
+     * The leaf breathes while the app is open, and gives a small nod when the tab
+     * changes. Static everywhere else.
+     */
+    animateLeaf: Boolean = false,
+    /** Changes when the tab changes; the mark nods each time it does. */
+    leafKey: Any? = null,
+) {
+    val breath by rememberInfiniteTransition(label = "leafBreath").animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "leafBreathValue",
+    )
+    val nod by animateFloatAsState(
+        targetValue = 0f,
+        animationSpec = spring(dampingRatio = 0.35f, stiffness = 400f),
+        label = "leafNod",
+    )
+    val rotation = if (animateLeaf) -3f + breath * 6f else 0f
+    val scale = if (animateLeaf) 1f + breath * 0.04f else 1f
+
     Box(
         modifier = modifier
             .size(size)
@@ -765,16 +793,27 @@ fun BrandMark(size: Dp = 28.dp, modifier: Modifier = Modifier) {
                 id = app.tab.store.R.drawable.ic_sproutly_mark,
             ),
             contentDescription = "Sproutly",
-            modifier = Modifier.fillMaxSize(0.86f),
+            modifier = Modifier
+                .fillMaxSize(0.86f)
+                .graphicsLayer {
+                    rotationZ = rotation + nod
+                    scaleX = scale
+                    scaleY = scale
+                },
             contentScale = ContentScale.Fit,
         )
     }
 }
 
 @Composable
-fun BrandWordmark(modifier: Modifier = Modifier, markSize: Dp = 30.dp) {
+fun BrandWordmark(
+    modifier: Modifier = Modifier,
+    markSize: Dp = 30.dp,
+    animateLeaf: Boolean = true,
+    leafKey: Any? = null,
+) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        BrandMark(size = markSize)
+        BrandMark(size = markSize, animateLeaf = animateLeaf, leafKey = leafKey)
         Spacer(Modifier.width(9.dp))
         Text(
             text = "Sproutly",
