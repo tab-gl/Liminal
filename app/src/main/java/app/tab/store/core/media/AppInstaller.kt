@@ -120,16 +120,27 @@ class AppInstaller @Inject constructor(
         }
         try {
             val code = connection.responseCode
-            if (code !in 200..299) error("The download failed (HTTP $code).")
+            if (code !in 200..299) throw HttpStatusException(code)
+
             val type = connection.contentType.orEmpty().lowercase()
             if (type.startsWith("text/html")) {
                 error("This link opens a web page, not a build. Use a direct link to the APK.")
             }
-            val code = connection.responseCode
-        if (code !in 200..299) throw HttpStatusException(code)
 
-        connection.inputStream.use { input ->
-                part.outputStream().use { output -> input.copyTo(output, 64 * 1024) }
+            val total = connection.contentLengthLong
+            connection.inputStream.use { input ->
+                part.outputStream().use { output ->
+                    val buffer = ByteArray(64 * 1024)
+                    var written = 0L
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read <= 0) break
+                        output.write(buffer, 0, read)
+                        written += read
+                        if (total > 0) onProgress((written.toFloat() / total).coerceIn(0f, 1f))
+                    }
+                    output.flush()
+                }
             }
         } catch (e: Exception) {
             part.delete()
