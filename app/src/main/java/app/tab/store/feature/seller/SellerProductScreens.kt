@@ -1125,7 +1125,12 @@ internal fun SellerOfferDialog(
 ) {
     val current = product.compareAtPrice?.let { Money.toRupeeString(it) }.orEmpty()
     var was by remember { mutableStateOf(current) }
-    var kind2 by remember { mutableStateOf(product.offerKind) }
+    var kind2 by remember {
+        mutableStateOf(
+            if (product.price <= 0 && product.offerKind == "PRICE_DROP") "PROMO_CODE"
+            else product.offerKind,
+        )
+    }
     var code by remember { mutableStateOf(product.promoCode) }
     var days by remember {
         mutableStateOf(
@@ -1142,8 +1147,12 @@ internal fun SellerOfferDialog(
         text = {
             Column {
                 Text(
-                    "People pay ${formatPrice(product.price)}. Enter the price it used to be " +
-                        "to show a discount, and how long the offer runs.",
+                    if (product.price > 0) {
+                        "People pay ${formatPrice(product.price)}. Enter the price it used to be " +
+                            "to show a discount, and how long the offer runs."
+                    } else {
+                        "This app is free, so offer a code or something inside the app."
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1151,8 +1160,9 @@ internal fun SellerOfferDialog(
                 Text("Offer kind", style = MaterialTheme.typography.labelSmall)
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(
-                        "PRICE_DROP" to "Price drop",
+                    // A free app cannot have a price drop; offer a code or a perk.
+                    listOfNotNull(
+                        if (product.price > 0) "PRICE_DROP" to "Price drop" else null,
                         "PROMO_CODE" to "Code",
                         "IN_APP" to "In-app",
                     ).forEach { (kind, label) ->

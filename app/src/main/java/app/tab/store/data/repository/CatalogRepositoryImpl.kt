@@ -62,47 +62,45 @@ class CatalogRepositoryImpl @Inject constructor(
         DataResult.Failure(t.toUserMessage(), t)
     }
 
-    override fun observeFeatured(limit: Int): Flow<List<Product>> =
-        activeProducts()
-            .whereEqualTo("featured", true)
-            .orderBy("unitsSold", Query.Direction.DESCENDING)
+    /**
+     * Every rail reads one equality filter — status — and sorts here.
+     *
+     * Adding an orderBy alongside a status filter needs a composite index. When
+     * that index is not deployed the query fails, the fallback returns an empty
+     * list, and the storefront looks broken rather than misconfigured. Sorting a
+     * page of results in the app costs nothing at this size and cannot fail that
+     * way.
+     */
+    private fun activePage(limit: Int = 60): Flow<List<Product>> =
+        products.whereEqualTo("status", ProductStatus.ACTIVE.name)
             .limit(limit.toLong())
             .snapshotFlow()
-            .map { snap ->
-                val items = snap.documents.map { it.toProduct() }
-                cache(items)
-                items
-            }
+            .map { snap -> snap.documents.map { it.toProduct() } }
             .orFallback(emptyList())
 
+    override fun observeFeatured(limit: Int): Flow<List<Product>> =
+        activePage()
+            .map { items ->
+                items.filter { it.featured }.sortedByDescending { it.unitsSold }.take(limit)
+                    .ifEmpty { items.sortedByDescending { it.unitsSold }.take(limit) }
+                    .also { cache(it) }
+            }
+
     override fun observeTrending(limit: Int): Flow<List<Product>> =
-        activeProducts()
-            .orderBy("unitsSold", Query.Direction.DESCENDING)
-            .limit(limit.toLong())
-            .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
+        activePage().map { items -> items.sortedByDescending { it.unitsSold }.take(limit) }
 
     override fun observeNewArrivals(limit: Int): Flow<List<Product>> =
-        activeProducts()
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit(limit.toLong())
-            .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
+        activePage().map { items -> items.sortedByDescending { it.createdAt }.take(limit) }
 
     override fun observeRecommended(limit: Int): Flow<List<Product>> =
-        activeProducts()
-            .orderBy("rating", Query.Direction.DESCENDING)
-            .limit(limit.toLong())
-            .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
+        activePage().map { items -> items.sortedByDescending { it.rating }.take(limit) }
 
     override fun observeByCategory(categoryId: String, limit: Int): Flow<List<Product>> =
-        activeProducts()
-            .whereEqualTo("categoryId", categoryId)
-            .orderBy("unitsSold", Query.Direction.DESCENDING)
-            .limit(limit.toLong())
-            .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
+        activePage().map { items ->
+            items.filter { it.categoryId == categoryId }
+                .sortedByDescending { it.unitsSold }
+                .take(limit)
+        }
 
     /**
      * Search is a Firestore range scan on the lower-cased title (`titleLower`),
@@ -288,11 +286,16 @@ class CatalogRepositoryImpl @Inject constructor(
             .map { snap -> if (snap.exists()) snap.toStore() else null }.orFallback(null)
 
     override fun observeStoreProducts(storeId: String): Flow<List<Product>> =
+        // One equality filter and sorting done here: adding status and an orderBy
+        // needs a composite index, and without that index the query fails and the
+        // fallback shows "no apps" — which looked like the profile was broken.
         products.whereEqualTo("storeId", storeId)
-            .whereEqualTo("status", ProductStatus.ACTIVE.name)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
+            .map { snap ->
+                snap.documents.map { it.toProduct() }
+                    .filter { it.status == ProductStatus.ACTIVE }
+                    .sortedByDescending { it.createdAt }
+            }.orFallback(emptyList())
 
     private suspend fun cache(items: List<Product>) {
         if (items.isEmpty()) return

@@ -117,12 +117,17 @@ private fun OrderCard(
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "#${order.id.take(8).uppercase()}",
+                    "Installed",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.weight(1f))
-                OrderStatusChip(order.status)
+                TablerIcon(
+                    TablerIcons.ChevronRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             Spacer(Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -141,22 +146,21 @@ private fun OrderCard(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                     Text(
-                        if (order.items.size > 1) {
-                            "+${order.items.size - 1} more item${if (order.items.size > 2) "s" else ""}"
-                        } else {
-                            "${order.itemCount} app"
-                        },
+                        listOfNotNull(
+                            order.items.firstOrNull()?.storeName?.takeIf { it.isNotBlank() },
+                            order.items.firstOrNull()?.versionName
+                                ?.takeIf { it.isNotBlank() }?.let { "v$it" },
+                            DateFormatters.date(order.placedAt),
+                        ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        DateFormatters.date(order.placedAt),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(formatPrice(order.total), style = MaterialTheme.typography.titleMedium)
+                    if (order.total > 0) {
+                        Text(formatPrice(order.total), style = MaterialTheme.typography.titleMedium)
+                    }
                     if (order.canCancel) {
                         TextButton(onClick = onCancel, enabled = !cancelling) {
                             Text(

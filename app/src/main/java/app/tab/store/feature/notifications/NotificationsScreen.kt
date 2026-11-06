@@ -74,7 +74,9 @@ class NotificationsViewModel @Inject constructor(
         viewModelScope.launch {
             notificationRepository.observeNotifications().collect { items ->
                 _uiState.value = _uiState.value.copy(
-                    items = items,
+                    // Install notices are shown as "Recently installed" above;
+                    // repeating them as updates reads like a second inbox.
+                    items = items.filter { it.type != NotificationType.ORDER },
                     unread = items.count { !it.read },
                     isLoading = false,
                 )
