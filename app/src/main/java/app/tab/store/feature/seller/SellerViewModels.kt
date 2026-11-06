@@ -643,6 +643,9 @@ class SellerProductEditViewModel @Inject constructor(
      * unsigned preset rejects ZIP content and caps at 10 MB, which no real APK
      * fits inside, and a Firestore document is capped at 1 MiB.
      */
+    /** Only an Android build, an iOS build, or a zip of one. */
+    private val allowedBuildExtensions = setOf("apk", "ipa", "zip")
+
     /** A real file name: a content Uri's last segment is often just a number. */
     private fun apkFileNameFor(raw: String): String {
         val cleaned = raw.trim()
@@ -658,6 +661,18 @@ class SellerProductEditViewModel @Inject constructor(
     fun onApkPicked(bytes: ByteArray, rawFileName: String) {
         if (bytes.isEmpty()) return
         val fileName = apkFileNameFor(rawFileName)
+
+        val extension = rawFileName.substringAfterLast('.', "").lowercase()
+            .ifBlank { fileName.substringAfterLast('.', "").lowercase() }
+        if (extension !in allowedBuildExtensions) {
+            _uiState.update {
+                it.copy(
+                    error = "Only .apk, .ipa or .zip builds can be published. " +
+                        "That file is ${if (extension.isBlank()) "not one of those" else ".$extension"}.",
+                )
+            }
+            return
+        }
         // Sprout Safe first: the developer should know what their build asks for
         // before it reaches anyone.
         viewModelScope.launch {

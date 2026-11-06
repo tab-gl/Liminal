@@ -82,14 +82,14 @@ import app.tab.store.feature.wishlist.WishlistScreen
 // rather than a swap. The drift is small on purpose: a big slide on every tap
 // feels slow by the third one.
 private val enter: androidx.compose.animation.EnterTransition =
-    fadeIn(tween(260)) +
-        slideInHorizontally(spring(dampingRatio = 0.9f, stiffness = 520f)) { it / 16 } +
-        scaleIn(tween(260), initialScale = 0.98f)
+    fadeIn(tween(180)) +
+        slideInHorizontally(spring(dampingRatio = 0.92f, stiffness = 900f)) { it / 18 } +
+        scaleIn(tween(180), initialScale = 0.985f)
 
 private val exit: androidx.compose.animation.ExitTransition =
-    fadeOut(tween(180)) +
-        slideOutHorizontally(tween(200)) { -it / 20 } +
-        scaleOut(tween(200), targetScale = 0.99f)
+    fadeOut(tween(120)) +
+        slideOutHorizontally(tween(140)) { -it / 24 } +
+        scaleOut(tween(140), targetScale = 0.992f)
 
 @Composable
 fun SproutlyNavHost(
@@ -185,7 +185,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             modifier = Modifier.statusBarsPadding(),
             enterTransition = { enter },
             exitTransition = { exit },
-            popEnterTransition = { fadeIn(tween(200)) },
+            popEnterTransition = { fadeIn(tween(140)) },
             popExitTransition = { fadeOut(tween(160)) },
         ) {
             // ------------------------------------------------------------- auth

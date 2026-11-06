@@ -1,0 +1,39 @@
+name: Sproutly
+options:
+  bundleIdPrefix: app.tab
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGNING_ALLOWED: "NO"
+
+targets:
+  Sproutly:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sproutly
+    info:
+      path: Sproutly/Info.plist
+      properties:
+        CFBundleDisplayName: Sproutly
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen: {}
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+        # iOS will not install a build from outside the App Store, so the app
+        # opens a listing's page rather than pretending it can install an IPA.
+        LSApplicationQueriesSchemes:
+          - https
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.tab.store.ios
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1,2"

@@ -468,13 +468,27 @@ fun ProductDetailScreen(
                         loading = state.isInstalling,
                     )
                     if (state.isInstalling) {
-                        Spacer(Modifier.height(8.dp))
-                        LinearProgressIndicator(
-                            progress = { state.downloadProgress },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(SproutlyRadii.pill),
-                        )
+                        Spacer(Modifier.height(10.dp))
+                        // A determinate bar at 0% renders as a hairline, which read
+                        // as "no loader". Unknown size gets the moving bar instead.
+                        if (state.downloadProgress > 0f) {
+                            LinearProgressIndicator(
+                                progress = { state.downloadProgress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(SproutlyRadii.pill),
+                                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+                            )
+                        } else {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(SproutlyRadii.pill),
+                                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+                            )
+                        }
                     }
                     if (state.installedPackage != null && !state.isInstalling) {
                         Spacer(Modifier.height(10.dp))

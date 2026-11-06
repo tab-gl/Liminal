@@ -152,9 +152,13 @@ class ProductDetailViewModel @Inject constructor(
                 it.copy(
                     isInstalling = false,
                     downloadProgress = 0f,
-                    installedPackage = (outcome as? AppInstaller.Outcome.Launched)?.packageName
-                        ?: it.installedPackage,
+                    installedPackage = when (outcome) {
+                        is AppInstaller.Outcome.Installed -> outcome.packageName
+                        is AppInstaller.Outcome.Launched -> outcome.packageName
+                        else -> it.installedPackage
+                    } ?: it.installedPackage,
                     message = when (outcome) {
+                        is AppInstaller.Outcome.Installed -> "Installed. Open it below."
                         is AppInstaller.Outcome.Launched -> "Android is installing it now."
                         is AppInstaller.Outcome.NeedsPermission ->
                             "Allow Sproutly to install apps, then come back to finish."

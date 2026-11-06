@@ -228,6 +228,20 @@ def check_kotlin() -> list[str]:
 
 
 # ----------------------------------------------------------------------------- build
+def check_ios():
+    """The iOS client and its workflow exist and stay in step."""
+    root = os.path.join(ROOT, "ios")
+    problems = []
+    if not os.path.exists(os.path.join(root, "project.yml")):
+        problems.append("ios/project.yml missing")
+    swift = list(walk_files(os.path.join(root, "Sproutly"), {".swift"}))
+    if len(swift) < 4:
+        problems.append(f"only {len(swift)} Swift files")
+    if not os.path.exists(os.path.join(ROOT, ".github", "workflows", "ios.yml")):
+        problems.append(".github/workflows/ios.yml missing")
+    return problems
+
+
 def check_build() -> list[str]:
     problems: list[str] = []
     gradle_path = os.path.join(ROOT, "app", "build.gradle.kts")
@@ -293,6 +307,7 @@ def check_indexes() -> list[str]:
 
 
 CHECKS = {
+    "ios": check_ios,
     "indexes": check_indexes,
     "secrets": check_secrets,
     "rules": check_rules,

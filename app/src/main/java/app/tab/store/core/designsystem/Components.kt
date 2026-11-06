@@ -166,11 +166,16 @@ fun SproutlyButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (loading) {
-                // M3 Expressive shape-morph loader.
+                // M3 Expressive shape-morph loader, with the label kept beside it:
+                // a spinner alone says nothing about what is happening.
                 LoadingIndicator(
                     modifier = Modifier.size(22.dp),
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
+                if (text.isNotBlank()) {
+                    Spacer(Modifier.width(10.dp))
+                    Text(text, style = MaterialTheme.typography.labelLarge)
+                }
             } else {
                 if (icon != null) {
                     TablerIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))

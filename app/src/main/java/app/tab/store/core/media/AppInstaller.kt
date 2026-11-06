@@ -33,6 +33,9 @@ class AppInstaller @Inject constructor(
          */
         data class Launched(val packageName: String?) : Outcome
 
+        /** Installed without any prompt, through Shizuku. */
+        data class Installed(val packageName: String?, val viaShizuku: Boolean) : Outcome
+
         /** The person must allow this app as an install source first. */
         data object NeedsPermission : Outcome
 
@@ -41,6 +44,8 @@ class AppInstaller @Inject constructor(
 
     /** Set by download() so Launched can report which app was installed. */
     private var installedPackage: String? = null
+
+    private val shizuku = ShizukuInstaller()
 
     /** Opens an installed app, if it has a launcher entry. */
     fun openInstalled(packageName: String): Boolean {
@@ -83,6 +88,14 @@ class AppInstaller @Inject constructor(
             // deployment is broken" (5xx) and "the network blocked it". Without it
             // every failure looked identical.
             return@withContext Outcome.Failed(describe(error))
+        }
+
+        // Shizuku, when the device has it, installs with no prompt at all.
+        val silent = shizuku.install(file.absolutePath)
+        if (silent != null) {
+            installedPackage = installedPackage ?: context.packageManager
+                .getPackageArchiveInfo(file.absolutePath, 0)?.packageName
+            return@withContext Outcome.Installed(installedPackage, viaShizuku = true)
         }
 
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.apkfiles", file)
