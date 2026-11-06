@@ -57,6 +57,40 @@ export default {
       return new Response(null, { status: 204, headers: CORS });
     }
 
+    // ---------------------------------------------------------------- health
+    // Answers "is this deployment wired up?" without uploading anything. If a
+    // download fails, open this URL first: it says whether the R2 binding and the
+    // Firebase key are actually present on the running version.
+    if (request.method === "GET" && url.pathname === "/health") {
+      const bound = Boolean(env.APKS);
+      let bucket = null;
+      let sampleCount = null;
+      if (bound) {
+        try {
+          const list = await env.APKS.list({ limit: 3 });
+          bucket = list.objects.map((o) => o.key);
+          sampleCount = bucket.length;
+        } catch (error) {
+          return json({
+            ok: false,
+            binding: "APKS",
+            bucketError: String(error),
+            hint: "The binding exists but the bucket cannot be read. Check that the bucket name in the binding matches the bucket you created.",
+          }, 500);
+        }
+      }
+      return json({
+        ok: bound && Boolean(env.FIREBASE_API_KEY),
+        binding: bound ? "APKS" : "MISSING",
+        firebaseKey: env.FIREBASE_API_KEY ? "set" : "MISSING",
+        sampleKeys: bucket,
+        sampleCount,
+        hint: bound
+          ? "Binding present. A 404 on a download means the key is wrong; a 500 means the bucket read failed."
+          : "No R2 binding called APKS. Add it in the Worker's Settings → Bindings, then redeploy.",
+      });
+    }
+
     // ---------------------------------------------------------------- upload
     if (request.method === "POST" && url.pathname === "/upload") {
       const auth = request.headers.get("Authorization") || "";
@@ -106,7 +140,11 @@ export default {
 
       const object = await env.APKS.get(key);
       if (!object) {
-        return json({ error: "Not found.", key }, 404);
+        return json({
+          error: "Not found.",
+          key,
+          hint: "No object at this key. Open /health to list a few real keys and compare.",
+        }, 404);
       }
 
       const headers = {

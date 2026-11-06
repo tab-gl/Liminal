@@ -63,16 +63,10 @@ class AppInstaller @Inject constructor(
         if (!canInstall()) return@withContext Outcome.NeedsPermission
 
         val file = runCatching { download(fixedUrl, fileName, onProgress) }.getOrElse { error ->
-            // Never surface the raw URL: a failed download used to print the whole
-            // link, which read like the app handing out a file path.
-            return@withContext Outcome.Failed(
-                when (error) {
-                    is java.net.UnknownHostException -> "No connection to the build server."
-                    is java.net.SocketTimeoutException -> "The build server took too long."
-                    is java.io.FileNotFoundException -> "The build link is broken."
-                    else -> "The build could not be downloaded."
-                },
-            )
+            // The status code is the difference between "wrong key" (404), "the
+            // deployment is broken" (5xx) and "the network blocked it". Without it
+            // every failure looked identical.
+            return@withContext Outcome.Failed(describe(error))
         }
 
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.apkfiles", file)
@@ -94,6 +88,23 @@ class AppInstaller @Inject constructor(
      * error body or a half-finished transfer must never reach the installer, which
      * would only answer "There was a problem parsing the package".
      */
+    /** The server answered, but not with a build. */
+    private class HttpStatusException(val code: Int) : Exception("HTTP $code")
+
+    private fun describe(error: Throwable): String = when {
+        error is HttpStatusException && error.code == 404 ->
+            "The build is missing on the server (404). Open /health on the Worker."
+        error is HttpStatusException && (error.code == 401 || error.code == 403) ->
+            "The build server refused this request (${error.code})."
+        error is HttpStatusException && error.code >= 500 ->
+            "The build server is misconfigured (${error.code}). Check the R2 binding."
+        error is java.net.UnknownHostException -> "No connection to the build server."
+        error is java.net.SocketTimeoutException -> "The build server took too long."
+        error is javax.net.ssl.SSLException ->
+            "The connection to the build server was blocked."
+        else -> "The build could not be downloaded."
+    }
+
     private fun download(url: String, fileName: String, onProgress: (Float) -> Unit): File {
         val dir = File(context.cacheDir, "apks").apply { mkdirs() }
         val safe = fileName.replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "app.apk" }
@@ -114,7 +125,10 @@ class AppInstaller @Inject constructor(
             if (type.startsWith("text/html")) {
                 error("This link opens a web page, not a build. Use a direct link to the APK.")
             }
-            connection.inputStream.use { input ->
+            val code = connection.responseCode
+        if (code !in 200..299) throw HttpStatusException(code)
+
+        connection.inputStream.use { input ->
                 part.outputStream().use { output -> input.copyTo(output, 64 * 1024) }
             }
         } catch (e: Exception) {
