@@ -9,6 +9,9 @@ import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.firebase.toUserMessage
 import app.tab.store.core.firebase.firestoreResult
 import app.tab.store.data.remote.FirestorePaths
+import app.tab.store.data.remote.booleanOr
+import app.tab.store.data.remote.numberOr
+import app.tab.store.data.remote.stringOr
 import app.tab.store.data.remote.toCategory
 import app.tab.store.data.remote.toProduct
 import app.tab.store.data.remote.toStore

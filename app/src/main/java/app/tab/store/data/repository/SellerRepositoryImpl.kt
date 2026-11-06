@@ -5,6 +5,9 @@ import app.tab.store.core.firebase.orFallback
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.firebase.toUserMessage
 import app.tab.store.data.remote.FirestorePaths
+import app.tab.store.data.remote.booleanOr
+import app.tab.store.data.remote.numberOr
+import app.tab.store.data.remote.stringOr
 import app.tab.store.data.remote.toProduct
 import app.tab.store.data.remote.toStore
 import app.tab.store.domain.model.Order
