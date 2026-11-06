@@ -643,8 +643,21 @@ class SellerProductEditViewModel @Inject constructor(
      * unsigned preset rejects ZIP content and caps at 10 MB, which no real APK
      * fits inside, and a Firestore document is capped at 1 MiB.
      */
-    fun onApkPicked(bytes: ByteArray, fileName: String) {
+    /** A real file name: a content Uri's last segment is often just a number. */
+    private fun apkFileNameFor(raw: String): String {
+        val cleaned = raw.trim()
+        val looksNumeric = cleaned.isNotEmpty() && cleaned.all { it.isDigit() }
+        val base = if (looksNumeric || cleaned.isBlank()) {
+            _uiState.value.title.ifBlank { "app" }
+        } else {
+            cleaned.substringBeforeLast('.').ifBlank { "app" }
+        }
+        return base.replace(Regex("[^A-Za-z0-9._-]"), "_").take(50) + ".apk"
+    }
+
+    fun onApkPicked(bytes: ByteArray, rawFileName: String) {
         if (bytes.isEmpty()) return
+        val fileName = apkFileNameFor(rawFileName)
         // Sprout Safe first: the developer should know what their build asks for
         // before it reaches anyone.
         viewModelScope.launch {

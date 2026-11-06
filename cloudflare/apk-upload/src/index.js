@@ -90,7 +90,7 @@ async function handle(request, env) {
       let sampleCount = null;
       if (bound) {
         try {
-          const list = await env.APKS.list({ limit: 3 });
+          const list = await env.APKS.list({ limit: 20 });
           bucket = list.objects.map((o) => o.key);
           sampleCount = bucket.length;
         } catch (error) {
