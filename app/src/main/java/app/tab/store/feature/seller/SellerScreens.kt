@@ -182,6 +182,7 @@ fun SellerDashboardScreen(
         )
     }
 
+    Box(Modifier.fillMaxSize()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -193,20 +194,6 @@ fun SellerDashboardScreen(
             onBack = onBack,
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            SellerTab.entries.forEach { entry ->
-                SproutlyChip(
-                    text = entry.label,
-                    selected = tab == entry,
-                    onClick = { tab = entry },
-                )
-            }
-        }
 
         if (state.needsStore) {
             EmptyState(
@@ -298,6 +285,106 @@ fun SellerDashboardScreen(
             return@Column
         }
 
+        if (tab == SellerTab.APPS) {
+            Column(Modifier.padding(horizontal = 20.dp)) {
+                if (state.products.isEmpty()) {
+                    EmptyState(
+                        title = "No apps yet",
+                        message = "Publish one and it appears here.",
+                        icon = TablerIcons.Grid,
+                        actionLabel = "Publish an app",
+                        onAction = onProducts,
+                    )
+                } else {
+                    state.products.forEach { product ->
+                        Surface(
+                            onClick = onProducts,
+                            shape = SproutlyRadii.card,
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                SproutlyImage(
+                                    url = product.images.firstOrNull()?.url,
+                                    contentDescription = product.title,
+                                    modifier = Modifier.size(44.dp),
+                                    corner = 14.dp,
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(product.title, style = MaterialTheme.typography.titleSmall)
+                                    Text(
+                                        product.status.name.lowercase()
+                                            .replaceFirstChar { it.uppercase() },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                TablerIcon(
+                                    TablerIcons.ChevronRight,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = onProducts) { Text("Manage all apps") }
+                }
+                Spacer(Modifier.height(110.dp))
+            }
+            return@Column
+        }
+
+        if (tab == SellerTab.INSTALLS) {
+            Column(Modifier.padding(horizontal = 20.dp)) {
+                if (state.recentOrders.isEmpty()) {
+                    EmptyState(
+                        title = "No installs yet",
+                        message = "Share an app link to get your first one.",
+                        icon = TablerIcons.Receipt,
+                    )
+                } else {
+                    state.recentOrders.forEach { order ->
+                        Surface(
+                            shape = SproutlyRadii.card,
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        order.items.firstOrNull()?.title ?: "An app",
+                                        style = MaterialTheme.typography.titleSmall,
+                                    )
+                                    Text(
+                                        app.tab.store.core.utils.DateFormatters.relative(order.placedAt),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = onOrders) { Text("See every install") }
+                }
+                Spacer(Modifier.height(110.dp))
+            }
+            return@Column
+        }
+
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
                 shape = SproutlyRadii.hero,
@@ -306,21 +393,21 @@ fun SellerDashboardScreen(
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Text(
-                        "TOTAL REVENUE",
+                        "INSTALLS",
                         style = MaterialTheme.typography.labelSmall,
                         color = SproutlyPalette.LimeSoft,
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        formatPrice(state.stats.totalRevenue),
+                        InstallCount.label(state.stats.orderCount),
                         style = MaterialTheme.typography.displaySmall,
                         color = SproutlyPalette.Lime,
                     )
                     Spacer(Modifier.height(14.dp))
                     Row {
-                        DashStat("Installs", state.stats.orderCount.toString(), Modifier.weight(1f))
                         DashStat("Apps", state.stats.activeProducts.toString(), Modifier.weight(1f))
-                        DashStat("Avg order", formatPrice(state.stats.averageOrderValue), Modifier.weight(1f))
+                        DashStat("Drafts", state.drafts.size.toString(), Modifier.weight(1f))
+                        DashStat("Live", state.stats.activeProducts.toString(), Modifier.weight(1f))
                     }
                 }
             }
@@ -362,15 +449,8 @@ fun SellerDashboardScreen(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Bento(
-                    icon = TablerIcons.Receipt,
-                    label = "Installs",
-                    detail = "Who and when",
-                    modifier = Modifier.weight(1f),
-                    onClick = onOrders,
-                )
-                Bento(
                     icon = TablerIcons.Store,
-                    label = "Your store page",
+                    label = "Store page",
                     detail = "What people see",
                     modifier = Modifier.weight(1f),
                     onClick = onStoreEdit,
@@ -382,6 +462,9 @@ fun SellerDashboardScreen(
                     modifier = Modifier.weight(1f),
                     onClick = onAnalytics,
                 )
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Bento(
                     icon = if (state.store?.verified == true) TablerIcons.Verified else TablerIcons.Tag,
                     label = "Verification",
@@ -393,8 +476,14 @@ fun SellerDashboardScreen(
                     modifier = Modifier.weight(1f),
                     onClick = onStoreEdit,
                 )
+                Bento(
+                    icon = TablerIcons.Receipt,
+                    label = "All installs",
+                    detail = "Every install, dated",
+                    modifier = Modifier.weight(1f),
+                    onClick = onOrders,
+                )
             }
-
             Spacer(Modifier.height(18.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Developer profile", style = MaterialTheme.typography.headlineSmall)
@@ -537,8 +626,17 @@ fun SellerDashboardScreen(
                     }
                 }
             }
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(110.dp))
         }
+    }
+        SellerConsoleBar(
+            selected = tab,
+            onSelect = { tab = it },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 14.dp),
+        )
     }
 }
 
@@ -785,7 +883,65 @@ private fun Bento(
 }
 
 /** The developer console's tabs. */
-private enum class SellerTab(val label: String) {
-    OVERVIEW("Overview"),
-    OFFERS("Offers"),
+/** The console's floating bar: icon and label, pill highlight, no chrome. */
+@Composable
+private fun SellerConsoleBar(
+    selected: SellerTab,
+    onSelect: (SellerTab) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape = SproutlyRadii.nav,
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 10.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SellerTab.entries.forEach { entry ->
+                val active = entry == selected
+                Surface(
+                    onClick = { onSelect(entry) },
+                    shape = SproutlyRadii.pill,
+                    color = if (active) MaterialTheme.colorScheme.primary
+                    else Color.Transparent,
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TablerIcon(
+                            icon = entry.icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = if (active) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (active) {
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                entry.label,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private enum class SellerTab(val label: String, val icon: Int) {
+    OVERVIEW("Overview", TablerIcons.Home),
+    APPS("Apps", TablerIcons.Grid),
+    OFFERS("Offers", TablerIcons.Gift),
+    INSTALLS("Installs", TablerIcons.Receipt),
 }

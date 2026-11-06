@@ -159,11 +159,51 @@ fun AdminDashboardScreen(
 
             Spacer(Modifier.height(20.dp))
             Text("Moderation", style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(8.dp))
-            AdminRow(TablerIcons.Store, "Developers", "Approve, suspend, review", onStores)
-            AdminRow(TablerIcons.User, "Users", "Roles and access", onUsers)
-            AdminRow(TablerIcons.Package, "Reported apps", "Block or restore apps", onProducts)
-            AdminRow(TablerIcons.Grid, "Categories", "App categories", onCategories)
+            Spacer(Modifier.height(10.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AdminTile(
+                    icon = TablerIcons.Store,
+                    label = "Developers",
+                    count = state.overview.sellerCount.toString(),
+                    detail = if (state.overview.pendingStores > 0) {
+                        "${state.overview.pendingStores} awaiting approval"
+                    } else {
+                        "All reviewed"
+                    },
+                    emphasise = state.overview.pendingStores > 0,
+                    modifier = Modifier.weight(1f),
+                    onClick = onStores,
+                )
+                AdminTile(
+                    icon = TablerIcons.User,
+                    label = "Users",
+                    count = state.overview.userCount.toString(),
+                    detail = "Roles and access",
+                    modifier = Modifier.weight(1f),
+                    onClick = onUsers,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AdminTile(
+                    icon = TablerIcons.Package,
+                    label = "Reported apps",
+                    count = state.overview.blockedProducts.toString(),
+                    detail = if (state.overview.blockedProducts > 0) "Needs a decision" else "Nothing flagged",
+                    emphasise = state.overview.blockedProducts > 0,
+                    modifier = Modifier.weight(1f),
+                    onClick = onProducts,
+                )
+                AdminTile(
+                    icon = TablerIcons.Grid,
+                    label = "Categories",
+                    count = "",
+                    detail = "App categories",
+                    modifier = Modifier.weight(1f),
+                    onClick = onCategories,
+                )
+            }
 
             if (state.pendingStores.isNotEmpty()) {
                 Spacer(Modifier.height(20.dp))
@@ -692,5 +732,59 @@ fun AdminCategoriesScreen(
                 .align(Alignment.BottomCenter)
                 .padding(16.dp),
         )
+    }
+}
+
+/** One bento tile of the admin console: a count, a name, and what it needs. */
+@Composable
+private fun AdminTile(
+    @DrawableRes icon: Int,
+    label: String,
+    count: String,
+    detail: String,
+    modifier: Modifier = Modifier,
+    emphasise: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.card,
+        color = if (emphasise) MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.surface,
+        modifier = modifier,
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (emphasise) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.primaryContainer,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                TablerIcon(
+                    icon = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(17.dp),
+                    tint = if (emphasise) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+            if (count.isNotBlank()) {
+                Spacer(Modifier.height(10.dp))
+                Text(count, style = MaterialTheme.typography.headlineSmall)
+            } else {
+                Spacer(Modifier.height(10.dp))
+            }
+            Text(label, style = MaterialTheme.typography.titleSmall)
+            Text(
+                detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+            )
+        }
     }
 }
