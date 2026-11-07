@@ -330,7 +330,9 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onBack = { navController.popBackStack() },
                     onOpen = { link ->
                         when {
-                            link.startsWith("order/") -> go(Routes.orderDetail(link.removePrefix("order/")))
+                            // Orders no longer exist as a concept; an old link to one
+                            // lands on the library instead of nowhere.
+                            link.startsWith("order/") -> goTab(Routes.LIBRARY)
                             link.startsWith("product/") -> go(Routes.product(link.removePrefix("product/")))
                             link.startsWith("store/") -> go(Routes.store(link.removePrefix("store/")))
                         }
