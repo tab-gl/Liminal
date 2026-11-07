@@ -1,5 +1,12 @@
 package app.tab.store.feature.seller
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.tween
 import app.tab.store.core.ui.Tokens
 import androidx.annotation.DrawableRes
 
@@ -201,7 +208,15 @@ fun SellerDashboardScreen(
             return@Column
         }
 
-        if (tab == SellerTab.OFFERS) {
+        AnimatedContent(
+            targetState = tab,
+            transitionSpec = {
+                (fadeIn(tween(220)) + slideInVertically { it / 14 })
+                    .togetherWith(fadeOut(tween(120)) + slideOutVertically { -it / 20 })
+            },
+            label = "consoleTab",
+        ) { current ->
+        if (current == SellerTab.OFFERS) {
             Column(Modifier.padding(horizontal = 20.dp)) {
                 Text("Offers", style = Tokens.typography.headlineSmall)
                 Spacer(Modifier.height(4.dp))
@@ -277,10 +292,10 @@ fun SellerDashboardScreen(
                 }
                 Spacer(Modifier.height(24.dp))
             }
-            return@Column
+            return@AnimatedContent
         }
 
-        if (tab == SellerTab.APPS) {
+        if (current == SellerTab.APPS) {
             Column(Modifier.padding(horizontal = 20.dp)) {
                 if (state.products.isEmpty()) {
                     EmptyState(
@@ -334,10 +349,10 @@ fun SellerDashboardScreen(
                 }
                 Spacer(Modifier.height(110.dp))
             }
-            return@Column
+            return@AnimatedContent
         }
 
-        if (tab == SellerTab.INSTALLS) {
+        if (current == SellerTab.INSTALLS) {
             Column(Modifier.padding(horizontal = 20.dp)) {
                 if (state.recentOrders.isEmpty()) {
                     EmptyState(
@@ -377,7 +392,7 @@ fun SellerDashboardScreen(
                 }
                 Spacer(Modifier.height(110.dp))
             }
-            return@Column
+            return@AnimatedContent
         }
 
         Column(Modifier.padding(horizontal = 20.dp)) {
@@ -622,6 +637,7 @@ fun SellerDashboardScreen(
                 }
             }
             Spacer(Modifier.height(110.dp))
+        }
         }
     }
         SellerConsoleBar(

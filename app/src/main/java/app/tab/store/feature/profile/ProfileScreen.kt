@@ -64,7 +64,9 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            // The floating bar sits over the last row otherwise.
+            .padding(bottom = 120.dp),
     ) {
         // Header panel in brand lime
         Box(

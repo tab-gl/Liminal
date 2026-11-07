@@ -65,6 +65,28 @@ fun SearchScreen(
     onProduct: (String) -> Unit,
     onStore: (String) -> Unit = {},
     viewModel: SearchViewModel = hiltViewModel(),
+) = SearchPanel(
+    initialCategoryId = initialCategoryId,
+    initialQuery = initialQuery,
+    onProduct = onProduct,
+    onStore = onStore,
+    title = { Text("Search", style = Tokens.typography.headlineLarge) },
+    viewModel = viewModel,
+)
+
+/**
+ * The search UI without a page around it, so it can slide up inside Home and
+ * Games instead of taking over the screen. [onClose] shows a dismiss button.
+ */
+@Composable
+fun SearchPanel(
+    initialCategoryId: String? = null,
+    initialQuery: String? = null,
+    onProduct: (String) -> Unit,
+    onStore: (String) -> Unit = {},
+    onClose: (() -> Unit)? = null,
+    title: @Composable (() -> Unit)? = null,
+    viewModel: SearchViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val keyboard = LocalSoftwareKeyboardController.current
@@ -89,10 +111,15 @@ fun SearchScreen(
                 .padding(start = 20.dp, end = 8.dp, top = 14.dp, bottom = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Search", style = Tokens.typography.headlineLarge)
+            if (title != null) title() else Text("Search", style = Tokens.typography.headlineLarge)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { showSortSheet = true }) {
                 SproutlyIcon(PhosphorIcons.Filter, contentDescription = "Sort and filter")
+            }
+            if (onClose != null) {
+                IconButton(onClick = onClose) {
+                    SproutlyIcon(PhosphorIcons.Close, contentDescription = "Close search")
+                }
             }
         }
 

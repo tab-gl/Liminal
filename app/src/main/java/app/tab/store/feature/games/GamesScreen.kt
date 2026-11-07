@@ -1,5 +1,23 @@
 package app.tab.store.feature.games
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.utils.InstallCount
 import app.tab.store.core.ui.Tokens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +57,9 @@ fun GamesScreen(
     viewModel: GamesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var searchOpen by remember { mutableStateOf(false) }
 
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 148.dp),
@@ -50,10 +70,14 @@ fun GamesScreen(
                     Text("Games", style = Tokens.typography.headlineMedium)
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "${state.games.size}",
+                        InstallCount.label(state.games.size),
                         style = Tokens.typography.labelLarge,
                         color = Tokens.colorScheme.onSurfaceVariant,
                     )
+                    Spacer(Modifier.weight(1f))
+                    IconButton(onClick = { searchOpen = true }) {
+                        SproutlyIcon(PhosphorIcons.Search, contentDescription = "Search games")
+                    }
                 }
                 Text(
                     "Play something new",
@@ -121,6 +145,45 @@ fun GamesScreen(
                     if (row.size == 1) Spacer(Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(8.dp))
+            }
+        }
+    }
+        AnimatedVisibility(
+            visible = searchOpen,
+            enter = fadeIn(tween(160)),
+            exit = fadeOut(tween(140)),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.28f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                    ) { searchOpen = false },
+            )
+        }
+        AnimatedVisibility(
+            visible = searchOpen,
+            enter = slideInVertically(spring(dampingRatio = 0.86f, stiffness = 420f)) { it },
+            exit = slideOutVertically(tween(200)) { it },
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(
+                    topStart = 34.dp, topEnd = 34.dp,
+                ),
+                color = Tokens.colorScheme.background,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                app.tab.store.feature.search.SearchPanel(
+                    onProduct = { id ->
+                        searchOpen = false
+                        onProduct(id)
+                    },
+                    onClose = { searchOpen = false },
+                    title = { Text("Search games", style = Tokens.typography.headlineLarge) },
+                )
             }
         }
     }

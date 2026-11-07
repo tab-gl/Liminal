@@ -583,7 +583,10 @@ fun ProductDetailScreen(
 private fun ScreenshotViewer(urls: List<String>, startIndex: Int, onDismiss: () -> Unit) {
     androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
+        ),
     ) {
         val pager = rememberPagerState(initialPage = startIndex) { urls.size }
         Box(
@@ -610,8 +613,10 @@ private fun ScreenshotViewer(urls: List<String>, startIndex: Int, onDismiss: () 
             Text(
                 "${pager.currentPage + 1} / ${urls.size}",
                 style = Tokens.typography.labelLarge,
-                color = androidx.compose.ui.graphics.Color.White,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 28.dp),
+                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 36.dp),
             )
             Surface(
                 onClick = onDismiss,

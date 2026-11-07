@@ -686,70 +686,7 @@ fun SellerProductEditScreen(
                 )
             }
 
-            if (state.status == ProductStatus.ACTIVE && state.paidNeedsVerification) {
-                Spacer(Modifier.height(10.dp))
-                Surface(
-                    shape = SproutlyRadii.card,
-                    color = Tokens.colorScheme.errorContainer,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text(
-                            "Paid apps need a verified profile",
-                            style = Tokens.typography.titleSmall,
-                            color = Tokens.colorScheme.onErrorContainer,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Request verification from your profile, or " +
-                                "set the price to 0.",
-                            style = Tokens.typography.bodySmall,
-                            color = Tokens.colorScheme.onErrorContainer,
-                        )
-                    }
-                }
-            }
-
-            if (state.status == ProductStatus.ACTIVE && !state.canPublish) {
-                Spacer(Modifier.height(10.dp))
-                Surface(
-                    shape = SproutlyRadii.card,
-                    color = Tokens.colorScheme.errorContainer,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Text(
-                            "Your developer profile is still in review",
-                            style = Tokens.typography.titleSmall,
-                            color = Tokens.colorScheme.onErrorContainer,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "An admin has to approve your profile first. " +
-                                "Save a draft meanwhile.",
-                            style = Tokens.typography.bodySmall,
-                            color = Tokens.colorScheme.onErrorContainer,
-                        )
-                    }
-                }
-            }
-            Spacer(Modifier.height(18.dp))
-
-            if (state.error != null) {
-                Surface(
-                    color = Tokens.colorScheme.errorContainer,
-                    shape = Tokens.shapes.small,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        state.error.orEmpty(),
-                        style = Tokens.typography.bodySmall,
-                        color = Tokens.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(12.dp),
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
-            }
+            Spacer(Modifier.height(12.dp))
 
             Text(
                 text = when {
