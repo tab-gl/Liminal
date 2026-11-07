@@ -2,8 +2,6 @@ package app.tab.store.core.navigation
 
 import app.tab.store.core.ui.Tokens
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
@@ -169,6 +167,22 @@ private fun PillGroup(
     }
 }
 
+/** Reveals the bottom [fraction] of a layer; used to pour a filled glyph in. */
+private class FillReveal(private val fraction: Float) : androidx.compose.ui.graphics.Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+        density: androidx.compose.ui.unit.Density,
+    ) = androidx.compose.ui.graphics.Outline.Rectangle(
+        androidx.compose.ui.geometry.Rect(
+            left = 0f,
+            top = size.height * (1f - fraction),
+            right = size.width,
+            bottom = size.height,
+        ),
+    )
+}
+
 @Composable
 private fun FloatingTab(
     tab: TabDestination,
@@ -208,22 +222,42 @@ private fun FloatingTab(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Outline at rest, filled when current — cross-faded so the change
-            // reads as the icon settling, not as a swap.
-            Crossfade(
-                targetState = selected,
-                animationSpec = tween(180),
+            // The outline stays put and the filled glyph pours in over it from the
+            // bottom with a small pop, so selecting a tab reads as the icon filling
+            // up. Both layers are driven by one float read in the draw phase.
+            val fill = animateFloatAsState(
+                targetValue = if (selected) 1f else 0f,
+                animationSpec = spring(dampingRatio = 0.7f, stiffness = 380f),
                 label = "tabIconFill",
-            ) { filled ->
+            )
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .graphicsLayer {
+                        val scale = iconPop.value * tab.iconScale
+                        scaleX = scale
+                        scaleY = scale
+                    },
+            ) {
                 SproutlyIcon(
-                    icon = if (filled) tab.iconFilled else tab.icon,
+                    icon = tab.icon,
                     contentDescription = tab.label,
                     modifier = Modifier
-                        .size(24.dp)
+                        .matchParentSize()
+                        .graphicsLayer { alpha = 1f - fill.value.coerceIn(0f, 1f) },
+                    tint = content,
+                )
+                SproutlyIcon(
+                    icon = tab.iconFilled,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .matchParentSize()
                         .graphicsLayer {
-                            val scale = iconPop.value * tab.iconScale
-                            scaleX = scale
-                            scaleY = scale
+                            val f = fill.value.coerceIn(0f, 1f)
+                            alpha = if (f > 0f) 1f else 0f
+                            // Grows from the bottom edge upwards.
+                            clip = true
+                            shape = FillReveal(f)
                         },
                     tint = content,
                 )
