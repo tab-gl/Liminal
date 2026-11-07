@@ -154,6 +154,14 @@ service cloud.firestore {
       match /tokens/{tokenId} {
         allow read, write: if isSignedIn() && userId == uid();
       }
+
+      // Installed apps are a personal library, not commerce orders. Each user
+      // owns only their own app records; the product itself remains public data.
+      match /library/{productId} {
+        allow read, delete: if isSignedIn() && userId == uid();
+        allow create, update: if isSignedIn() && userId == uid()
+          && request.resource.data.productId == productId;
+      }
     }
 
     // -------------------------------------------------------------- stores
@@ -544,7 +552,7 @@ service cloud.firestore {
         // Scoped to order notices with a bounded body.
         // Admins resolve listings and tell the developer why.
         allow create: if isSignedIn()
-          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM', 'MODERATION', 'RATING', 'UPDATE']
+          && request.resource.data.type in ['ORDER', 'APPROVAL', 'SYSTEM', 'MODERATION', 'RATING', 'UPDATE']
           && request.resource.data.title is string
           && request.resource.data.body is string
           && request.resource.data.body.size() <= 200
@@ -552,7 +560,7 @@ service cloud.firestore {
           && (userId == uid() || isAdmin());
 
         allow create: if isSignedIn()
-          && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM']
+          && request.resource.data.type in ['ORDER', 'APPROVAL', 'SYSTEM']
           && request.resource.data.title is string
           && request.resource.data.title.size() <= 80
           && request.resource.data.body is string

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.tab.store.core.media.AppInstaller
 import app.tab.store.domain.model.Product
-import app.tab.store.domain.repository.OrderRepository
+import app.tab.store.domain.repository.AppLibraryRepository
 import app.tab.store.domain.repository.CatalogRepository
 import app.tab.store.domain.repository.DataResult
 import app.tab.store.domain.repository.WishlistRepository
@@ -51,7 +51,7 @@ class ProductDetailViewModel @Inject constructor(
     private val catalogRepository: CatalogRepository,
     private val appInstaller: app.tab.store.core.media.AppInstaller,
     private val auth: com.google.firebase.auth.FirebaseAuth,
-    private val orderRepository: OrderRepository,
+    private val appLibraryRepository: AppLibraryRepository,
     private val wishlistRepository: WishlistRepository,
     private val adminRepository: app.tab.store.domain.repository.AdminRepository,
 ) : ViewModel() {
@@ -170,13 +170,13 @@ class ProductDetailViewModel @Inject constructor(
             when (outcome) {
                 is AppInstaller.Outcome.Launched -> {
                     // A failed record must not undo an install that already started.
-                    (orderRepository.install(product.id) as? DataResult.Failure)?.let { failure ->
+                    (appLibraryRepository.recordInstall(product.id) as? DataResult.Failure)?.let { failure ->
                         _uiState.update { it.copy(message = failure.message) }
                     }
                 }
                 is AppInstaller.Outcome.Installed -> {
                     // Silent install through Shizuku: record it straight away.
-                    (orderRepository.install(product.id) as? DataResult.Failure)?.let { failure ->
+                    (appLibraryRepository.recordInstall(product.id) as? DataResult.Failure)?.let { failure ->
                         _uiState.update { it.copy(message = failure.message) }
                     }
                 }

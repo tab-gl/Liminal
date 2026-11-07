@@ -174,3 +174,8 @@ interface MediaRepository {
 }
 
 data class UploadedAsset(val url: String, val publicId: String, val width: Int, val height: Int, val bytes: Long)
+
+interface AppLibraryRepository {
+    fun observeMyApps(): Flow<List<app.tab.store.domain.model.InstalledApp>>
+    suspend fun recordInstall(productId: String): DataResult<Unit>
+}

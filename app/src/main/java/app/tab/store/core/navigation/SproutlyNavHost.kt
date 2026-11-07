@@ -55,13 +55,10 @@ import app.tab.store.feature.auth.LoginScreen
 import app.tab.store.feature.auth.RegisterScreen
 import app.tab.store.feature.home.HomeScreen
 import app.tab.store.feature.notifications.NotificationsScreen
-import app.tab.store.feature.orders.OrderDetailScreen
-import app.tab.store.feature.orders.OrderPlacedScreen
 import app.tab.store.feature.games.GamesScreen
 import app.tab.store.feature.legal.LegalScreen
 import app.tab.store.feature.onboarding.OnboardingScreen
 import app.tab.store.feature.offers.OffersScreen
-import app.tab.store.feature.orders.OrdersScreen
 import app.tab.store.feature.rankings.RankingsScreen
 import app.tab.store.feature.product.ProductDetailScreen
 import app.tab.store.feature.profile.ProfileEditScreen
@@ -70,7 +67,7 @@ import app.tab.store.feature.profile.SettingsScreen
 import app.tab.store.feature.search.SearchScreen
 import app.tab.store.feature.seller.SellerAnalyticsScreen
 import app.tab.store.feature.seller.SellerDashboardScreen
-import app.tab.store.feature.seller.SellerOrdersScreen
+import app.tab.store.feature.library.MyAppsScreen
 import app.tab.store.feature.seller.SellerProductEditScreen
 import app.tab.store.feature.seller.SellerProductsScreen
 import app.tab.store.feature.seller.SellerSetupScreen
@@ -211,7 +208,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onSearch = { goTab(Routes.SEARCH) },
                     onCategory = { go(Routes.searchInCategory(it)) },
                     onSeeAll = { goTab(Routes.SEARCH) },
-                    onDownloads = { goTab(Routes.ORDERS) },
+                    onDownloads = { goTab(Routes.LIBRARY) },
                     onProfile = { goTab(Routes.PROFILE) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
@@ -253,7 +250,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     isAdmin = role == UserRole.ADMIN,
                     onBack = { navController.popBackStack() },
                     onStore = { go(Routes.store(it)) },
-                    onDownloads = { goTab(Routes.ORDERS) },
+                    onDownloads = { goTab(Routes.LIBRARY) },
                     onProduct = { go(Routes.product(it)) },
                     onSearchTag = { tag -> go(Routes.search(tag)) },
                 )
@@ -305,42 +302,17 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 )
             }
 
-            composable(Routes.ORDERS) {
-                OrdersScreen(
-                    onOrder = { go(Routes.orderDetail(it)) },
-                    onStartShopping = { goTab(Routes.HOME) },
-                )
-            }
-            composable(
-                route = Routes.ORDER_DETAIL,
-                arguments = listOf(navArgument("orderId") { type = NavType.StringType }),
-            ) { entry ->
-                OrderDetailScreen(
-                    orderId = entry.arguments?.getString("orderId").orEmpty(),
-                    onBack = { navController.popBackStack() },
-                )
-            }
-            composable(
-                route = Routes.ORDER_PLACED,
-                arguments = listOf(navArgument("orderId") { type = NavType.StringType }),
-            ) { entry ->
-                OrderPlacedScreen(
-                    orderId = entry.arguments?.getString("orderId").orEmpty(),
-                    onTrackOrder = { orderId ->
-                        navController.navigate(Routes.orderDetail(orderId)) {
-                            popUpTo(Routes.HOME)
-                        }
-                    },
-                    onKeepShopping = {
-                        navController.navigate(Routes.HOME) { popUpTo(Routes.HOME) { inclusive = true } }
-                    },
+            composable(Routes.LIBRARY) {
+                MyAppsScreen(
+                    onProduct = { go(Routes.product(it)) },
+                    onBrowse = { goTab(Routes.HOME) },
                 )
             }
             composable(Routes.PROFILE) {
                 ProfileScreen(
                     onEditProfile = { go(Routes.PROFILE_EDIT) },
                     onWishlist = { go(Routes.WISHLIST) },
-                    onOrders = { goTab(Routes.ORDERS) },
+                    onOrders = { goTab(Routes.LIBRARY) },
                     onNotifications = { go(Routes.NOTIFICATIONS) },
                     onSellerHub = { go(Routes.SELLER_DASHBOARD) },
                     onBecomeDeveloper = { go(Routes.SELLER_SETUP) },
@@ -388,7 +360,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 SellerDashboardScreen(
                     onBack = { navController.popBackStack() },
                     onProducts = { go(Routes.SELLER_PRODUCTS) },
-                    onOrders = { go(Routes.SELLER_ORDERS) },
+                    onOrders = { goTab(Routes.LIBRARY) },
                     onAnalytics = { go(Routes.SELLER_ANALYTICS) },
                     onStoreEdit = { go(Routes.SELLER_STORE_EDIT) },
                     onSetupStore = { go(Routes.SELLER_SETUP) },
@@ -414,9 +386,6 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     productId = entry.arguments?.getString("productId")?.takeIf { it.isNotBlank() },
                     onBack = { navController.popBackStack() },
                 )
-            }
-            composable(Routes.SELLER_ORDERS) {
-                SellerOrdersScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.SELLER_ANALYTICS) {
                 SellerAnalyticsScreen(onBack = { navController.popBackStack() })

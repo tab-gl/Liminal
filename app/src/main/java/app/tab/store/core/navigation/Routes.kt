@@ -17,14 +17,12 @@ object Routes {
     const val LEGAL = "legal?terms={terms}"
 
     fun legal(terms: Boolean = false) = "legal?terms=$terms"
-    const val ORDERS = "orders"
+    const val LIBRARY = "library"
     const val PROFILE = "profile"
 
     // Customer detail destinations
     const val PRODUCT = "product/{productId}"
     const val STORE = "store/{storeId}"
-    const val ORDER_DETAIL = "order/{orderId}"
-    const val ORDER_PLACED = "order-placed/{orderId}"
     const val WISHLIST = "wishlist"
     const val PROFILE_EDIT = "profile-edit"
     const val NOTIFICATIONS = "notifications"
@@ -35,7 +33,6 @@ object Routes {
     const val SELLER_DASHBOARD = "seller/dashboard"
     const val SELLER_PRODUCTS = "seller/products"
     const val SELLER_PRODUCT_EDIT = "seller/product-edit?productId={productId}"
-    const val SELLER_ORDERS = "seller/orders"
     const val SELLER_ANALYTICS = "seller/analytics"
     const val SELLER_STORE_EDIT = "seller/store-edit"
 
@@ -48,8 +45,6 @@ object Routes {
 
     fun product(id: String) = "product/$id"
     fun store(id: String) = "store/$id"
-    fun orderDetail(id: String) = "order/$id"
-    fun orderPlaced(id: String) = "order-placed/$id"
     fun sellerProductEdit(id: String?) = "seller/product-edit?productId=${id ?: ""}"
     fun searchInCategory(categoryId: String) = "search?categoryId=${android.net.Uri.encode(categoryId)}"
 

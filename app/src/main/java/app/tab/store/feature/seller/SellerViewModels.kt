@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -414,6 +415,12 @@ data class ProductEditorUiState(
 
     val canGoLive: Boolean get() = canPublish && !paidNeedsVerification
 
+    val canAutoSaveDraft: Boolean
+        get() = title.trim().length >= 3 && categoryId.isNotBlank() &&
+            (isFree || priceRupees.isBlank() || effectivePrice > 0) && priceError == null &&
+            flavourError == null && uploadingFlavour < 0 &&
+            !isUploading && !isUploadingApk && !isUploadingScreenshot
+
     val canSave: Boolean
         get() = title.trim().length >= 3 &&
             categoryId.isNotBlank() &&
@@ -449,8 +456,16 @@ class SellerProductEditViewModel @Inject constructor(
         ProductEditorUiState(productId = productId, apkUploadEnabled = apkStorage.isConfigured),
     )
     val uiState: StateFlow<ProductEditorUiState> = _uiState.asStateFlow()
+    private var lastAutoSaveFingerprint: String? = null
 
     init {
+        viewModelScope.launch {
+            _uiState.debounce(900).collect { state ->
+                if ((productId == null || state.loaded) && state.canAutoSaveDraft) {
+                    persistDraft(state)
+                }
+            }
+        }
         viewModelScope.launch {
             catalogRepository.observeCategories().collect { categories ->
                 _uiState.update { it.copy(categories = categories) }
@@ -845,6 +860,54 @@ class SellerProductEditViewModel @Inject constructor(
         }
     }
 
+    private fun draftFingerprint(state: ProductEditorUiState): String = listOf(
+        state.title, state.description, state.categoryId, state.categoryLabel,
+        state.isFree, state.priceRupees, state.compareAtRupees, state.offerDays,
+        state.promoHeadline, state.promoBody, state.promoImageUrl,
+        state.versionName, state.versionCode, state.releaseNotes,
+        state.apkUrl, state.apkLink, state.flavours, state.scanRisk, state.scanScore,
+        state.scanPermissions, state.scanWarnings, state.stock, state.images,
+        state.screenshots, state.tags,
+    ).joinToString("|")
+
+    private suspend fun persistDraft(state: ProductEditorUiState) {
+        val fingerprint = draftFingerprint(state)
+        if (fingerprint == lastAutoSaveFingerprint || state.isSaving || !state.canAutoSaveDraft) return
+        val store = sellerRepository.observeMyStore().first() ?: return
+        _uiState.update { it.copy(isSaving = true, error = null) }
+        val product = Product(
+            id = state.productId.orEmpty(), storeId = store.id, storeName = store.name,
+            title = state.title.trim(), description = state.description,
+            categoryId = state.categoryId, categoryLabel = state.categoryLabel,
+            images = state.images, screenshots = state.screenshots,
+            price = state.effectivePrice,
+            compareAtPrice = if (state.isFree) null else Money.toPaise(state.compareAtRupees),
+            offerEndsAt = state.offerDays.toIntOrNull()?.let { System.currentTimeMillis() + it * 86_400_000L },
+            stock = state.stock.toIntOrNull() ?: 0,
+            apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
+            apkSizeBytes = state.apkSizeBytes,
+            flavours = state.flavours.filter { it.apkUrl.isNotBlank() }
+                .map { it.copy(name = it.name.trim(), apkUrl = it.apkUrl.trim()) },
+            promoHeadline = state.promoHeadline.trim(), promoBody = state.promoBody.trim(),
+            promoImageUrl = state.promoImageUrl,
+            versionName = state.versionName.trim().ifBlank { "1.0" },
+            versionCode = state.versionCode.toIntOrNull() ?: 1,
+            official = state.storeOfficial, scanRisk = state.scanRisk, scanScore = state.scanScore,
+            scanPermissions = state.scanPermissions, scanWarnings = state.scanWarnings,
+            releaseNotes = state.releaseNotes.trim(), status = ProductStatus.DRAFT,
+            tags = state.tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
+        )
+        when (val result = sellerRepository.upsertProduct(product)) {
+            is DataResult.Failure -> _uiState.update { it.copy(isSaving = false, error = result.message) }
+            is DataResult.Success -> {
+                lastAutoSaveFingerprint = fingerprint
+                _uiState.update { current ->
+                    current.copy(isSaving = false, productId = result.value, status = ProductStatus.DRAFT)
+                }
+            }
+        }
+    }
+
     fun save() {
         val state = _uiState.value
         if (!state.canSave) return
@@ -1068,6 +1131,54 @@ class SellerStoreEditViewModel @Inject constructor(
                             state.store.copy(bannerUrl = res.value.url, bannerPublicId = res.value.publicId)
                         },
                     )
+                }
+            }
+        }
+    }
+
+    private fun draftFingerprint(state: ProductEditorUiState): String = listOf(
+        state.title, state.description, state.categoryId, state.categoryLabel,
+        state.isFree, state.priceRupees, state.compareAtRupees, state.offerDays,
+        state.promoHeadline, state.promoBody, state.promoImageUrl,
+        state.versionName, state.versionCode, state.releaseNotes,
+        state.apkUrl, state.apkLink, state.flavours, state.scanRisk, state.scanScore,
+        state.scanPermissions, state.scanWarnings, state.stock, state.images,
+        state.screenshots, state.tags,
+    ).joinToString("|")
+
+    private suspend fun persistDraft(state: ProductEditorUiState) {
+        val fingerprint = draftFingerprint(state)
+        if (fingerprint == lastAutoSaveFingerprint || state.isSaving || !state.canAutoSaveDraft) return
+        val store = sellerRepository.observeMyStore().first() ?: return
+        _uiState.update { it.copy(isSaving = true, error = null) }
+        val product = Product(
+            id = state.productId.orEmpty(), storeId = store.id, storeName = store.name,
+            title = state.title.trim(), description = state.description,
+            categoryId = state.categoryId, categoryLabel = state.categoryLabel,
+            images = state.images, screenshots = state.screenshots,
+            price = state.effectivePrice,
+            compareAtPrice = if (state.isFree) null else Money.toPaise(state.compareAtRupees),
+            offerEndsAt = state.offerDays.toIntOrNull()?.let { System.currentTimeMillis() + it * 86_400_000L },
+            stock = state.stock.toIntOrNull() ?: 0,
+            apkUrl = state.apkUrl?.takeIf { it.isNotBlank() } ?: state.apkLink.trim(),
+            apkSizeBytes = state.apkSizeBytes,
+            flavours = state.flavours.filter { it.apkUrl.isNotBlank() }
+                .map { it.copy(name = it.name.trim(), apkUrl = it.apkUrl.trim()) },
+            promoHeadline = state.promoHeadline.trim(), promoBody = state.promoBody.trim(),
+            promoImageUrl = state.promoImageUrl,
+            versionName = state.versionName.trim().ifBlank { "1.0" },
+            versionCode = state.versionCode.toIntOrNull() ?: 1,
+            official = state.storeOfficial, scanRisk = state.scanRisk, scanScore = state.scanScore,
+            scanPermissions = state.scanPermissions, scanWarnings = state.scanWarnings,
+            releaseNotes = state.releaseNotes.trim(), status = ProductStatus.DRAFT,
+            tags = state.tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
+        )
+        when (val result = sellerRepository.upsertProduct(product)) {
+            is DataResult.Failure -> _uiState.update { it.copy(isSaving = false, error = result.message) }
+            is DataResult.Success -> {
+                lastAutoSaveFingerprint = fingerprint
+                _uiState.update { current ->
+                    current.copy(isSaving = false, productId = result.value, status = ProductStatus.DRAFT)
                 }
             }
         }
