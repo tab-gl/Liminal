@@ -351,11 +351,17 @@ fun SproutlyImage(
                 )
             }
         } else {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
+            val context = LocalContext.current
+            // One request per url, not one per recomposition: rebuilding it on
+            // every frame of a scroll was avoidable allocation and cache churn.
+            val request = remember(url) {
+                ImageRequest.Builder(context)
                     .data(url)
                     .crossfade(180)
-                    .build(),
+                    .build()
+            }
+            AsyncImage(
+                model = request,
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 modifier = Modifier.fillMaxSize(),

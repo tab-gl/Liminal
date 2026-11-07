@@ -283,7 +283,7 @@ fun SearchPanel(
                             }
                         }
                     } else {
-                    items(state.results.chunked(2)) { row ->
+                    items(state.results.distinctBy { it.id }.chunked(2), key = { row -> row.first().id }) { row ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()

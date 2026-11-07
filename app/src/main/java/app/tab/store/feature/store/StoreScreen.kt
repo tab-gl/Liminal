@@ -254,7 +254,7 @@ fun StoreScreen(
                 )
             }
         } else {
-            items(state.products.chunked(2)) { row ->
+            items(state.products.distinctBy { it.id }.chunked(2), key = { row -> row.first().id }) { row ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

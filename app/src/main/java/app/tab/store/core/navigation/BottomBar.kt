@@ -5,7 +5,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -22,17 +21,19 @@ import app.tab.store.core.ui.Surface
 import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,12 +46,15 @@ data class TabDestination(
     @DrawableRes val icon: Int,
     /** The filled variant of the same icon, shown while this tab is current. */
     @DrawableRes val iconFilled: Int = icon,
+    /** Some glyphs fill their whole box and look larger than their neighbours. */
+    val iconScale: Float = 1f,
 )
 
 /** Browsing destinations, in the left pill. */
 val primaryTabs = listOf(
     TabDestination(Routes.HOME, "Apps", PhosphorIcons.Apps, PhosphorIcons.AppsFilled),
-    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Dice, PhosphorIcons.GamesFilled),
+    // Outline and filled must be the same glyph: the controller, not a die.
+    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Gamepad, PhosphorIcons.GamesFilled, iconScale = 0.88f),
     TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.Gift, PhosphorIcons.OffersFilled),
 )
 
@@ -103,27 +107,19 @@ private fun PillGroup(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val density = LocalDensity.current
     // Measured positions, so one indicator can slide between tabs instead of
     // each tab fading its own background in and out.
     val bounds = remember { mutableStateMapOf<String, Pair<Int, Int>>() }
     val selected = tabs.firstOrNull { it.route == currentRoute }
     val target = selected?.let { bounds[it.route] }
 
-    // Low damping on purpose: the pill overshoots slightly and settles, which
-    // is what makes the movement read as fluid rather than mechanical.
-    val gooey = spring<Dp>(dampingRatio = 0.52f, stiffness = 520f)
-
-    val indicatorX by animateDpAsState(
-        targetValue = with(density) { (target?.first ?: 0).toDp() },
-        animationSpec = gooey,
-        label = "indicatorX",
-    )
-    val indicatorWidth by animateDpAsState(
-        targetValue = with(density) { (target?.second ?: 0).toDp() },
-        animationSpec = gooey,
-        label = "indicatorWidth",
-    )
+    // Settles with a small overshoot. Animated as plain floats and read only in
+    // the draw phase below, so a slide redraws the pill without recomposing it.
+    val slide = spring<Float>(dampingRatio = 0.72f, stiffness = 420f)
+    val indicatorX = animateFloatAsState(target?.first?.toFloat() ?: 0f, slide, label = "indicatorX")
+    val indicatorWidth = animateFloatAsState(target?.second?.toFloat() ?: 0f, slide, label = "indicatorWidth")
+    val indicatorColor = Tokens.colorScheme.primaryContainer
+    val indicatorVisible = target != null
 
     Surface(
         shape = RoundedCornerShape(36.dp),
@@ -137,18 +133,18 @@ private fun PillGroup(
         modifier = modifier,
     ) {
         Box(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
-            if (target != null && indicatorWidth > 0.dp) {
-                Box(
-                    Modifier
-                        .offset(x = indicatorX)
-                        .size(width = indicatorWidth, height = 46.dp)
-                        .background(
-                            Tokens.colorScheme.primaryContainer,
-                            RoundedCornerShape(30.dp),
-                        ),
-                )
-            }
             Row(
+                modifier = Modifier.drawBehind {
+                    val width = indicatorWidth.value
+                    if (indicatorVisible && width > 1f) {
+                        drawRoundRect(
+                            color = indicatorColor,
+                            topLeft = Offset(indicatorX.value, 0f),
+                            size = Size(width, size.height),
+                            cornerRadius = CornerRadius(30.dp.toPx()),
+                        )
+                    }
+                },
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -162,7 +158,10 @@ private fun PillGroup(
                         } else {
                             Modifier
                         },
-                        onMeasured = { x, width -> bounds[tab.route] = x to width },
+                        onMeasured = { x, width ->
+                            val next = x to width
+                            if (bounds[tab.route] != next) bounds[tab.route] = next
+                        },
                     )
                 }
             }
@@ -184,10 +183,10 @@ private fun FloatingTab(
         animationSpec = spring(dampingRatio = 0.9f, stiffness = 1400f),
         label = "tabContent",
     )
-    val iconSize by animateDpAsState(
-        targetValue = if (selected) 21.dp else 23.dp,
-        animationSpec = spring(dampingRatio = 0.75f, stiffness = 1500f),
-        label = "iconSize",
+    val iconPop = animateFloatAsState(
+        targetValue = if (selected) 0.92f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 900f),
+        label = "iconPop",
     )
 
     Surface(
@@ -199,11 +198,14 @@ private fun FloatingTab(
             onMeasured(coords.positionInParent().x.toInt(), coords.size.width)
         },
     ) {
+        // Centred in the tab, so the icon sits in the middle of the sliding pill
+        // whatever width the tab takes.
         Row(
-            modifier = Modifier.padding(
-                horizontal = if (selected) 12.dp else 10.dp,
-                vertical = 12.dp,
-            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(46.dp)
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // Outline at rest, filled when current — cross-faded so the change
@@ -216,7 +218,13 @@ private fun FloatingTab(
                 SproutlyIcon(
                     icon = if (filled) tab.iconFilled else tab.icon,
                     contentDescription = tab.label,
-                    modifier = Modifier.size(iconSize),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .graphicsLayer {
+                            val scale = iconPop.value * tab.iconScale
+                            scaleX = scale
+                            scaleY = scale
+                        },
                     tint = content,
                 )
             }
