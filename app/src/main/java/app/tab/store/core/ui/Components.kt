@@ -89,10 +89,12 @@ fun Text(
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
     textDecoration: androidx.compose.ui.text.style.TextDecoration? = null,
+    letterSpacing: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
     style: TextStyle = TextStyle.Default,
 ) {
     val resolved = (if (style == TextStyle.Default) DefaultTextStyle else style).copy(
         textDecoration = textDecoration ?: style.textDecoration,
+        letterSpacing = if (letterSpacing.isSpecified) letterSpacing else style.letterSpacing,
         color = if (color == Color.Unspecified) LocalContentColor.current else color,
         fontSize = if (fontSize.isSpecified) fontSize else style.fontSize,
         fontWeight = fontWeight ?: style.fontWeight,
@@ -416,6 +418,7 @@ fun AlertDialog(
     dismissButton: @Composable (() -> Unit)? = null,
     shape: Shape = RoundedCornerShape(32.dp),
     containerColor: Color = Tokens.colorScheme.surface,
+    icon: @Composable (() -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
     text: @Composable (() -> Unit)? = null,
 ) {
@@ -435,6 +438,12 @@ fun AlertDialog(
                     .clickable(enabled = false) {}
                     .padding(22.dp),
             ) {
+                icon?.let {
+                    androidx.compose.runtime.CompositionLocalProvider(
+                        LocalContentColor provides Tokens.colorScheme.primary,
+                    ) { it() }
+                    Spacer(Modifier.height(12.dp))
+                }
                 title?.let {
                     androidx.compose.runtime.CompositionLocalProvider(
                         LocalContentColor provides Tokens.colorScheme.onSurface,
@@ -713,6 +722,8 @@ fun TextField(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: androidx.compose.foundation.text.KeyboardActions =
+        androidx.compose.foundation.text.KeyboardActions.Default,
     shape: Shape = CircleShape,
     colors: TextFieldColors = TextFieldDefaults.colors(),
 ) {
@@ -742,6 +753,7 @@ fun TextField(
                 textStyle = Tokens.typography.bodyMedium.copy(color = colors.unfocusedTextColor),
                 cursorBrush = SolidColor(colors.cursorColor),
                 keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
