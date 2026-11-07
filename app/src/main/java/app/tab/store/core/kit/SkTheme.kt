@@ -8,6 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import app.tab.store.core.designsystem.Outfit
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,41 +52,41 @@ data class SkColors(
 @Immutable
 data class SkType(
     val display: TextStyle = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = Outfit,
         fontWeight = FontWeight.Bold,
         fontSize = 34.sp,
         lineHeight = 40.sp,
     ),
     val title: TextStyle = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = Outfit,
         fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
     ),
     val headline: TextStyle = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = Outfit,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         lineHeight = 24.sp,
     ),
     val body: TextStyle = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = Outfit,
         fontSize = 15.sp,
         lineHeight = 21.sp,
     ),
     val small: TextStyle = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = Outfit,
         fontSize = 13.sp,
         lineHeight = 18.sp,
     ),
     val label: TextStyle = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = Outfit,
         fontWeight = FontWeight.Medium,
         fontSize = 13.sp,
         lineHeight = 16.sp,
     ),
     val eyebrow: TextStyle = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = Outfit,
         fontWeight = FontWeight.SemiBold,
         fontSize = 11.sp,
         lineHeight = 14.sp,

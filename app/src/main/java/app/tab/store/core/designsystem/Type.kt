@@ -17,19 +17,18 @@ import app.tab.store.R
  * information reads cleanly.
  */
 /**
- * DM Sans (OFL) ships as one variable font; the weights below select instances
- * of its wght axis, so the scale keeps its editorial contrast without three
- * separate files.
+ * Outfit (OFL), instanced from its variable font into the four weights the app
+ * uses. Static instances rather than the variable file, because API 24 and 25
+ * have no font-variation support and would render every weight identically.
  */
-private val DmSans = FontFamily(
-    Font(R.font.dm_sans, FontWeight.Normal),
-    Font(R.font.dm_sans, FontWeight.Medium),
-    Font(R.font.dm_sans, FontWeight.SemiBold),
-    Font(R.font.dm_sans, FontWeight.Bold),
-    Font(R.font.dm_sans, FontWeight.Black),
+val Outfit = FontFamily(
+    Font(R.font.outfit_regular, FontWeight.Normal),
+    Font(R.font.outfit_medium, FontWeight.Medium),
+    Font(R.font.outfit_semibold, FontWeight.SemiBold),
+    Font(R.font.outfit_bold, FontWeight.Bold),
 )
 
-private val Sans = DmSans
+private val Sans = Outfit
 private val Serif = FontFamily.Serif
 
 private val Trim = LineHeightStyle(
