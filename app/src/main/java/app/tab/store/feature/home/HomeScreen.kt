@@ -40,10 +40,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.ShoppingBag
 import app.tab.store.core.ui.Badge
 import app.tab.store.core.ui.BadgedBox
 import app.tab.store.core.ui.IconButton

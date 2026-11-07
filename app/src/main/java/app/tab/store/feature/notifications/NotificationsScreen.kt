@@ -16,11 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Campaign
-import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material.icons.outlined.Receipt
 import app.tab.store.core.ui.Surface
 import app.tab.store.core.ui.Text
 import app.tab.store.core.ui.TextButton

@@ -19,11 +19,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.outlined.SearchOff
 import app.tab.store.core.ui.ExperimentalMaterial3ExpressiveApi
 import app.tab.store.core.ui.LoadingIndicator
 import app.tab.store.core.ui.ExperimentalMaterial3Api

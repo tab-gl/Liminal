@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import app.tab.store.core.ui.IconButton
 import app.tab.store.core.ui.Surface
 import app.tab.store.core.ui.Text

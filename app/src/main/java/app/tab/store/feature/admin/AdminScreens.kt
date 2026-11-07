@@ -21,14 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Storefront
 import app.tab.store.core.ui.HorizontalDivider
 import app.tab.store.core.ui.OutlinedTextField
 import app.tab.store.core.ui.SnackbarHost

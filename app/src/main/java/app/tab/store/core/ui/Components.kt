@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
@@ -157,7 +158,7 @@ fun Surface(
 
     Column(
         modifier = modifier
-            .androidx.compose.ui.draw.scale(scale)
+            .scale(scale)
             .clip(shape)
             .background(color)
             .then(
