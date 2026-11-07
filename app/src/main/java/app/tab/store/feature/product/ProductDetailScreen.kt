@@ -55,8 +55,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.ErrorState
 import app.tab.store.core.designsystem.PriceText
 import app.tab.store.core.designsystem.RatingBadge
@@ -173,7 +173,7 @@ fun ProductDetailScreen(
                             modifier = Modifier.size(40.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                TablerIcon(TablerIcons.ChevronLeft, contentDescription = "Back")
+                                SproutlyIcon(PhosphorIcons.ChevronLeft, contentDescription = "Back")
                             }
                         }
                         Row {
@@ -184,9 +184,9 @@ fun ProductDetailScreen(
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    TablerIcon(
-                                        if (state.isWishlisted) TablerIcons.FavouriteFilled
-                                        else TablerIcons.Favourite,
+                                    SproutlyIcon(
+                                        if (state.isWishlisted) PhosphorIcons.FavouriteFilled
+                                        else PhosphorIcons.Favourite,
                                         contentDescription =
                                             if (state.isWishlisted) "Remove from wishlist" else "Add to wishlist",
                                         tint = MaterialTheme.colorScheme.primary,
@@ -201,7 +201,7 @@ fun ProductDetailScreen(
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    TablerIcon(TablerIcons.Share, contentDescription = "Share")
+                                    SproutlyIcon(PhosphorIcons.Share, contentDescription = "Share")
                                 }
                             }
                         }
@@ -287,7 +287,7 @@ fun ProductDetailScreen(
                                     .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                TablerIcon(TablerIcons.Store,
+                                SproutlyIcon(PhosphorIcons.Store,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(20.dp),
@@ -305,8 +305,8 @@ fun ProductDetailScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            TablerIcon(
-                                TablerIcons.ArrowRight,
+                            SproutlyIcon(
+                                PhosphorIcons.ArrowRight,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -380,8 +380,8 @@ fun ProductDetailScreen(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            TablerIcon(
-                                TablerIcons.Share,
+                            SproutlyIcon(
+                                PhosphorIcons.Share,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -406,8 +406,8 @@ fun ProductDetailScreen(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            TablerIcon(
-                                TablerIcons.Tag,
+                            SproutlyIcon(
+                                PhosphorIcons.Tag,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -424,8 +424,8 @@ fun ProductDetailScreen(
                     if (product.versionName.isNotBlank()) {
                         Spacer(Modifier.height(14.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            TablerIcon(
-                                TablerIcons.Tag,
+                            SproutlyIcon(
+                                PhosphorIcons.Tag,
                                 contentDescription = null,
                                 modifier = Modifier.size(15.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -627,8 +627,8 @@ private fun ScreenshotViewer(urls: List<String>, startIndex: Int, onDismiss: () 
                 modifier = Modifier.align(Alignment.TopEnd).padding(top = 20.dp, end = 16.dp).size(40.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    TablerIcon(
-                        TablerIcons.Close,
+                    SproutlyIcon(
+                        PhosphorIcons.Close,
                         contentDescription = "Close",
                         tint = androidx.compose.ui.graphics.Color.White,
                     )
@@ -704,8 +704,8 @@ private fun RatingRow(
         Spacer(Modifier.width(6.dp))
         repeat(5) { index ->
             val star = index + 1
-            TablerIcon(
-                icon = TablerIcons.Star,
+            SproutlyIcon(
+                icon = PhosphorIcons.Star,
                 contentDescription = if (mine > 0) "Your rating" else null,
                 modifier = Modifier
                     .size(18.dp)

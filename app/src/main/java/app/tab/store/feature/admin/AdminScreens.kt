@@ -50,8 +50,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyButton
@@ -163,7 +163,7 @@ fun AdminDashboardScreen(
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AdminTile(
-                    icon = TablerIcons.Store,
+                    icon = PhosphorIcons.Store,
                     label = "Developers",
                     count = state.overview.sellerCount.toString(),
                     detail = if (state.overview.pendingStores > 0) {
@@ -176,7 +176,7 @@ fun AdminDashboardScreen(
                     onClick = onStores,
                 )
                 AdminTile(
-                    icon = TablerIcons.User,
+                    icon = PhosphorIcons.User,
                     label = "Users",
                     count = state.overview.userCount.toString(),
                     detail = "Roles and access",
@@ -187,7 +187,7 @@ fun AdminDashboardScreen(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AdminTile(
-                    icon = TablerIcons.Package,
+                    icon = PhosphorIcons.Package,
                     label = "Reported apps",
                     count = state.overview.blockedProducts.toString(),
                     detail = if (state.overview.blockedProducts > 0) "Needs a decision" else "Nothing flagged",
@@ -196,7 +196,7 @@ fun AdminDashboardScreen(
                     onClick = onProducts,
                 )
                 AdminTile(
-                    icon = TablerIcons.Grid,
+                    icon = PhosphorIcons.Grid,
                     label = "Categories",
                     count = "",
                     detail = "App categories",
@@ -301,7 +301,7 @@ private fun AdminRow(@DrawableRes icon: Int, title: String, subtitle: String, on
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(icon,
+                SproutlyIcon(icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(19.dp),
@@ -316,8 +316,8 @@ private fun AdminRow(@DrawableRes icon: Int, title: String, subtitle: String, on
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            TablerIcon(
-                TablerIcons.ArrowRight,
+            SproutlyIcon(
+                PhosphorIcons.ArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -399,7 +399,7 @@ fun AdminStoresScreen(
                                         TextButton(
                                             onClick = { viewModel.setStatus(store, StoreStatus.ACTIVE) },
                                         ) {
-                                            TablerIcon(TablerIcons.Tick, contentDescription = null, modifier = Modifier.size(16.dp))
+                                            SproutlyIcon(PhosphorIcons.Tick, contentDescription = null, modifier = Modifier.size(16.dp))
                                             Spacer(Modifier.width(4.dp))
                                             Text("Approve")
                                         }
@@ -407,8 +407,8 @@ fun AdminStoresScreen(
                                     // The store's own studio: everything it publishes
                                     // carries the Official badge.
                                     TextButton(onClick = { viewModel.setOfficial(store, !store.official) }) {
-                                        TablerIcon(
-                                            TablerIcons.Verified,
+                                        SproutlyIcon(
+                                            PhosphorIcons.Verified,
                                             contentDescription = null,
                                             modifier = Modifier.size(16.dp),
                                         )
@@ -558,7 +558,7 @@ fun AdminProductsScreen(
                 EmptyState(
                     title = "Nothing reported",
                     message = "Flagged apps will appear here for review.",
-                    icon = TablerIcons.Verified,
+                    icon = PhosphorIcons.Verified,
                 )
             } else {
                 LazyColumn(
@@ -764,7 +764,7 @@ private fun AdminTile(
                     ),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(
+                SproutlyIcon(
                     icon = icon,
                     contentDescription = null,
                     modifier = Modifier.size(17.dp),

@@ -32,8 +32,8 @@ import app.tab.store.core.designsystem.SproutlyTextField
 import app.tab.store.core.designsystem.SproutlyTopBar
 import app.tab.store.core.designsystem.UploadProgressBar
 import app.tab.store.core.utils.pickImageRequest
-import app.tab.store.core.designsystem.TablerIcon
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.SproutlyIcon
+import app.tab.store.core.designsystem.PhosphorIcons
 import app.tab.store.core.utils.rememberImagePicker
 
 @Composable
@@ -77,7 +77,7 @@ fun ProfileEditScreen(
                             .padding(2.dp),
                     ) {
                         Box(Modifier.padding(8.dp)) {
-                            TablerIcon(TablerIcons.Image,
+                            SproutlyIcon(PhosphorIcons.Image,
                                 contentDescription = "Change photo",
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.height(18.dp),

@@ -37,8 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyRadii
-import app.tab.store.core.designsystem.TablerIcon
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.SproutlyIcon
+import app.tab.store.core.designsystem.PhosphorIcons
 
 /**
  * The two things worth asking for before the store opens.
@@ -105,7 +105,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     title = "Apps from\nindependent\ndevelopers",
                     body = "Build it. Publish it. Grow it. Install what you like, and " +
                         "publish your own when you are ready.",
-                    icon = TablerIcons.Store,
+                    icon = PhosphorIcons.Store,
                     primary = "Continue" to { step = 1 },
                     secondary = null,
                 )
@@ -116,7 +116,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     body = "We use notifications for three things: an app you installed " +
                         "got an update, a developer replied to you, and a decision about " +
                         "something you published.",
-                    icon = TablerIcons.Notification,
+                    icon = PhosphorIcons.Notification,
                     primary = "Allow notifications" to {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -131,7 +131,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     eyebrow = "Ready",
                     title = "That is\nall we\nneed",
                     body = "You can change every one of these later in Settings.",
-                    icon = TablerIcons.Tick,
+                    icon = PhosphorIcons.Tick,
                     primary = "Open Sproutly" to onDone,
                     secondary = null,
                 )
@@ -158,7 +158,7 @@ private fun Panel(
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            TablerIcon(
+            SproutlyIcon(
                 icon = icon,
                 contentDescription = null,
                 modifier = Modifier.size(28.dp),

@@ -80,9 +80,9 @@ import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.formatPrice
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.categoryIcon
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.PhosphorIcons
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.domain.model.Category
 import app.tab.store.domain.model.Product
@@ -214,15 +214,15 @@ fun HomeScreen(
                                 }
                             },
                         ) {
-                            TablerIcon(TablerIcons.Notification, contentDescription = "Notifications")
+                            SproutlyIcon(PhosphorIcons.Notification, contentDescription = "Notifications")
                         }
                     }
                     // Downloads (the library of installed apps) lives in the top
                     // bar, not the bottom navigation: installing is a rare action
                     // compared with browsing, but checking what you own is common.
                     IconButton(onClick = onDownloads) {
-                        TablerIcon(
-                            icon = TablerIcons.Download,
+                        SproutlyIcon(
+                            icon = PhosphorIcons.Download,
                             contentDescription = "Downloads",
                             modifier = Modifier.size(22.dp),
                             tint = MaterialTheme.colorScheme.onSurface,
@@ -269,7 +269,7 @@ fun HomeScreen(
                             modifier = Modifier.padding(horizontal = 18.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            TablerIcon(TablerIcons.Search,
+                            SproutlyIcon(PhosphorIcons.Search,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp),
@@ -400,8 +400,8 @@ fun HomeScreen(
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                TablerIcon(
-                                    TablerIcons.Analytics,
+                                SproutlyIcon(
+                                    PhosphorIcons.Analytics,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -438,7 +438,7 @@ fun HomeScreen(
                         message = "New apps show up here.",
                         actionLabel = "Browse apps",
                         onAction = onSeeAll,
-                        icon = TablerIcons.Store,
+                        icon = PhosphorIcons.Store,
                     )
                 }
             } else {
@@ -625,7 +625,7 @@ fun HomeScreen(
         ) {
             Column(horizontalAlignment = Alignment.End) {
                 SmallFab(
-                    icon = TablerIcons.ArrowRight,
+                    icon = PhosphorIcons.ArrowRight,
                     contentDescription = "Back to top",
                     container = MaterialTheme.colorScheme.surface,
                     content = MaterialTheme.colorScheme.onSurface,
@@ -636,7 +636,7 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 SmallFab(
-                    icon = TablerIcons.Search,
+                    icon = PhosphorIcons.Search,
                     contentDescription = "Search apps",
                     container = MaterialTheme.colorScheme.primary,
                     content = MaterialTheme.colorScheme.onPrimary,
@@ -668,7 +668,7 @@ private fun CategoryChip(category: Category, onClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TablerIcon(
+            SproutlyIcon(
                 icon = categoryIcon(category.iconKey),
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
@@ -699,7 +699,7 @@ private fun SmallFab(
         modifier = Modifier.size(52.dp),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            TablerIcon(
+            SproutlyIcon(
                 icon = icon,
                 contentDescription = contentDescription,
                 modifier = Modifier

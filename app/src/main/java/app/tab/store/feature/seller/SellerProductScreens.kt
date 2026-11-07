@@ -68,8 +68,8 @@ import kotlinx.coroutines.withContext
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.QuantityStepper
 import app.tab.store.core.designsystem.RiskMeter
@@ -178,7 +178,7 @@ fun SellerProductsScreen(
                 EmptyState(
                     title = "No apps here",
                     message = "Publish your first app and it will appear in the store.",
-                    icon = TablerIcons.Package,
+                    icon = PhosphorIcons.Package,
                     actionLabel = "Publish app",
                     onAction = { onEdit(null) },
                 )
@@ -247,11 +247,11 @@ fun SellerProductsScreen(
                                             }
                                         },
                                     ) {
-                                        TablerIcon(
+                                        SproutlyIcon(
                                             if (product.status == ProductStatus.ACTIVE) {
-                                                TablerIcons.Close
+                                                PhosphorIcons.Close
                                             } else {
-                                                TablerIcons.Tick
+                                                PhosphorIcons.Tick
                                             },
                                             contentDescription = if (product.status == ProductStatus.ACTIVE) {
                                                 "Unpublish"
@@ -263,8 +263,8 @@ fun SellerProductsScreen(
                                         )
                                     }
                                     IconButton(onClick = { offerFor = product }) {
-                                        TablerIcon(
-                                            TablerIcons.Tag,
+                                        SproutlyIcon(
+                                            PhosphorIcons.Tag,
                                             contentDescription = "Offer",
                                             tint = if (product.hasActiveOffer) {
                                                 MaterialTheme.colorScheme.primary
@@ -275,7 +275,7 @@ fun SellerProductsScreen(
                                         )
                                     }
                                     IconButton(onClick = { confirmDelete = product }) {
-                                        TablerIcon(TablerIcons.Trash,
+                                        SproutlyIcon(PhosphorIcons.Trash,
                                             contentDescription = "Delete",
                                             tint = MaterialTheme.colorScheme.error,
                                             modifier = Modifier.size(19.dp),
@@ -364,7 +364,7 @@ fun SellerProductEditScreen(
                                 .padding(3.dp)
                                 .size(22.dp),
                         ) {
-                            TablerIcon(TablerIcons.Close,
+                            SproutlyIcon(PhosphorIcons.Close,
                                 contentDescription = "Remove image",
                                 modifier = Modifier.padding(4.dp),
                             )
@@ -383,7 +383,7 @@ fun SellerProductEditScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            TablerIcon(TablerIcons.Plus, contentDescription = "Add photo")
+                            SproutlyIcon(PhosphorIcons.Plus, contentDescription = "Add photo")
                             Text("Photo", style = MaterialTheme.typography.labelSmall)
                         }
                     }
@@ -452,8 +452,8 @@ fun SellerProductEditScreen(
                                 .size(22.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                TablerIcon(
-                                    TablerIcons.Close,
+                                SproutlyIcon(
+                                    PhosphorIcons.Close,
                                     contentDescription = "Remove screenshot",
                                     modifier = Modifier.size(13.dp),
                                 )
@@ -473,8 +473,8 @@ fun SellerProductEditScreen(
                                 LoadingIndicator(modifier = Modifier.size(24.dp))
                             } else {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    TablerIcon(
-                                        TablerIcons.Plus,
+                                    SproutlyIcon(
+                                        PhosphorIcons.Plus,
                                         contentDescription = "Add screenshot",
                                         modifier = Modifier.size(20.dp),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -805,8 +805,8 @@ private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TablerIcon(
-                    icon = if (isFree) TablerIcons.Sparkles else TablerIcons.Bag,
+                SproutlyIcon(
+                    icon = if (isFree) PhosphorIcons.Sparkles else PhosphorIcons.Bag,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -824,8 +824,8 @@ private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                TablerIcon(
-                    icon = TablerIcons.ChevronDown,
+                SproutlyIcon(
+                    icon = PhosphorIcons.ChevronDown,
                     contentDescription = "Change pricing",
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -959,8 +959,8 @@ private fun ApkSourcePicker(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        TablerIcon(
-                            icon = TablerIcons.Verified,
+                        SproutlyIcon(
+                            icon = PhosphorIcons.Verified,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -988,8 +988,8 @@ private fun ApkSourcePicker(
                             modifier = Modifier.size(28.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                TablerIcon(
-                                    icon = TablerIcons.Close,
+                                SproutlyIcon(
+                                    icon = PhosphorIcons.Close,
                                     contentDescription = "Remove build",
                                     modifier = Modifier.size(14.dp),
                                 )
@@ -1001,7 +1001,7 @@ private fun ApkSourcePicker(
             else -> {
                 SproutlyButton(
                     text = "Choose APK",
-                    icon = TablerIcons.Upload,
+                    icon = PhosphorIcons.Upload,
                     onClick = { picker.launch(APK_MIME_TYPES) },
                 )
                 Spacer(Modifier.height(6.dp))
@@ -1038,8 +1038,8 @@ private fun VerificationGate(
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                TablerIcon(
-                    icon = TablerIcons.Verified,
+                SproutlyIcon(
+                    icon = PhosphorIcons.Verified,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onErrorContainer,
@@ -1261,8 +1261,8 @@ private fun SproutSafeCard(
     ) {
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                TablerIcon(
-                    TablerIcons.Verified,
+                SproutlyIcon(
+                    PhosphorIcons.Verified,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = onColour,

@@ -111,7 +111,7 @@ fun SproutlyTopBar(
         navigationIcon = {
             if (onBack != null) {
                 IconButton(onClick = onBack) {
-                    TablerIcon(TablerIcons.ChevronLeft, contentDescription = "Back")
+                    Icon(PhosphorIcons.ChevronLeft, contentDescription = "Back")
                 }
             }
         },
@@ -180,7 +180,7 @@ fun SproutlyButton(
                 }
             } else {
                 if (icon != null) {
-                    TablerIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
+                    Icon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(text, style = MaterialTheme.typography.labelLarge)
@@ -213,7 +213,7 @@ fun SproutlySecondaryButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
-                TablerIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
+                Icon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                 Spacer(Modifier.width(8.dp))
             }
             Text(text, style = MaterialTheme.typography.labelLarge)
@@ -271,7 +271,7 @@ fun SproutlyChip(
 @Composable
 fun RatingBadge(rating: Double, count: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        TablerIcon(TablerIcons.Star,
+        Icon(PhosphorIcons.Star,
             contentDescription = null,
             modifier = Modifier.size(13.dp),
             tint = LocalSproutlyExtra.current.ratingGold,
@@ -429,7 +429,7 @@ fun EmptyState(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(
+                Icon(
                     icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -565,7 +565,7 @@ fun QuantityStepper(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onDecrease, enabled = enabled) {
-                TablerIcon(TablerIcons.Close, contentDescription = "Decrease", modifier = Modifier.size(17.dp))
+                Icon(PhosphorIcons.Close, contentDescription = "Decrease", modifier = Modifier.size(17.dp))
             }
             Text(
                 text = quantity.toString(),
@@ -574,7 +574,7 @@ fun QuantityStepper(
                 textAlign = TextAlign.Center,
             )
             IconButton(onClick = onIncrease, enabled = enabled && quantity < max) {
-                TablerIcon(TablerIcons.Plus, contentDescription = "Increase", modifier = Modifier.size(17.dp))
+                Icon(PhosphorIcons.Plus, contentDescription = "Increase", modifier = Modifier.size(17.dp))
             }
         }
     }
@@ -681,8 +681,8 @@ fun ProductCard(
                 )
                 Spacer(Modifier.weight(1f))
                 if (product.rating > 0) {
-                    TablerIcon(
-                        TablerIcons.Star,
+                    Icon(
+                        PhosphorIcons.Star,
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -889,7 +889,7 @@ fun SuccessCheck(modifier: Modifier = Modifier, size: Dp = 64.dp) {
             .background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
-        TablerIcon(TablerIcons.Tick,
+        Icon(PhosphorIcons.Tick,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.size(size / 2),
@@ -944,8 +944,8 @@ fun RiskMeter(
     ) {
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                TablerIcon(
-                    TablerIcons.Verified,
+                Icon(
+                    PhosphorIcons.Verified,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = content,
@@ -997,8 +997,8 @@ fun OfficialBadge(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TablerIcon(
-                TablerIcons.Verified,
+            Icon(
+                PhosphorIcons.Verified,
                 contentDescription = null,
                 modifier = Modifier.size(12.dp),
                 tint = MaterialTheme.colorScheme.onPrimary,

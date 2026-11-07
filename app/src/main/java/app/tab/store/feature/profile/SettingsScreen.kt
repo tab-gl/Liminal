@@ -6,8 +6,8 @@ import app.tab.store.core.designsystem.SproutlyChip
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.size
-import app.tab.store.core.designsystem.TablerIcon
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.SproutlyIcon
+import app.tab.store.core.designsystem.PhosphorIcons
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -247,8 +247,8 @@ private fun SettingLink(title: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-        TablerIcon(
-            TablerIcons.ChevronRight,
+        SproutlyIcon(
+            PhosphorIcons.ChevronRight,
             contentDescription = null,
             modifier = Modifier.size(18.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,

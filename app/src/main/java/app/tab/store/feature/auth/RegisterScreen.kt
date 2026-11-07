@@ -27,8 +27,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyTextField
 import app.tab.store.core.designsystem.SproutlyTopBar
@@ -85,7 +85,7 @@ fun RegisterScreen(
                 errorText = "Use at least 8 characters.",
                 trailing = {
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
-                        TablerIcon(if (state.passwordVisible) TablerIcons.Notification else TablerIcons.Notification,
+                        SproutlyIcon(if (state.passwordVisible) PhosphorIcons.Notification else PhosphorIcons.Notification,
                             contentDescription = "Toggle password visibility",
                         )
                     }

@@ -51,8 +51,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.OfficialBadge
 import app.tab.store.core.designsystem.EmptyState
@@ -98,7 +98,7 @@ fun SearchScreen(
             Text("Search", style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { showSortSheet = true }) {
-                TablerIcon(TablerIcons.Filter, contentDescription = "Sort and filter")
+                SproutlyIcon(PhosphorIcons.Filter, contentDescription = "Sort and filter")
             }
         }
 
@@ -121,12 +121,12 @@ fun SearchScreen(
                     .focusRequester(focusRequester),
                 placeholder = { Text("Search apps", style = MaterialTheme.typography.bodyMedium) },
                 leadingIcon = {
-                    TablerIcon(TablerIcons.Search, contentDescription = null, modifier = Modifier.size(20.dp))
+                    SproutlyIcon(PhosphorIcons.Search, contentDescription = null, modifier = Modifier.size(20.dp))
                 },
                 trailingIcon = {
                     if (state.query.isNotEmpty()) {
                         IconButton(onClick = { viewModel.onQueryChange("") }) {
-                            TablerIcon(TablerIcons.Close, contentDescription = "Clear")
+                            SproutlyIcon(PhosphorIcons.Close, contentDescription = "Clear")
                         }
                     }
                 },
@@ -203,7 +203,7 @@ fun SearchScreen(
                 state.isEmpty -> EmptyState(
                     title = "Nothing matched",
                     message = "Try a different keyword, or widen the filters.",
-                    icon = TablerIcons.SearchOff,
+                    icon = PhosphorIcons.SearchOff,
                     actionLabel = "Clear filters",
                     onAction = {
                         viewModel.setCategory(null, null)

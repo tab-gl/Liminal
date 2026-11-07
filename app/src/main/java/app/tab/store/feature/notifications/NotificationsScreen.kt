@@ -37,8 +37,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.SproutlyImage
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTopBar
@@ -129,7 +129,7 @@ fun NotificationsScreen(
             EmptyState(
                 title = "Nothing yet",
                 message = "Install an app and it shows up here.",
-                icon = TablerIcons.Notification,
+                icon = PhosphorIcons.Notification,
             )
         } else {
             LazyColumn(
@@ -184,10 +184,10 @@ fun NotificationsScreen(
 @Composable
 private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
     val icon: Int = when (item.type) {
-        NotificationType.ORDER -> TablerIcons.Receipt
-        NotificationType.STORE -> TablerIcons.Store
-        NotificationType.PROMO -> TablerIcons.Notification
-        NotificationType.SYSTEM -> TablerIcons.Notification
+        NotificationType.ORDER -> PhosphorIcons.Receipt
+        NotificationType.STORE -> PhosphorIcons.Store
+        NotificationType.PROMO -> PhosphorIcons.Notification
+        NotificationType.SYSTEM -> PhosphorIcons.Notification
     }
     Surface(
         onClick = onClick,
@@ -207,7 +207,7 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                SproutlyIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
@@ -265,8 +265,8 @@ private fun InstallRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            TablerIcon(
-                TablerIcons.ChevronRight,
+            SproutlyIcon(
+                PhosphorIcons.ChevronRight,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -51,8 +51,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyImage
@@ -92,7 +92,7 @@ fun SellerSetupScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(20.dp)) {
-                    TablerIcon(TablerIcons.Store,
+                    SproutlyIcon(PhosphorIcons.Store,
                         contentDescription = null,
                         tint = SproutlyPalette.OliveDeep,
                         modifier = Modifier.size(30.dp),
@@ -148,7 +148,7 @@ fun SellerSetupScreen(
                 onClick = viewModel::createStore,
                 enabled = state.canSubmit,
                 loading = state.isCreating,
-                icon = TablerIcons.Plus,
+                icon = PhosphorIcons.Plus,
             )
             Spacer(Modifier.height(12.dp))
             Text(
@@ -203,7 +203,7 @@ fun SellerDashboardScreen(
             EmptyState(
                 title = "No developer profile yet",
                 message = "Open a developer profile to start publishing apps on Sproutly.",
-                icon = TablerIcons.Store,
+                icon = PhosphorIcons.Store,
                 actionLabel = "Get started",
                 onAction = onSetupStore,
             )
@@ -226,7 +226,7 @@ fun SellerDashboardScreen(
                     EmptyState(
                         title = "Nothing published yet",
                         message = "Publish an app and it will appear here, ready for an offer.",
-                        icon = TablerIcons.Gift,
+                        icon = PhosphorIcons.Gift,
                     )
                 }
 
@@ -295,7 +295,7 @@ fun SellerDashboardScreen(
                     EmptyState(
                         title = "No apps yet",
                         message = "Publish one and it appears here.",
-                        icon = TablerIcons.Grid,
+                        icon = PhosphorIcons.Grid,
                         actionLabel = "Publish an app",
                         onAction = onProducts,
                     )
@@ -329,8 +329,8 @@ fun SellerDashboardScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                TablerIcon(
-                                    TablerIcons.ChevronRight,
+                                SproutlyIcon(
+                                    PhosphorIcons.ChevronRight,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -352,7 +352,7 @@ fun SellerDashboardScreen(
                     EmptyState(
                         title = "No installs yet",
                         message = "Share an app link to get your first one.",
-                        icon = TablerIcons.Receipt,
+                        icon = PhosphorIcons.Receipt,
                     )
                 } else {
                     state.recentOrders.forEach { order ->
@@ -425,7 +425,7 @@ fun SellerDashboardScreen(
             Spacer(Modifier.height(10.dp))
 
             Bento(
-                icon = TablerIcons.Plus,
+                icon = PhosphorIcons.Plus,
                 label = "Publish a new app",
                 detail = "Upload a build or paste a link, set a price, ship it.",
                 emphasis = true,
@@ -435,7 +435,7 @@ fun SellerDashboardScreen(
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Bento(
-                    icon = TablerIcons.Dice,
+                    icon = PhosphorIcons.Dice,
                     label = "Your apps",
                     detail = if (state.stats.activeProducts == 1) "1 app"
                     else "${state.stats.activeProducts} apps",
@@ -443,7 +443,7 @@ fun SellerDashboardScreen(
                     onClick = onProducts,
                 )
                 Bento(
-                    icon = TablerIcons.Receipt,
+                    icon = PhosphorIcons.Receipt,
                     label = "Installs",
                     detail = app.tab.store.core.utils.InstallCount.label(state.stats.orderCount) + " installs",
                     modifier = Modifier.weight(1f),
@@ -453,14 +453,14 @@ fun SellerDashboardScreen(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Bento(
-                    icon = TablerIcons.Store,
+                    icon = PhosphorIcons.Store,
                     label = "Store page",
                     detail = "What people see",
                     modifier = Modifier.weight(1f),
                     onClick = onStoreEdit,
                 )
                 Bento(
-                    icon = TablerIcons.Analytics,
+                    icon = PhosphorIcons.Analytics,
                     label = "Analytics",
                     detail = "Charts and trends",
                     modifier = Modifier.weight(1f),
@@ -470,7 +470,7 @@ fun SellerDashboardScreen(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Bento(
-                    icon = if (state.store?.verified == true) TablerIcons.Verified else TablerIcons.Tag,
+                    icon = if (state.store?.verified == true) PhosphorIcons.Verified else PhosphorIcons.Tag,
                     label = "Verification",
                     detail = when {
                         state.store?.verified == true -> "Verified"
@@ -481,7 +481,7 @@ fun SellerDashboardScreen(
                     onClick = onStoreEdit,
                 )
                 Bento(
-                    icon = TablerIcons.Receipt,
+                    icon = PhosphorIcons.Receipt,
                     label = "All installs",
                     detail = "Every install, dated",
                     modifier = Modifier.weight(1f),
@@ -501,7 +501,7 @@ fun SellerDashboardScreen(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        TablerIcon(TablerIcons.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
+                        SproutlyIcon(PhosphorIcons.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("Edit developer profile", style = MaterialTheme.typography.labelMedium)
                     }
@@ -684,7 +684,7 @@ private fun QuickAction(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(icon,
+                SproutlyIcon(icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(18.dp),
@@ -861,7 +861,7 @@ private fun Bento(
                     ),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(
+                SproutlyIcon(
                     icon = icon,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
@@ -921,7 +921,7 @@ private fun SellerConsoleBar(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        TablerIcon(
+                        SproutlyIcon(
                             icon = entry.icon,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
@@ -944,8 +944,8 @@ private fun SellerConsoleBar(
 }
 
 private enum class SellerTab(val label: String, val icon: Int) {
-    OVERVIEW("Overview", TablerIcons.Home),
-    APPS("Apps", TablerIcons.Grid),
-    OFFERS("Offers", TablerIcons.Gift),
-    INSTALLS("Installs", TablerIcons.Receipt),
+    OVERVIEW("Overview", PhosphorIcons.Home),
+    APPS("Apps", PhosphorIcons.Grid),
+    OFFERS("Offers", PhosphorIcons.Gift),
+    INSTALLS("Installs", PhosphorIcons.Receipt),
 }

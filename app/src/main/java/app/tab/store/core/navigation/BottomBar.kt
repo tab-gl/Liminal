@@ -36,8 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.tab.store.core.designsystem.TablerIcon
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.SproutlyIcon
+import app.tab.store.core.designsystem.PhosphorIcons
 
 data class TabDestination(
     val route: String,
@@ -49,14 +49,14 @@ data class TabDestination(
 
 /** Browsing destinations, in the left pill. */
 val primaryTabs = listOf(
-    TabDestination(Routes.HOME, "Apps", TablerIcons.Apps, TablerIcons.AppsFilled),
-    TabDestination(Routes.GAMES, "Games", TablerIcons.Dice, TablerIcons.GamesFilled),
-    TabDestination(Routes.OFFERS, "Offers", TablerIcons.Gift, TablerIcons.OffersFilled),
+    TabDestination(Routes.HOME, "Apps", PhosphorIcons.Apps, PhosphorIcons.AppsFilled),
+    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Dice, PhosphorIcons.GamesFilled),
+    TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.Gift, PhosphorIcons.OffersFilled),
 )
 
 /** You, in the right pill. Search is a FAB, not a tab. */
 val utilityTabs = listOf(
-    TabDestination(Routes.PROFILE, "Profile", TablerIcons.User, TablerIcons.UserFilled),
+    TabDestination(Routes.PROFILE, "Profile", PhosphorIcons.User, PhosphorIcons.UserFilled),
 )
 
 val mainTabs = primaryTabs + utilityTabs
@@ -213,7 +213,7 @@ private fun FloatingTab(
                 animationSpec = tween(180),
                 label = "tabIconFill",
             ) { filled ->
-                TablerIcon(
+                SproutlyIcon(
                     icon = if (filled) tab.iconFilled else tab.icon,
                     contentDescription = tab.label,
                     modifier = Modifier.size(iconSize),

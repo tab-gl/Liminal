@@ -30,7 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.SproutlyRadii
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.PhosphorIcons
 import app.tab.store.core.designsystem.formatPrice
 import app.tab.store.domain.model.Product
 
@@ -68,7 +68,7 @@ fun RankingsScreen(
                 EmptyState(
                     title = "Nothing ranked yet",
                     message = "Once apps start getting installed they will chart here.",
-                    icon = TablerIcons.Analytics,
+                    icon = PhosphorIcons.Analytics,
                 )
             }
         }

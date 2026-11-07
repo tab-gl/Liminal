@@ -8,7 +8,7 @@ rather than generic linting:
   secrets      a live credential committed by accident
   rules        Firestore rules that are malformed or over-permissive, and
                collections the app uses but the rules do not define
-  icons        TablerIcons constants and ic_tb_*.xml drifting apart
+  icons        PhosphorIcons constants and ic_ph_*.xml drifting apart
   kotlin       an import that no longer resolves, or unbalanced braces
   build        applicationId vs google-services.json, ABI filters leaking into
                defaultConfig, missing version fields, release not minified
@@ -155,22 +155,22 @@ def check_rules() -> list[str]:
 # ----------------------------------------------------------------------------- icons
 def check_icons() -> list[str]:
     problems: list[str] = []
-    icons_kt = os.path.join(JAVA, "app", "tab", "store", "core", "designsystem", "TablerIcons.kt")
+    icons_kt = os.path.join(JAVA, "app", "tab", "store", "core", "designsystem", "PhosphorIcons.kt")
     if not os.path.exists(icons_kt):
-        return ["TablerIcons.kt missing"]
+        return ["PhosphorIcons.kt missing"]
 
     body = "\n".join(
         line for line in read(icons_kt).splitlines() if not line.strip().startswith("//")
     )
-    referenced = set(re.findall(r"R\.drawable\.(ic_tb_\w+)", body))
+    referenced = set(re.findall(r"R\.drawable\.(ic_ph_\w+)", body))
     on_disk = {
         os.path.splitext(os.path.basename(p))[0]
-        for p in glob.glob(os.path.join(APP, "res", "drawable", "ic_tb_*.xml"))
+        for p in glob.glob(os.path.join(APP, "res", "drawable", "ic_ph_*.xml"))
     }
 
     for name in sorted(referenced - on_disk):
         problems.append(f"TablerIcons: {name} referenced but no drawable "
-                        f"(run tools/tabler.py)")
+                        f"(run tools/phosphor.py)")
     for name in sorted(on_disk - referenced):
         problems.append(f"drawable {name}.xml exists but TablerIcons never exposes it")
     return problems

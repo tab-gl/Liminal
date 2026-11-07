@@ -30,8 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.LoadingColumn
 import app.tab.store.core.designsystem.SproutlyImage
@@ -69,7 +69,7 @@ fun OrdersScreen(
                 state.orders.isEmpty() -> EmptyState(
                     title = "Nothing published yet",
                     message = "Apps you install show up here.",
-                    icon = TablerIcons.Receipt,
+                    icon = PhosphorIcons.Receipt,
                     actionLabel = "Browse apps",
                     onAction = onStartShopping,
                 )
@@ -122,8 +122,8 @@ private fun OrderCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.weight(1f))
-                TablerIcon(
-                    TablerIcons.ChevronRight,
+                SproutlyIcon(
+                    PhosphorIcons.ChevronRight,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,

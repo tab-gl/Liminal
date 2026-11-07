@@ -25,7 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.ProductCard
 import app.tab.store.core.designsystem.SectionHeader
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.PhosphorIcons
 
 /**
  * Games, as a section of their own rather than a filter chip on the app list.
@@ -68,7 +68,7 @@ fun GamesScreen(
                 EmptyState(
                     title = "No games yet",
                     message = "When developers publish games they will appear here.",
-                    icon = TablerIcons.Gamepad,
+                    icon = PhosphorIcons.Gamepad,
                 )
             }
         }

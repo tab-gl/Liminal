@@ -29,7 +29,7 @@ import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTag
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.PhosphorIcons
 import app.tab.store.core.designsystem.formatPrice
 import app.tab.store.domain.model.Product
 
@@ -74,7 +74,7 @@ fun OffersScreen(
                 EmptyState(
                     title = "No offers right now",
                     message = "When a developer discounts an app it shows up here.",
-                    icon = TablerIcons.Bag,
+                    icon = PhosphorIcons.Bag,
                 )
             }
         }

@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import app.tab.store.core.account.AccountRegistry
 import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.SproutlyRadii
-import app.tab.store.core.designsystem.TablerIcon
-import app.tab.store.core.designsystem.TablerIcons
+import app.tab.store.core.designsystem.SproutlyIcon
+import app.tab.store.core.designsystem.PhosphorIcons
 
 /** The three places a signed-in person can be. */
 enum class Workspace(val label: String, val blurb: String) {
@@ -149,8 +149,8 @@ fun AccountSwitcherSheet(
                             }
                         }
                         if (isCurrent) {
-                            TablerIcon(
-                                icon = TablerIcons.Tick,
+                            SproutlyIcon(
+                                icon = PhosphorIcons.Tick,
                                 contentDescription = "Signed in",
                                 modifier = Modifier.size(18.dp),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -164,8 +164,8 @@ fun AccountSwitcherSheet(
                                     modifier = Modifier.size(28.dp),
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
-                                        TablerIcon(
-                                            icon = TablerIcons.More,
+                                        SproutlyIcon(
+                                            icon = PhosphorIcons.More,
                                             contentDescription = "Options for ${account.email}",
                                             modifier = Modifier.size(16.dp),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -190,7 +190,7 @@ fun AccountSwitcherSheet(
                 }
             }
 
-            SheetAction(TablerIcons.Plus, "Add another account", onAddAccount)
+            SheetAction(PhosphorIcons.Plus, "Add another account", onAddAccount)
 
             Spacer(Modifier.height(8.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -224,11 +224,11 @@ fun AccountSwitcherSheet(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        TablerIcon(
+                        SproutlyIcon(
                             icon = when (workspace) {
-                                Workspace.SHOPPER -> TablerIcons.Store
-                                Workspace.DEVELOPER -> TablerIcons.Sparkles
-                                Workspace.ADMIN -> TablerIcons.Settings
+                                Workspace.SHOPPER -> PhosphorIcons.Store
+                                Workspace.DEVELOPER -> PhosphorIcons.Sparkles
+                                Workspace.ADMIN -> PhosphorIcons.Settings
                             },
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
@@ -251,8 +251,8 @@ fun AccountSwitcherSheet(
                             )
                         }
                         if (selected) {
-                            TablerIcon(
-                                icon = TablerIcons.Tick,
+                            SproutlyIcon(
+                                icon = PhosphorIcons.Tick,
                                 contentDescription = "Current workspace",
                                 modifier = Modifier.size(20.dp),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -265,7 +265,7 @@ fun AccountSwitcherSheet(
             Spacer(Modifier.height(8.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(6.dp))
-            SheetAction(TablerIcons.ArrowRight, "Sign out", onSignOut)
+            SheetAction(PhosphorIcons.ArrowRight, "Sign out", onSignOut)
 
             Spacer(Modifier.height(24.dp))
         }
@@ -313,7 +313,7 @@ private fun SheetAction(icon: Int, label: String, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(
+                SproutlyIcon(
                     icon = icon,
                     contentDescription = null,
                     modifier = Modifier.size(17.dp),

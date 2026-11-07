@@ -45,8 +45,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.tab.store.core.designsystem.TablerIcons
-import app.tab.store.core.designsystem.TablerIcon
+import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
@@ -120,7 +120,7 @@ fun ProfileScreen(
                     modifier = Modifier.size(38.dp),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        TablerIcon(TablerIcons.Edit,
+                        SproutlyIcon(PhosphorIcons.Edit,
                             contentDescription = "Edit profile",
                             tint = SproutlyPalette.Lime,
                             modifier = Modifier.size(18.dp),
@@ -143,15 +143,15 @@ fun ProfileScreen(
         Column(Modifier.padding(horizontal = 20.dp)) {
             Text("Account", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            ProfileRow(TablerIcons.Receipt, "My apps", "Installed and updates", onOrders)
-            ProfileRow(TablerIcons.Favourite, "Wishlist", "Saved for later", onWishlist)
-            ProfileRow(TablerIcons.Notification, "Notifications", "Updates and offers", onNotifications)
+            ProfileRow(PhosphorIcons.Receipt, "My apps", "Installed and updates", onOrders)
+            ProfileRow(PhosphorIcons.Favourite, "Wishlist", "Saved for later", onWishlist)
+            ProfileRow(PhosphorIcons.Notification, "Notifications", "Updates and offers", onNotifications)
 
             Spacer(Modifier.height(18.dp))
             Text("Publishing", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             ProfileRow(
-                TablerIcons.Store,
+                PhosphorIcons.Store,
                 if (user?.isSeller == true) "Developer hub" else "Publish an app",
                 if (user?.isSeller == true) "Manage your apps" else "Open a developer profile",
                 onClick = {
@@ -161,7 +161,7 @@ fun ProfileScreen(
             )
             if (user?.isAdmin == true) {
                 ProfileRow(
-                    TablerIcons.Settings,
+                    PhosphorIcons.Settings,
                     "Admin console",
                     "Moderate the store",
                     onAdmin,
@@ -171,7 +171,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(18.dp))
             Text("Preferences", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
-            ProfileRow(TablerIcons.Settings, "Settings", "App preferences") { showSettings = true }
+            ProfileRow(PhosphorIcons.Settings, "Settings", "App preferences") { showSettings = true }
 
             Spacer(Modifier.height(18.dp))
             Surface(
@@ -184,7 +184,7 @@ fun ProfileScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TablerIcon(TablerIcons.ArrowRight,
+                    SproutlyIcon(PhosphorIcons.ArrowRight,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                     )
@@ -285,7 +285,7 @@ private fun ProfileRow(@DrawableRes icon: Int, title: String, subtitle: String, 
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                TablerIcon(icon,
+                SproutlyIcon(icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(19.dp),
@@ -300,7 +300,7 @@ private fun ProfileRow(@DrawableRes icon: Int, title: String, subtitle: String, 
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            TablerIcon(TablerIcons.ArrowRight,
+            SproutlyIcon(PhosphorIcons.ArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
