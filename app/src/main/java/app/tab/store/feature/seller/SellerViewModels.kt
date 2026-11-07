@@ -94,7 +94,6 @@ data class SellerDashboardUiState(
 @HiltViewModel
 class SellerDashboardViewModel @Inject constructor(
     private val sellerRepository: SellerRepository,
-    orderRepository: OrderRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SellerDashboardUiState())
@@ -117,16 +116,6 @@ class SellerDashboardViewModel @Inject constructor(
                     launch {
                         sellerRepository.observeStats(store.id).collect { stats ->
                             _uiState.update { s -> s.copy(stats = stats) }
-                        }
-                    }
-                    launch {
-                        orderRepository.observeSellerOrders(store.id).collect { orders ->
-                            _uiState.update {
-                                it.copy(
-                                    recentOrders = orders.take(4),
-                                    drafts = emptyList(),
-                                )
-                            }
                         }
                     }
                     launch {

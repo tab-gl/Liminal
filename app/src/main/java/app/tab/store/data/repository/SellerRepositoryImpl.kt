@@ -11,7 +11,6 @@ import app.tab.store.data.remote.stringOr
 import app.tab.store.data.remote.toProduct
 import app.tab.store.data.remote.toStore
 import app.tab.store.domain.model.Order
-import app.tab.store.domain.model.OrderStatus
 import app.tab.store.domain.model.Product
 import app.tab.store.domain.model.ProductPerformance
 import app.tab.store.domain.model.ProductStatus
@@ -26,7 +25,6 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -213,83 +211,39 @@ class SellerRepositoryImpl @Inject constructor(
                 ).await()
         }
 
-    /**
-     * Seller analytics are derived from the seller's real order stream — the
-     * same documents the buyer sees — so the dashboard can never drift from
-     * actual sales.
-     */
-    override fun observeStats(storeId: String): Flow<SellerStats> {
-        val orders = firestore.collection(FirestorePaths.ORDERS)
-            .whereArrayContains("storeIds", storeId)
-            .orderBy("placedAt", Query.Direction.DESCENDING)
-            .limit(300)
-            .snapshotFlow()
-            .map { snap -> snap.documents.map { doc ->
-                @Suppress("UNCHECKED_CAST")
-                val items = doc.get("items") as? List<Map<String, Any?>> ?: emptyList()
-                val mine = items.filter { it["storeId"] == storeId }
-                Triple(
-                    doc.stringOr("status"),
-                    (doc.get("placedAt") as? Number)?.toLong() ?: 0L,
-                    mine,
-                )
-            } }
-            .orFallback(emptyList<Triple<String, Long, List<Map<String, Any?>>>>())
-
-        val products = firestore.collection(FirestorePaths.PRODUCTS)
+    /** Seller metrics come from product install counters, never order documents. */
+    override fun observeStats(storeId: String): Flow<SellerStats> =
+        firestore.collection(FirestorePaths.PRODUCTS)
             .whereEqualTo("storeId", storeId)
             .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toProduct() } }.orFallback(emptyList())
-
-        return combine(orders, products) { orderRows, productRows ->
-            val valid = orderRows.filter { it.first != OrderStatus.CANCELLED.name }
-            var revenue = 0L
-            var units = 0
-            val perProduct = mutableMapOf<String, ProductPerformance>()
-            val byDay = mutableMapOf<String, Long>()
-            val dayFormat = SimpleDateFormat("d MMM", Locale("en", "IN"))
-            val cutoff = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -6) }.timeInMillis
-
-            valid.forEach { (status, placedAt, items) ->
-                items.forEach { item ->
-                    val qty = (item["quantity"] as? Number)?.toInt() ?: 0
-                    val price = (item["unitPrice"] as? Number)?.toLong() ?: 0L
-                    val line = price * qty
-                    revenue += line
-                    units += qty
-                    val id = item["productId"] as? String ?: return@forEach
-                    val existing = perProduct[id]
-                    perProduct[id] = ProductPerformance(
-                        productId = id,
-                        title = item["title"] as? String ?: existing?.title.orEmpty(),
-                        imageUrl = item["imageUrl"] as? String,
-                        unitsSold = (existing?.unitsSold ?: 0) + qty,
-                        revenue = (existing?.revenue ?: 0L) + line,
+            .map { snap ->
+                val products = snap.documents.map { it.toProduct() }
+                val installs = products.sumOf { it.unitsSold.coerceAtLeast(0) }
+                val top = products.sortedByDescending { it.unitsSold }.take(5).map { product ->
+                    ProductPerformance(
+                        productId = product.id,
+                        title = product.title,
+                        imageUrl = product.images.firstOrNull()?.url,
+                        unitsSold = product.unitsSold,
+                        // Revenue stays zero until paid checkout is implemented.
+                        revenue = 0L,
                     )
-                    if (placedAt >= cutoff) {
-                        val key = dayFormat.format(Date(placedAt))
-                        byDay[key] = (byDay[key] ?: 0L) + line
-                    }
                 }
+                SellerStats(
+                    totalRevenue = 0L,
+                    orderCount = installs,
+                    unitsSold = installs,
+                    activeProducts = products.count { it.status == ProductStatus.ACTIVE },
+                    lowStockCount = 0,
+                    averageOrderValue = 0L,
+                    pendingOrders = 0,
+                    topProducts = top,
+                    revenueByDay = (0..6).map { offset ->
+                        val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, offset - 6) }
+                        SimpleDateFormat("d MMM", Locale("en", "IN")).format(cal.time) to 0L
+                    },
+                )
             }
+            .orFallback(SellerStats())
 
-            val days = (0..6).map { offset ->
-                val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, offset - 6) }
-                val key = dayFormat.format(cal.time)
-                key to (byDay[key] ?: 0L)
-            }
-
-            SellerStats(
-                totalRevenue = revenue,
-                orderCount = valid.size,
-                unitsSold = units,
-                activeProducts = productRows.count { it.status == ProductStatus.ACTIVE },
-                lowStockCount = productRows.count { it.stock in 1..5 },
-                averageOrderValue = if (valid.isEmpty()) 0 else revenue / valid.size,
-                pendingOrders = orderRows.count { it.first == OrderStatus.PENDING.name },
-                topProducts = perProduct.values.sortedByDescending { it.revenue }.take(5),
-                revenueByDay = days,
-            )
-        }
-    }
 }
