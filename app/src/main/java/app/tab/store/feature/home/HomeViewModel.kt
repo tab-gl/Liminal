@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -61,20 +62,25 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        // Combined in two groups so each `combine` stays a typed overload.
-        val rails = combine(
-            catalogRepository.observeFeatured(8),
-            catalogRepository.observeTrending(8),
-            catalogRepository.observeNewArrivals(6),
-        ) { featured, trending, newArrivals ->
-            // Games have their own tab, so they are not repeated in Apps.
-            Triple(featured.withoutGames(), trending.withoutGames(), newArrivals.withoutGames())
+        // One listener for the whole storefront: the four rails are views of the
+        // same snapshot, so opening a query per rail downloaded the same documents
+        // four times.
+        val catalogue = catalogRepository.observeCatalogue(60)
+        val rails = catalogue.map { items ->
+            val featured = items.filter { it.featured }.sortedByDescending { it.unitsSold }
+                .ifEmpty { items.sortedByDescending { it.unitsSold } }
+                .take(8)
+            Triple(
+                featured.withoutGames(),
+                items.sortedByDescending { it.unitsSold }.take(8).withoutGames(),
+                items.sortedByDescending { it.createdAt }.take(6).withoutGames(),
+            )
         }
         val extras = combine(
-            catalogRepository.observeRecommended(6),
+            catalogue.map { items -> items.sortedByDescending { it.rating }.take(6).withoutGames() },
             catalogRepository.observeRecentlyViewed(8),
         ) { recommended, recentlyViewed ->
-            recommended.withoutGames() to recentlyViewed.withoutGames()
+            recommended to recentlyViewed.withoutGames()
         }
 
         viewModelScope.launch {

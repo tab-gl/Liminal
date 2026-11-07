@@ -792,9 +792,7 @@ private fun FlavourBuildRow(
     val picker = rememberApkPicker { uri ->
         if (uri != null) {
             scope.launch {
-                val bytes = withContext(Dispatchers.IO) {
-                    context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                }
+                val bytes = withContext(Dispatchers.IO) { readPickedBuild(context, uri) }
                 if (bytes != null) {
                     onPicked(bytes, uri.lastPathSegment?.substringAfterLast('/') ?: "app.apk")
                 }
@@ -837,9 +835,7 @@ private fun ApkSourcePicker(
     val picker = rememberApkPicker { uri ->
         if (uri != null) {
             scope.launch {
-                val bytes = withContext(Dispatchers.IO) {
-                    context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                }
+                val bytes = withContext(Dispatchers.IO) { readPickedBuild(context, uri) }
                 if (bytes != null) {
                     val name = uri.lastPathSegment?.substringAfterLast('/') ?: "app.apk"
                     onPicked(bytes, name)
@@ -1238,5 +1234,26 @@ private fun SproutSafeCard(
                 )
             }
         }
+    }
+}
+
+/** Reads a picked build, refusing anything over the ceiling before allocating it. */
+private fun readPickedBuild(context: android.content.Context, uri: android.net.Uri): ByteArray? {
+    val limit = 100L * 1024 * 1024
+    val size = context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { it.length } ?: -1L
+    if (size > limit) return null
+    return context.contentResolver.openInputStream(uri)?.use { stream ->
+        // A stream that lies about its length still cannot exceed the ceiling.
+        val buffer = java.io.ByteArrayOutputStream()
+        val chunk = ByteArray(64 * 1024)
+        var total = 0L
+        while (true) {
+            val read = stream.read(chunk)
+            if (read <= 0) break
+            total += read
+            if (total > limit) return null
+            buffer.write(chunk, 0, read)
+        }
+        buffer.toByteArray()
     }
 }

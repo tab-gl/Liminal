@@ -57,7 +57,8 @@ class CatalogRepositoryImpl @Inject constructor(
 
     override suspend fun refreshCategories(): DataResult<Unit> = try {
         val snap = firestore.collection(FirestorePaths.CATEGORIES).orderBy("order").get().await()
-        cachedProductDao.clear()
+        // Nothing is cleared here. This used to wipe the product cache, which meant
+        // the six-hourly sync deleted the offline catalogue it exists to keep.
         DataResult.Success(Unit)
     } catch (t: Throwable) {
         DataResult.Failure(t.toUserMessage(), t)
@@ -78,6 +79,8 @@ class CatalogRepositoryImpl @Inject constructor(
             .snapshotFlow()
             .map { snap -> snap.documents.map { it.toProduct() } }
             .orFallback(emptyList())
+
+    override fun observeCatalogue(limit: Int): Flow<List<Product>> = activePage(limit)
 
     override fun observeFeatured(limit: Int): Flow<List<Product>> =
         activePage()
@@ -295,14 +298,15 @@ class CatalogRepositoryImpl @Inject constructor(
             .map { snap -> if (snap.exists()) snap.toStore() else null }.orFallback(null)
 
     override fun observeStoreProducts(storeId: String): Flow<List<Product>> =
-        // One equality filter and sorting done here: adding status and an orderBy
-        // needs a composite index, and without that index the query fails and the
-        // fallback shows "no apps" — which looked like the profile was broken.
-        products.whereEqualTo("storeId", storeId)
+        // The rules only allow a public listing query that constrains `status`, so
+        // this filters on status and narrows to the studio here. Querying by
+        // storeId alone was denied outright, which is why a studio page could come
+        // back empty.
+        products.whereEqualTo("status", ProductStatus.ACTIVE.name)
             .snapshotFlow()
             .map { snap ->
                 snap.documents.map { it.toProduct() }
-                    .filter { it.status == ProductStatus.ACTIVE }
+                    .filter { it.storeId == storeId }
                     .sortedByDescending { it.createdAt }
             }.orFallback(emptyList())
 

@@ -48,6 +48,12 @@ interface ProfileRepository {
 interface CatalogRepository {
     fun observeCategories(): Flow<List<Category>>
     suspend fun refreshCategories(): DataResult<Unit>
+    /**
+     * One snapshot of every active listing, so the storefront's rails share a
+     * single Firestore listener instead of opening four on the same query.
+     */
+    fun observeCatalogue(limit: Int = 60): Flow<List<Product>>
+
     fun observeFeatured(limit: Int = 10): Flow<List<Product>>
     fun observeTrending(limit: Int = 10): Flow<List<Product>>
     fun observeNewArrivals(limit: Int = 10): Flow<List<Product>>

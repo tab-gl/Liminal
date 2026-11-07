@@ -230,34 +230,33 @@ private fun FloatingTab(
                 animationSpec = spring(dampingRatio = 0.7f, stiffness = 380f),
                 label = "tabIconFill",
             )
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .graphicsLayer {
-                        val scale = iconPop.value * tab.iconScale
-                        scaleX = scale
-                        scaleY = scale
-                    },
-            ) {
+            // Two plain layers at a fixed size, cross-faded. matchParentSize and a
+            // clipping shape were cleverer, and left the bar empty on device.
+            val f = fill.value.coerceIn(0f, 1f)
+            Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
                 SproutlyIcon(
                     icon = tab.icon,
                     contentDescription = tab.label,
                     modifier = Modifier
-                        .matchParentSize()
-                        .graphicsLayer { alpha = 1f - fill.value.coerceIn(0f, 1f) },
+                        .size(24.dp)
+                        .graphicsLayer {
+                            alpha = 1f - f
+                            val scale = iconPop.value * tab.iconScale
+                            scaleX = scale
+                            scaleY = scale
+                        },
                     tint = content,
                 )
                 SproutlyIcon(
                     icon = tab.iconFilled,
                     contentDescription = null,
                     modifier = Modifier
-                        .matchParentSize()
+                        .size(24.dp)
                         .graphicsLayer {
-                            val f = fill.value.coerceIn(0f, 1f)
-                            alpha = if (f > 0f) 1f else 0f
-                            // Grows from the bottom edge upwards.
-                            clip = true
-                            shape = FillReveal(f)
+                            alpha = f
+                            val scale = iconPop.value * tab.iconScale
+                            scaleX = scale
+                            scaleY = scale
                         },
                     tint = content,
                 )

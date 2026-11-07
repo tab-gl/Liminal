@@ -6,6 +6,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -516,7 +519,15 @@ fun ModalBottomSheet(
                         .clip(CircleShape)
                         .background(Tokens.colorScheme.outlineVariant),
                 )
-                content()
+                // Tall content scrolls rather than running off the top of the
+                // screen, which is what hid the account switcher's rows.
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 620.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    content()
+                }
             }
         }
     }

@@ -59,8 +59,8 @@ export default {
       return json(
         {
           error: "Worker threw an exception.",
-          message: String(error && error.message ? error.message : error),
-          stack: String(error && error.stack ? error.stack : "").split("\n").slice(0, 4),
+          // No message or stack: this endpoint is public, and an internal error
+          // string is a map of the deployment.
           hint:
             "If this mentions APKS, the R2 binding is missing on this version. " +
             "If it mentions FIREBASE_API_KEY, the secret is missing. " +
@@ -86,18 +86,20 @@ async function handle(request, env) {
     // Firebase key are actually present on the running version.
     if (request.method === "GET" && url.pathname === "/health") {
       const bound = Boolean(env.APKS);
-      let bucket = null;
+      let readable = null;
       let sampleCount = null;
       if (bound) {
         try {
+          // Only a count leaves this endpoint: keys carry user identifiers and
+          // this URL is public.
           const list = await env.APKS.list({ limit: 20 });
-          bucket = list.objects.map((o) => o.key);
-          sampleCount = bucket.length;
+          readable = true;
+          sampleCount = list.objects.length;
         } catch (error) {
           return json({
             ok: false,
             binding: "APKS",
-            bucketError: String(error),
+            bucketError: "Bucket could not be listed.",
             hint: "The binding exists but the bucket cannot be read. Check that the bucket name in the binding matches the bucket you created.",
           }, 500);
         }
@@ -106,7 +108,7 @@ async function handle(request, env) {
         ok: bound && Boolean(env.FIREBASE_API_KEY),
         binding: bound ? "APKS" : "MISSING",
         firebaseKey: env.FIREBASE_API_KEY ? "set" : "MISSING",
-        sampleKeys: bucket,
+        bucketReadable: readable,
         sampleCount,
         hint: bound
           ? "Binding present. A 404 on a download means the key is wrong; a 500 means the bucket read failed."

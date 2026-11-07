@@ -160,7 +160,44 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
         contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) {
-        Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                // Swipe between the browsing tabs: drag from either edge and the
+                // neighbouring tab comes in from that side. Edge-only, so it never
+                // fights a horizontally scrolling row or the screenshot pager.
+                .pointerInput(currentRoute) {
+                    val edge = 32.dp.toPx()
+                    val threshold = 90.dp.toPx()
+                    var total = 0f
+                    var active = false
+                    detectHorizontalDragGestures(
+                        onDragStart = { offset ->
+                            active = offset.x < edge || offset.x > size.width - edge
+                            total = 0f
+                        },
+                        onDragEnd = {
+                            if (active && abs(total) > threshold) {
+                                val order = listOf(Routes.HOME, Routes.GAMES, Routes.OFFERS)
+                                val index = order.indexOf(currentRoute)
+                                if (index >= 0) {
+                                    val next = if (total < 0) index + 1 else index - 1
+                                    order.getOrNull(next)?.let { goTab(it) }
+                                }
+                            }
+                            active = false
+                            total = 0f
+                        },
+                        onDragCancel = { active = false; total = 0f },
+                        onHorizontalDrag = { change, amount ->
+                            if (active) {
+                                total += amount
+                                change.consume()
+                            }
+                        },
+                    )
+                },
+        ) {
         NavHost(
             navController = navController,
             // Resolved once per session, so a later role change does not move

@@ -75,8 +75,9 @@ jobs:
         run: ./gradlew :app:testUniversalDebugUnitTest --stacktrace
 
       - name: Android lint
+        # Warnings are allowed, errors are not. continue-on-error made this step a
+        # decoration: a lint error never failed a run.
         run: ./gradlew :app:lintUniversalDebug --stacktrace
-        continue-on-error: true
 
       - name: Assemble debug APKs (universal + arm32)
         run: |

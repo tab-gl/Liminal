@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 data class ProductDetailUiState(
@@ -58,6 +60,10 @@ class ProductDetailViewModel @Inject constructor(
 
     private val productId: String = savedStateHandle.get<String>("productId").orEmpty()
 
+    /** The store whose listeners are running, so they are not restarted per snapshot. */
+    private var followingStoreId: String? = null
+    private var storeJobs: List<Job> = emptyList()
+
     private val _uiState = MutableStateFlow(ProductDetailUiState())
     val uiState: StateFlow<ProductDetailUiState> = _uiState.asStateFlow()
 
@@ -88,21 +94,29 @@ class ProductDetailViewModel @Inject constructor(
                         error = if (product == null) "This product is no longer available." else null,
                     )
                 }
-                // Follow the listing to its developer, then to their shelf.
+                // Follow the listing to its developer. Collected once per store id:
+                // launching two more collectors on every product snapshot piled up
+                // duplicate listeners whenever the listing was edited.
                 val storeId = product?.storeId.orEmpty()
-                if (storeId.isNotBlank()) {
-                    launch {
-                        catalogRepository.observeStore(storeId).collect { store ->
-                            _uiState.update { it.copy(store = store) }
-                        }
-                    }
-                    launch {
-                        catalogRepository.observeStoreProducts(storeId).collect { apps ->
-                            _uiState.update { current ->
-                                current.copy(developerApps = apps.filter { it.id != productId })
-                            }
-                        }
-                    }
+                if (storeId.isNotBlank() && storeId != followingStoreId) {
+                    followingStoreId = storeId
+                    storeJobs.forEach { it.cancel() }
+                    storeJobs = listOf(
+                        launch {
+                            catalogRepository.observeStore(storeId)
+                                .distinctUntilChanged()
+                                .collect { store -> _uiState.update { it.copy(store = store) } }
+                        },
+                        launch {
+                            catalogRepository.observeStoreProducts(storeId)
+                                .distinctUntilChanged()
+                                .collect { apps ->
+                                    _uiState.update { current ->
+                                        current.copy(developerApps = apps.filter { it.id != productId })
+                                    }
+                                }
+                        },
+                    )
                 }
             }
         }
