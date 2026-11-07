@@ -193,9 +193,15 @@ describe("developer conversion", () => {
 });
 
 describe("paid apps", () => {
-  it("refuses a paid listing from an unverified developer", async () => {
-    await assertFails(
+  it("lets an unverified developer save a paid draft", async () => {
+    await assertSucceeds(
       setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "DRAFT" })),
+    );
+  });
+
+  it("refuses to make a paid listing live until the store is verified", async () => {
+    await assertFails(
+      setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "ACTIVE" })),
     );
   });
 
@@ -204,7 +210,7 @@ describe("paid apps", () => {
       await updateDoc(doc(context.firestore(), "stores", STORE), { verified: true });
     });
     await assertSucceeds(
-      setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "DRAFT" })),
+      setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "ACTIVE" })),
     );
   });
 
