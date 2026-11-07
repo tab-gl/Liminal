@@ -1,5 +1,6 @@
 package app.tab.store.core.navigation
 
+import app.tab.store.core.ui.Tokens
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut

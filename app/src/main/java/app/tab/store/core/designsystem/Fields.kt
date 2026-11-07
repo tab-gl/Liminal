@@ -1,5 +1,6 @@
 package app.tab.store.core.designsystem
 
+import app.tab.store.core.ui.Tokens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth

@@ -1,5 +1,6 @@
 package app.tab.store.feature.notifications
 
+import app.tab.store.core.ui.Tokens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

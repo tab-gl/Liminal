@@ -1,5 +1,6 @@
 package app.tab.store.core.designsystem
 
+import app.tab.store.core.ui.Tokens
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
