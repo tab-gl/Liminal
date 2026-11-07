@@ -410,7 +410,7 @@ data class ProductEditorUiState(
 
     /** A paid listing additionally needs a verified developer profile. */
     val paidNeedsVerification: Boolean
-        get() = priceRupees.toLongOrNull()?.let { it > 0 } == true && !storeVerified
+        get() = (Money.toPaise(priceRupees) ?: 0L) > 0L && !storeVerified
 
     val canGoLive: Boolean get() = canPublish && !paidNeedsVerification
 
@@ -420,7 +420,8 @@ data class ProductEditorUiState(
             hasBuild &&
             flavourError == null &&
             uploadingFlavour < 0 &&
-            !needsVerification &&
+            // Verification gates paid publication, not saving work as a draft.
+            // canGoLive applies the paid-profile check when status is ACTIVE.
             (isFree || effectivePrice > 0) &&
             !isSaving && !isUploading && !isUploadingApk
 

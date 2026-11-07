@@ -292,7 +292,10 @@ service cloud.firestore {
         || isAdmin();
 
       function paidNeedsVerification() {
-        return request.resource.data.price == 0
+        // Unverified developers may save paid listings as drafts. Verification
+        // is required only when a paid listing is made publicly available.
+        return request.resource.data.status != 'ACTIVE'
+          || request.resource.data.price == 0
           || (hasStore(request.resource.data.storeId)
             && storeDoc(request.resource.data.storeId).get('verified', false) == true);
       }
