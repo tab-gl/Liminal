@@ -109,7 +109,7 @@ fun ProfileScreen(
                     color = SproutlyPalette.Olive,
                     modifier = Modifier.size(38.dp),
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         SproutlyIcon(PhosphorIcons.Edit,
                             contentDescription = "Edit profile",
                             tint = SproutlyPalette.Lime,

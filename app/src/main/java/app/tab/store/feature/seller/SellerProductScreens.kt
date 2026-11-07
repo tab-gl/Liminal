@@ -462,7 +462,7 @@ fun SellerProductEditScreen(
                         color = Tokens.colorScheme.surfaceContainerLow,
                         modifier = Modifier.size(width = 108.dp, height = 190.dp),
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             if (state.isUploadingScreenshot) {
                                 LoadingIndicator(modifier = Modifier.size(24.dp))
                             } else {
@@ -918,7 +918,7 @@ private fun ApkSourcePicker(
                             color = Tokens.colorScheme.surface,
                             modifier = Modifier.size(28.dp),
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 SproutlyIcon(
                                     icon = PhosphorIcons.Close,
                                     contentDescription = "Remove build",

@@ -165,7 +165,7 @@ fun ProductDetailScreen(
                             color = Tokens.colorScheme.surface.copy(alpha = 0.92f),
                             modifier = Modifier.size(40.dp),
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 SproutlyIcon(PhosphorIcons.ChevronLeft, contentDescription = "Back")
                             }
                         }
@@ -176,7 +176,7 @@ fun ProductDetailScreen(
                                 color = Tokens.colorScheme.surface.copy(alpha = 0.92f),
                                 modifier = Modifier.size(40.dp),
                             ) {
-                                Box(contentAlignment = Alignment.Center) {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     SproutlyIcon(
                                         if (state.isWishlisted) PhosphorIcons.FavouriteFilled
                                         else PhosphorIcons.Favourite,
@@ -193,7 +193,7 @@ fun ProductDetailScreen(
                                 color = Tokens.colorScheme.surface.copy(alpha = 0.92f),
                                 modifier = Modifier.size(40.dp),
                             ) {
-                                Box(contentAlignment = Alignment.Center) {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     SproutlyIcon(PhosphorIcons.Share, contentDescription = "Share")
                                 }
                             }

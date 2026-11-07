@@ -697,7 +697,7 @@ private fun SmallFab(
         shadowElevation = 8.dp,
         modifier = Modifier.size(52.dp),
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             SproutlyIcon(
                 icon = icon,
                 contentDescription = contentDescription,

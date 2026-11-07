@@ -3,6 +3,7 @@ package app.tab.store.feature.profile
 import app.tab.store.core.ui.Tokens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -163,7 +164,7 @@ fun AccountSwitcherSheet(
                                     color = Tokens.colorScheme.surface,
                                     modifier = Modifier.size(28.dp),
                                 ) {
-                                    Box(contentAlignment = Alignment.Center) {
+                                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                         SproutlyIcon(
                                             icon = PhosphorIcons.More,
                                             contentDescription = "Options for ${account.email}",
