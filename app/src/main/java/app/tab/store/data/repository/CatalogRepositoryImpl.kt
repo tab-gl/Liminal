@@ -33,6 +33,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
@@ -108,6 +109,15 @@ class CatalogRepositoryImpl @Inject constructor(
      * documented in docs/ARCHITECTURE.md as the seam where a dedicated search
      * index (Algolia / Typesense) would slot in for typo tolerance.
      */
+    /**
+     * Search runs over one page of active listings, in the app.
+     *
+     * A Firestore range scan on `titleLower` needs a composite index with status;
+     * without that index the query fails and search silently returns nothing. It
+     * also cannot look inside a list, so tags were never searchable. Filtering a
+     * page here costs nothing at this size, matches titles, studios and tags, and
+     * cannot fail that way.
+     */
     override suspend fun search(
         query: String,
         categoryId: String?,
@@ -117,35 +127,34 @@ class CatalogRepositoryImpl @Inject constructor(
         pageSize: Int,
         pageToken: String?,
     ): DataResult<ProductPage> = try {
-        var q: Query = activeProducts()
+        val needle = query.trim().lowercase()
+        var items = activePage(limit = 200).first()
 
-        if (query.isNotBlank()) {
-            val needle = query.trim().lowercase()
-            q = q.whereGreaterThanOrEqualTo("titleLower", needle)
-                .whereLessThan("titleLower", needle + "\uF8FF")
+        if (needle.isNotBlank()) {
+            items = items.filter { product ->
+                product.title.lowercase().contains(needle) ||
+                    product.storeName.lowercase().contains(needle) ||
+                    product.categoryLabel.lowercase().contains(needle) ||
+                    product.tags.any { it.lowercase().contains(needle) }
+            }
         }
-        if (categoryId != null) q = q.whereEqualTo("categoryId", categoryId)
-        if (minPricePaise != null) q = q.whereGreaterThanOrEqualTo("price", minPricePaise)
-        if (maxPricePaise != null) q = q.whereLessThanOrEqualTo("price", maxPricePaise)
+        if (categoryId != null) items = items.filter { it.categoryId == categoryId }
+        if (minPricePaise != null) items = items.filter { it.price >= minPricePaise }
+        if (maxPricePaise != null) items = items.filter { it.price <= maxPricePaise }
 
-        q = when (sort) {
-            ProductSort.PRICE_LOW_HIGH -> q.orderBy("price", Query.Direction.ASCENDING)
-            ProductSort.PRICE_HIGH_LOW -> q.orderBy("price", Query.Direction.DESCENDING)
-            ProductSort.NEWEST -> q.orderBy("createdAt", Query.Direction.DESCENDING)
-            ProductSort.TOP_RATED -> q.orderBy("rating", Query.Direction.DESCENDING)
-            ProductSort.RELEVANCE -> q.orderBy("unitsSold", Query.Direction.DESCENDING)
+        items = when (sort) {
+            ProductSort.PRICE_LOW_HIGH -> items.sortedBy { it.price }
+            ProductSort.PRICE_HIGH_LOW -> items.sortedByDescending { it.price }
+            ProductSort.NEWEST -> items.sortedByDescending { it.createdAt }
+            ProductSort.TOP_RATED -> items.sortedByDescending { it.rating }
+            ProductSort.RELEVANCE -> items.sortedByDescending { it.unitsSold }
         }
 
-        if (pageToken != null) {
-            val anchor = products.document(pageToken).get().await()
-            if (anchor.exists()) q = q.startAfter(anchor)
-        }
-
-        val snapshot = q.limit(pageSize.toLong()).get().await()
-        val items = snapshot.documents.map { it.toProduct() }
-        val next = if (snapshot.size() == pageSize) snapshot.documents.lastOrNull()?.id else null
-        cache(items)
-        DataResult.Success(ProductPage(items, next))
+        val offset = pageToken?.toIntOrNull() ?: 0
+        val page = items.drop(offset).take(pageSize)
+        val next = if (offset + page.size < items.size) (offset + page.size).toString() else null
+        cache(page)
+        DataResult.Success(ProductPage(page, next))
     } catch (t: Throwable) {
         DataResult.Failure(t.toUserMessage(), t)
     }

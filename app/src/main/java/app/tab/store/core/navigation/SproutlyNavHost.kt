@@ -249,6 +249,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onStore = { go(Routes.store(it)) },
                     onDownloads = { goTab(Routes.ORDERS) },
                     onProduct = { go(Routes.product(it)) },
+                    onSearchTag = { tag -> go(Routes.search()) },
                 )
             }
             composable(

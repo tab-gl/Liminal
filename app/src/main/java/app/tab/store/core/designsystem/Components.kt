@@ -66,7 +66,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.tab.store.domain.model.Product
-import coil.compose.SubcomposeAsyncImage
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -357,20 +359,14 @@ fun SproutlyImage(
                 )
             }
         } else {
-            SubcomposeAsyncImage(
-                model = url,
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(url)
+                    .crossfade(180)
+                    .build(),
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 modifier = Modifier.fillMaxSize(),
-                loading = { ShimmerBox(Modifier.fillMaxSize(), corner = corner) },
-                error = {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        TablerIcon(TablerIcons.Image,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
             )
         }
     }
@@ -849,19 +845,14 @@ fun Avatar(
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         } else {
-            SubcomposeAsyncImage(
-                model = url,
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(url)
+                    .crossfade(180)
+                    .build(),
                 contentDescription = name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
-                loading = { ShimmerBox(Modifier.fillMaxSize(), corner = 0.dp) },
-                error = {
-                    Text(
-                        text = name.trim().take(1).uppercase().ifBlank { "S" },
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                },
             )
         }
     }

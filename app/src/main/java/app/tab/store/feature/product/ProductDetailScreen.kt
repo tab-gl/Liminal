@@ -77,6 +77,7 @@ fun ProductDetailScreen(
     onStore: (String) -> Unit,
     onDownloads: () -> Unit,
     onProduct: (String) -> Unit = {},
+    onSearchTag: (String) -> Unit = {},
     viewModel: ProductDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -134,7 +135,9 @@ fun ProductDetailScreen(
             else -> Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    // Room for the pinned install bar.
+                    .padding(bottom = 96.dp),
             ) {
                 Box {
                     val pagerState = rememberPagerState(
@@ -327,42 +330,6 @@ fun ProductDetailScreen(
                         onRate = { stars -> viewModel.rate(stars) },
                     )
 
-                    Spacer(Modifier.height(24.dp))
-                    Spacer(Modifier.height(20.dp))
-                    SproutlyButton(
-                        text = when {
-                            !state.isInstalling -> "Install"
-                            state.downloadProgress > 0f ->
-                                "Downloading ${(state.downloadProgress * 100).toInt()}%"
-                            else -> "Preparing…"
-                        },
-                        onClick = viewModel::installApp,
-                        enabled = state.canInstall,
-                        loading = state.isInstalling,
-                    )
-                    if (state.isInstalling) {
-                        Spacer(Modifier.height(10.dp))
-                        // A determinate bar at 0% renders as a hairline, which read
-                        // as "no loader". Unknown size gets the moving bar instead.
-                        if (state.downloadProgress > 0f) {
-                            LinearProgressIndicator(
-                                progress = { state.downloadProgress },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(SproutlyRadii.pill),
-                                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
-                            )
-                        } else {
-                            LinearProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(SproutlyRadii.pill),
-                                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
-                            )
-                        }
-                    }
                     if (state.installedPackage != null && !state.isInstalling) {
                         Spacer(Modifier.height(10.dp))
                         Surface(
@@ -514,12 +481,13 @@ fun ProductDetailScreen(
 
                     if (product.tags.isNotEmpty()) {
                         Spacer(Modifier.height(14.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            product.tags.take(4).forEach { tag ->
-                                SproutlyTag(
-                                    text = tag.uppercase(),
-                                    container = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    content = MaterialTheme.colorScheme.onSurfaceVariant,
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            product.tags.take(6).forEach { tag ->
+                                // A tag is a way in, not decoration: tapping it searches.
+                                SproutlyChip(
+                                    text = tag,
+                                    selected = false,
+                                    onClick = { onSearchTag(tag) },
                                 )
                             }
                         }
@@ -555,6 +523,42 @@ fun ProductDetailScreen(
                 },
             )
         }
+
+
+            if (product != null) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                ) {
+                    if (state.isInstalling) {
+                        LinearProgressIndicator(
+                            progress = { state.downloadProgress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(SproutlyRadii.pill),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    SproutlyButton(
+                        text = when {
+                            !state.isInstalling -> if (state.installedPackage != null) "Open" else "Install"
+                            state.downloadProgress > 0f ->
+                                "Downloading ${(state.downloadProgress * 100).toInt()}%"
+                            else -> "Preparing…"
+                        },
+                        onClick = {
+                            if (state.installedPackage != null) viewModel.openInstalledApp()
+                            else viewModel.installApp()
+                        },
+                        enabled = state.canInstall || state.installedPackage != null,
+                        loading = state.isInstalling,
+                    )
+                }
+            }
 
         SnackbarHost(
             hostState = snackbar,
