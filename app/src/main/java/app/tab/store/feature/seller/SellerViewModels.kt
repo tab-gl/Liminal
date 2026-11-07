@@ -461,7 +461,7 @@ class SellerProductEditViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _uiState.debounce(900).collect { state ->
-                if ((productId == null || state.loaded) && state.canAutoSaveDraft) {
+                if ((productId == null || state.loaded) && state.status == ProductStatus.DRAFT && state.canAutoSaveDraft) {
                     persistDraft(state)
                 }
             }
@@ -524,6 +524,7 @@ class SellerProductEditViewModel @Inject constructor(
                                     loaded = true,
                                 )
                             }
+                            lastAutoSaveFingerprint = draftFingerprint(_uiState.value)
                         }
                     }
                 }

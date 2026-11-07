@@ -757,6 +757,17 @@ fun SellerProductEditScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
+            Text(
+                text = when {
+                    state.isSaving && state.status == ProductStatus.DRAFT -> "Saving draft…"
+                    state.productId != null && state.status == ProductStatus.DRAFT -> "Draft saved automatically"
+                    state.status == ProductStatus.DRAFT -> "Draft saves automatically as you edit"
+                    else -> "Changes to a live app are saved when you publish them"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
             SproutlyButton(
                 text = when {
                     state.status == ProductStatus.ACTIVE && !state.canPublish -> "Waiting for approval"

@@ -95,8 +95,6 @@ interface WishlistRepository {
 interface OrderRepository {
     fun observeBuyerOrders(): Flow<List<Order>>
     fun observeOrder(orderId: String): Flow<Order?>
-    /** Adds an app to the library. No cart, no address: a digital install. */
-    suspend fun install(productId: String): DataResult<String>
     suspend fun cancelOrder(orderId: String): DataResult<Unit>
     fun observeSellerOrders(storeId: String): Flow<List<Order>>
     suspend fun updateOrderStatus(orderId: String, status: OrderStatus): DataResult<Unit>
