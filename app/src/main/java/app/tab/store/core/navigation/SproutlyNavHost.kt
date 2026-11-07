@@ -1,5 +1,9 @@
 package app.tab.store.core.navigation
 
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import app.tab.store.core.ui.Tokens
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
