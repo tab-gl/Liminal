@@ -17,7 +17,7 @@ const {
   assertSucceeds,
 } = require("@firebase/rules-unit-testing");
 const {
-  doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, writeBatch,
+  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where, writeBatch,
 } = require("firebase/firestore");
 
 const DEV = "dev1";      // developer: role SELLER, owns STORE
@@ -266,6 +266,96 @@ describe("wishlist", () => {
     await assertFails(
       getDocs(collection(env.authenticatedContext(BOB).firestore(), "wishlists", SHOPPER, "items")),
     );
+  });
+});
+
+describe("wishlist hearts", () => {
+  const item = () => doc(shopper(), "wishlists", SHOPPER, "items", "app1");
+
+  it("lets the owner save, read back and remove a heart", async () => {
+    await assertSucceeds(setDoc(item(), { productId: "app1" }));
+    await assertSucceeds(getDoc(item()));
+    await assertSucceeds(deleteDoc(item()));
+  });
+
+  it("refuses an item whose productId does not match its id", async () => {
+    await assertFails(setDoc(item(), { productId: "other" }));
+  });
+
+  it("keeps hearts private", async () => {
+    await assertSucceeds(setDoc(item(), { productId: "app1" }));
+    await assertFails(getDoc(doc(env.authenticatedContext(BOB).firestore(), "wishlists", SHOPPER, "items", "app1")));
+  });
+});
+
+describe("loopholes", () => {
+  it("does not let an owner approve or badge their own store", async () => {
+    const pending = env.authenticatedContext(DEV2).firestore();
+    await assertFails(updateDoc(doc(pending, "stores", STORE_PENDING), {
+      verificationStatus: "PENDING", status: "ACTIVE",
+    }));
+    await assertFails(updateDoc(doc(pending, "stores", STORE_PENDING), {
+      verificationStatus: "PENDING", official: true,
+    }));
+    await assertSucceeds(updateDoc(doc(pending, "stores", STORE_PENDING), {
+      verificationStatus: "PENDING", verificationRequestedAt: 5,
+    }));
+  });
+
+  it("refuses a new store that arrives pre-verified or official", async () => {
+    await assertFails(setDoc(doc(shopper(), "stores", "mine"), {
+      ownerId: SHOPPER, name: "Mine Studio", status: "PENDING", official: true,
+    }));
+    await assertFails(setDoc(doc(shopper(), "stores", "mine"), {
+      ownerId: SHOPPER, name: "Mine Studio", status: "PENDING", verified: true,
+    }));
+  });
+
+  it("does not let a developer revive a blocked listing", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "products", "app1"), { status: "BLOCKED" });
+    });
+    await assertFails(updateDoc(doc(dev(), "products", "app1"), { status: "ACTIVE", updatedAt: 2 }));
+  });
+
+  it("does not let a developer clear a report", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "products", "app1"), {
+        reported: true, reportReason: "x", reportCount: 1,
+      });
+    });
+    await assertFails(updateDoc(doc(dev(), "products", "app1"), { reported: false, updatedAt: 2 }));
+  });
+
+  it("refuses a new listing that seeds its own installs or rating", async () => {
+    await assertFails(setDoc(doc(dev(), "products", "fake"), product({ unitsSold: 5000 })));
+    await assertFails(setDoc(doc(dev(), "products", "fake2"), product({ rating: 5, ratingCount: 900 })));
+  });
+
+  it("lets a signed-in user bump installs by one and nothing more", async () => {
+    await assertSucceeds(updateDoc(doc(shopper(), "products", "app1"), { unitsSold: 1, updatedAt: 2 }));
+    await assertFails(updateDoc(doc(shopper(), "products", "app1"), { unitsSold: 500, updatedAt: 3 }));
+    await assertFails(updateDoc(doc(shopper(), "products", "app1"), { stock: 99, updatedAt: 3 }));
+  });
+
+  it("refuses an order that routes itself to another store", async () => {
+    const ts = (storeIds) => ({
+      buyerId: SHOPPER, status: "DELIVERED", subtotal: 0, shipping: 0, total: 0,
+      items: [{ productId: "app1", quantity: 1, unitPrice: 0, storeId: STORE }],
+      storeIds,
+    });
+    await assertSucceeds(setDoc(doc(shopper(), "orders", "ok1"), ts([STORE])));
+    await assertFails(setDoc(doc(shopper(), "orders", "bad1"), ts(["other-store"])));
+    await assertFails(setDoc(doc(shopper(), "orders", "bad2"), ts([STORE, "other-store"])));
+  });
+
+  it("refuses notices that carry a web link", async () => {
+    const n = (deepLink) => ({
+      type: "SYSTEM", title: "Hi", body: "x", deepLink, read: false,
+    });
+    const inbox = (id) => doc(shopper(), "notifications", BOB, "items", id);
+    await assertSucceeds(setDoc(inbox("a"), n("product/app1")));
+    await assertFails(setDoc(inbox("b"), n("https://evil.example/login")));
   });
 });
 

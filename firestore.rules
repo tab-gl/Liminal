@@ -164,6 +164,10 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.ownerId == uid()
         && request.resource.data.status == 'PENDING'
+        && request.resource.data.get('verified', false) == false
+        && request.resource.data.get('official', false) == false
+        && request.resource.data.get('rating', 0) == 0
+        && request.resource.data.get('ratingCount', 0) == 0
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 3
         && request.resource.data.name.size() <= 60;
@@ -173,6 +177,10 @@ service cloud.firestore {
       allow update: if (isSeller() && resource.data.ownerId == uid()
           && unchanged('ownerId')
           && unchanged('verified')
+          && unchanged('status')
+          && unchanged('official')
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['verificationStatus', 'verificationRequestedAt', 'updatedAt'])
           && request.resource.data.verificationStatus == 'PENDING');
 
       allow update: if (isSeller() && resource.data.ownerId == uid()
@@ -264,9 +272,9 @@ service cloud.firestore {
       // never go negative.
       function stockOnlyChange() {
         return request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['stock', 'unitsSold', 'updatedAt'])
-          && request.resource.data.stock is int
-          && request.resource.data.stock >= 0;
+            .hasOnly(['unitsSold', 'updatedAt'])
+          && request.resource.data.unitsSold is int
+          && request.resource.data.unitsSold == resource.data.get('unitsSold', 0) + 1;
       }
 
       // Split so the storefront's list queries never depend on get(): Firestore
@@ -291,6 +299,11 @@ service cloud.firestore {
 
       allow create: if isSeller()
         && request.resource.data.storeId == myStoreId()
+        && request.resource.data.get('unitsSold', 0) == 0
+        && request.resource.data.get('rating', 0) == 0
+        && request.resource.data.get('ratingCount', 0) == 0
+        && request.resource.data.get('featured', false) == false
+        && request.resource.data.get('reported', false) == false
         && (request.resource.data.status != 'ACTIVE'
             || storeIsApproved()
             || (request.resource.data.get('scanScore', 100) <= 50
@@ -304,6 +317,11 @@ service cloud.firestore {
 
       allow update: if isSeller()
         && resource.data.storeId == myStoreId()
+        // A listing a moderator blocked stays blocked until an admin lifts it.
+        && resource.data.status != 'BLOCKED'
+        && unchanged('reported')
+        && unchanged('reportReason')
+        && unchanged('reportCount')
         && unchanged('storeId')
         && unchanged('unitsSold')
         && unchanged('rating')
@@ -379,8 +397,12 @@ service cloud.firestore {
     match /wishlists/{userId} {
       allow read, write: if isSignedIn() && userId == uid();
 
+      // request.resource is null on read and delete, so the productId check
+      // belongs to writes only. Checking it on every operation made the heart
+      // unable to load, save or remove anything.
       match /items/{productId} {
-        allow read, write: if isSignedIn() && userId == uid()
+        allow read, delete: if isSignedIn() && userId == uid();
+        allow create, update: if isSignedIn() && userId == uid()
           && request.resource.data.productId == productId;
       }
     }
@@ -407,6 +429,7 @@ service cloud.firestore {
           && item.unitPrice >= 0
           && item.unitPrice == product.price
           && item.storeId == product.storeId
+          && item.storeId in request.resource.data.storeIds
           && product.status == 'ACTIVE';
       }
 
@@ -483,6 +506,7 @@ service cloud.firestore {
         && request.resource.data.items.size() <= 8
         && request.resource.data.storeIds is list
         && request.resource.data.storeIds.size() > 0
+        && request.resource.data.storeIds.size() <= request.resource.data.items.size()
         && subtotalMatches()
         && totalsConsistent()
         && itemValid(0)
@@ -527,9 +551,13 @@ service cloud.firestore {
         allow create: if isSignedIn()
           && request.resource.data.type in ['ORDER', 'INSTALL', 'APPROVAL', 'SYSTEM']
           && request.resource.data.title is string
+          && request.resource.data.title.size() <= 80
           && request.resource.data.body is string
           && request.resource.data.body.size() <= 200
           && request.resource.data.deepLink is string
+          // In-app destinations only: a notice must never carry a web link.
+          && request.resource.data.deepLink.size() <= 120
+          && !request.resource.data.deepLink.matches('.*://.*')
           && request.resource.data.read == false;
 
         allow delete: if false;

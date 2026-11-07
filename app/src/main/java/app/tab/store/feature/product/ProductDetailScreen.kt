@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -83,6 +84,7 @@ fun ProductDetailScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var showReportDialog by remember { mutableStateOf(false) }
+    var viewerStart by remember { mutableStateOf<Int?>(null) }
     val context = LocalContext.current
 
     fun shareProduct() {
@@ -183,9 +185,10 @@ fun ProductDetailScreen(
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     TablerIcon(
-                                        if (state.isWishlisted) TablerIcons.Favourite
+                                        if (state.isWishlisted) TablerIcons.FavouriteFilled
                                         else TablerIcons.Favourite,
-                                        contentDescription = "Wishlist",
+                                        contentDescription =
+                                            if (state.isWishlisted) "Remove from wishlist" else "Add to wishlist",
                                         tint = MaterialTheme.colorScheme.primary,
                                     )
                                 }
@@ -498,11 +501,13 @@ fun ProductDetailScreen(
                 Text("Screenshots", style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.height(10.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(product.screenshots) { shot ->
+                    itemsIndexed(product.screenshots) { index, shot ->
                         SproutlyImage(
                             url = shot.url,
-                            contentDescription = null,
-                            modifier = Modifier.size(width = 150.dp, height = 266.dp),
+                            contentDescription = "Screenshot ${index + 1} of ${product.screenshots.size}",
+                            modifier = Modifier
+                                .size(width = 150.dp, height = 266.dp)
+                                .clickable { viewerStart = index },
                             corner = 18.dp,
                         )
                     }
@@ -511,6 +516,16 @@ fun ProductDetailScreen(
 
                     Spacer(Modifier.height(28.dp))
                 }
+            }
+        }
+
+        viewerStart?.let { start ->
+            state.product?.screenshots?.takeIf { it.isNotEmpty() }?.let { shots ->
+                ScreenshotViewer(
+                    urls = shots.map { it.url },
+                    startIndex = start.coerceIn(0, shots.lastIndex),
+                    onDismiss = { viewerStart = null },
+                )
             }
         }
 
@@ -569,6 +584,59 @@ fun ProductDetailScreen(
     }
 }
 
+
+/** Full-screen screenshots: swipe sideways between them, tap outside or the close button to leave. */
+@Composable
+private fun ScreenshotViewer(urls: List<String>, startIndex: Int, onDismiss: () -> Unit) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        val pager = rememberPagerState(initialPage = startIndex) { urls.size }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.94f))
+                .clickable(onClick = onDismiss),
+        ) {
+            HorizontalPager(
+                state = pager,
+                modifier = Modifier.fillMaxSize(),
+                pageSpacing = 12.dp,
+            ) { page ->
+                SproutlyImage(
+                    url = urls[page],
+                    contentDescription = "Screenshot ${page + 1} of ${urls.size}",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 64.dp),
+                    corner = 16.dp,
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                )
+            }
+            Text(
+                "${pager.currentPage + 1} / ${urls.size}",
+                style = MaterialTheme.typography.labelLarge,
+                color = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 28.dp),
+            )
+            Surface(
+                onClick = onDismiss,
+                shape = CircleShape,
+                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.16f),
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 20.dp, end = 16.dp).size(40.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    TablerIcon(
+                        TablerIcons.Close,
+                        contentDescription = "Close",
+                        tint = androidx.compose.ui.graphics.Color.White,
+                    )
+                }
+            }
+        }
+    }
+}
 
 /** A short, structured report — the reason is what a moderator needs. */
 @Composable
