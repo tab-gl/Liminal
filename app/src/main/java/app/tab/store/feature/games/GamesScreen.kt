@@ -55,10 +55,10 @@ import app.tab.store.core.designsystem.PhosphorIcons
 @Composable
 fun GamesScreen(
     onProduct: (String) -> Unit,
+    onSearch: () -> Unit = {},
     viewModel: GamesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    var searchOpen by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize()) {
     LazyColumn(
@@ -76,7 +76,7 @@ fun GamesScreen(
                         color = Tokens.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.weight(1f))
-                    IconButton(onClick = { searchOpen = true }) {
+                    IconButton(onClick = onSearch) {
                         SproutlyIcon(PhosphorIcons.Search, contentDescription = "Search games")
                     }
                 }
@@ -149,43 +149,5 @@ fun GamesScreen(
             }
         }
     }
-        AnimatedVisibility(
-            visible = searchOpen,
-            enter = fadeIn(tween(160)),
-            exit = fadeOut(tween(140)),
-        ) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.28f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) { searchOpen = false },
-            )
-        }
-        AnimatedVisibility(
-            visible = searchOpen,
-            enter = slideInVertically(spring(dampingRatio = 0.86f, stiffness = 420f)) { it },
-            exit = slideOutVertically(tween(200)) { it },
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Surface(
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(
-                    topStart = 34.dp, topEnd = 34.dp,
-                ),
-                color = Tokens.colorScheme.background,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                app.tab.store.feature.search.SearchPanel(
-                    onProduct = { id ->
-                        searchOpen = false
-                        onProduct(id)
-                    },
-                    onClose = { searchOpen = false },
-                    title = { Text("Search games", style = Tokens.typography.headlineLarge) },
-                )
-            }
-        }
     }
 }

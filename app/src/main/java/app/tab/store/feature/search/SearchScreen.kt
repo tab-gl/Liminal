@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -64,8 +65,10 @@ fun SearchScreen(
     initialQuery: String? = null,
     onProduct: (String) -> Unit,
     onStore: (String) -> Unit = {},
+    onBack: (() -> Unit)? = null,
     viewModel: SearchViewModel = hiltViewModel(),
 ) = SearchPanel(
+    onClose = onBack,
     initialCategoryId = initialCategoryId,
     initialQuery = initialQuery,
     onProduct = onProduct,
@@ -92,6 +95,15 @@ fun SearchPanel(
     val keyboard = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     var showSortSheet by remember { mutableStateOf(false) }
+
+    // Only the search bar travels: it rises from the bottom edge, where the
+    // search button was, into its place under the title. Everything else on the
+    // page is already settled, so nothing else moves and there is no sheet.
+    val rise = remember { androidx.compose.animation.core.Animatable(1f) }
+    LaunchedEffect(Unit) {
+        rise.animateTo(0f, androidx.compose.animation.core.spring(dampingRatio = 0.8f, stiffness = 380f))
+        if (initialQuery.isNullOrBlank()) runCatching { focusRequester.requestFocus() }
+    }
 
     LaunchedEffect(initialQuery) {
         if (!initialQuery.isNullOrBlank()) viewModel.submitQuery(initialQuery)
@@ -132,7 +144,11 @@ fun SearchPanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .height(52.dp),
+                .height(52.dp)
+                .graphicsLayer {
+                    translationY = rise.value * 420.dp.toPx()
+                    alpha = 1f - rise.value * 0.4f
+                },
         ) {
             TextField(
                 value = state.query,

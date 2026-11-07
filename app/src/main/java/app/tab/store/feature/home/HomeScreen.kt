@@ -176,7 +176,6 @@ fun HomeScreen(
         }
     }
 
-    var searchOpen by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     // The search FAB starts as a labelled pill and shrinks to a bare circle once
     // the list is scrolled, so it stops covering content but stays reachable.
@@ -255,7 +254,7 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(16.dp))
                     Surface(
-                        onClick = { searchOpen = true },
+                        onClick = onSearch,
                         shape = SproutlyRadii.pill,
                         color = Tokens.colorScheme.surface,
                         border = androidx.compose.foundation.BorderStroke(
@@ -640,48 +639,7 @@ fun HomeScreen(
                     contentDescription = "Search apps",
                     container = Tokens.colorScheme.primary,
                     content = Tokens.colorScheme.onPrimary,
-                    onClick = { searchOpen = true },
-                )
-            }
-        }
-
-        // Search slides up over the storefront rather than navigating away: the
-        // rails stay behind it, so closing it returns you exactly where you were.
-        AnimatedVisibility(
-            visible = searchOpen,
-            enter = fadeIn(tween(160)),
-            exit = fadeOut(tween(140)),
-        ) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.28f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) { searchOpen = false },
-            )
-        }
-        AnimatedVisibility(
-            visible = searchOpen,
-            enter = slideInVertically(spring(dampingRatio = 0.86f, stiffness = 420f)) { it },
-            exit = slideOutVertically(tween(200)) { it },
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Surface(
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(
-                    topStart = 34.dp, topEnd = 34.dp,
-                ),
-                color = Tokens.colorScheme.background,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                app.tab.store.feature.search.SearchPanel(
-                    onProduct = { id ->
-                        searchOpen = false
-                        onProduct(id)
-                    },
-                    onClose = { searchOpen = false },
-                    title = { Text("Search", style = Tokens.typography.headlineLarge) },
+                    onClick = onSearch,
                 )
             }
         }

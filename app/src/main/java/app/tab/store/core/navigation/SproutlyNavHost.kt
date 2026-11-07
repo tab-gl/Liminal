@@ -205,7 +205,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 HomeScreen(
                     onProduct = { go(Routes.product(it)) },
                     onStore = { go(Routes.store(it)) },
-                    onSearch = { goTab(Routes.SEARCH) },
+                    onSearch = { go(Routes.search()) },
                     onCategory = { go(Routes.searchInCategory(it)) },
                     onSeeAll = { goTab(Routes.SEARCH) },
                     onDownloads = { goTab(Routes.LIBRARY) },
@@ -237,6 +237,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     initialQuery = entry.arguments?.getString("query").orEmpty(),
                     onProduct = { go(Routes.product(it)) },
                     onStore = { go(Routes.store(it)) },
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable(
@@ -268,7 +269,10 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             }
 
             composable(Routes.GAMES) {
-                GamesScreen(onProduct = { go(Routes.product(it)) })
+                GamesScreen(
+                    onProduct = { go(Routes.product(it)) },
+                    onSearch = { go(Routes.search()) },
+                )
             }
             composable(Routes.ONBOARDING) {
                 OnboardingScreen(
