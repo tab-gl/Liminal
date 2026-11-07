@@ -86,9 +86,11 @@ fun Text(
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
+    textDecoration: androidx.compose.ui.text.style.TextDecoration? = null,
     style: TextStyle = TextStyle.Default,
 ) {
     val resolved = (if (style == TextStyle.Default) DefaultTextStyle else style).copy(
+        textDecoration = textDecoration ?: style.textDecoration,
         color = if (color == Color.Unspecified) LocalContentColor.current else color,
         fontSize = if (fontSize.isSpecified) fontSize else style.fontSize,
         fontWeight = fontWeight ?: style.fontWeight,
@@ -141,9 +143,10 @@ fun Surface(
     border: BorderStroke? = null,
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
+    interactionSource: MutableInteractionSource? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val interaction = remember { MutableInteractionSource() }
+    val interaction = interactionSource ?: remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by androidx.compose.animation.core.animateFloatAsState(
         targetValue = if (pressed) 0.988f else 1f,
@@ -593,8 +596,10 @@ object OutlinedTextFieldDefaults {
         unfocusedPlaceholderColor: Color = Tokens.colorScheme.onSurfaceVariant,
         focusedLabelColor: Color = Tokens.colorScheme.primary,
         unfocusedLabelColor: Color = Tokens.colorScheme.onSurfaceVariant,
+        focusedBorderColor: Color = focusedIndicatorColor,
+        unfocusedBorderColor: Color = unfocusedIndicatorColor,
     ) = TextFieldColors(
-        focusedContainerColor, unfocusedContainerColor, focusedIndicatorColor, unfocusedIndicatorColor,
+        focusedContainerColor, unfocusedContainerColor, focusedBorderColor, unfocusedBorderColor,
         focusedTextColor, unfocusedTextColor, cursorColor,
         focusedPlaceholderColor, unfocusedPlaceholderColor, focusedLabelColor, unfocusedLabelColor,
     )
@@ -631,7 +636,12 @@ fun OutlinedTextField(
     label: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: androidx.compose.ui.text.input.VisualTransformation =
+        androidx.compose.ui.text.input.VisualTransformation.None,
+    textStyle: TextStyle = Tokens.typography.bodyLarge,
+    minLines: Int = 1,
     shape: Shape = RoundedCornerShape(24.dp),
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
     isError: Boolean = false,
@@ -657,6 +667,12 @@ fun OutlinedTextField(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            prefix?.let {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    LocalContentColor provides colors.unfocusedTextColor,
+                ) { it() }
+                Spacer(Modifier.width(6.dp))
+            }
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 if (value.isEmpty() && placeholder != null) {
                     androidx.compose.runtime.CompositionLocalProvider(
@@ -668,9 +684,11 @@ fun OutlinedTextField(
                     onValueChange = onValueChange,
                     enabled = enabled,
                     singleLine = singleLine,
-                    textStyle = Tokens.typography.bodyMedium.copy(color = colors.unfocusedTextColor),
+                    minLines = minLines,
+                    textStyle = textStyle.copy(color = colors.unfocusedTextColor),
                     cursorBrush = SolidColor(colors.cursorColor),
                     keyboardOptions = keyboardOptions,
+                    visualTransformation = visualTransformation,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
