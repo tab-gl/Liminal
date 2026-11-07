@@ -51,6 +51,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -135,7 +136,7 @@ fun Text(
 @Composable
 fun Surface(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(Tokens.shapes.medium.dp),
+    shape: Shape = Tokens.shapes.medium,
     color: Color = Tokens.colorScheme.surface,
     contentColor: Color = Tokens.colorScheme.onSurface,
     tonalElevation: Dp = 0.dp,
