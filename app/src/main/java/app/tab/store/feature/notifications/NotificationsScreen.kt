@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.outlined.Receipt
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text

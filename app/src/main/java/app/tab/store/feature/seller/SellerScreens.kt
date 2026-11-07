@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
 import app.tab.store.core.utils.InstallCount
 import androidx.compose.foundation.layout.navigationBarsPadding
