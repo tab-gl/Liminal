@@ -51,7 +51,11 @@ object Routes {
     fun orderDetail(id: String) = "order/$id"
     fun orderPlaced(id: String) = "order-placed/$id"
     fun sellerProductEdit(id: String?) = "seller/product-edit?productId=${id ?: ""}"
-    fun searchInCategory(categoryId: String) = "search?categoryId=$categoryId"
+    fun searchInCategory(categoryId: String) = "search?categoryId=${android.net.Uri.encode(categoryId)}"
+
+    /** Opens search already filled in, e.g. when a tag is tapped. */
+    fun search(query: String = "") =
+        if (query.isBlank()) "search" else "search?query=${android.net.Uri.encode(query.trim())}"
 
     /** Public link for an app; the manifest claims the same pattern. */
     const val productLink = "https://sproutly.app/app/{productId}"

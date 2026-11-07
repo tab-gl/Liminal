@@ -221,9 +221,14 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 )
             }
             composable(
-                route = "search?categoryId={categoryId}",
+                route = "search?categoryId={categoryId}&query={query}",
                 arguments = listOf(
                     navArgument("categoryId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                    navArgument("query") {
                         type = NavType.StringType
                         nullable = true
                         defaultValue = null
@@ -232,6 +237,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             ) { entry ->
                 SearchScreen(
                     initialCategoryId = entry.arguments?.getString("categoryId"),
+                    initialQuery = entry.arguments?.getString("query"),
                     onProduct = { go(Routes.product(it)) },
                     onStore = { go(Routes.store(it)) },
                 )
@@ -249,7 +255,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onStore = { go(Routes.store(it)) },
                     onDownloads = { goTab(Routes.ORDERS) },
                     onProduct = { go(Routes.product(it)) },
-                    onSearchTag = { tag -> go(Routes.search()) },
+                    onSearchTag = { tag -> go(Routes.search(tag)) },
                 )
             }
             composable(

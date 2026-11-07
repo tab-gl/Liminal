@@ -67,6 +67,7 @@ import app.tab.store.domain.repository.ProductSort
 @Composable
 fun SearchScreen(
     initialCategoryId: String?,
+    initialQuery: String? = null,
     onProduct: (String) -> Unit,
     onStore: (String) -> Unit = {},
     viewModel: SearchViewModel = hiltViewModel(),
@@ -75,6 +76,10 @@ fun SearchScreen(
     val keyboard = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     var showSortSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialQuery) {
+        if (!initialQuery.isNullOrBlank()) viewModel.submitQuery(initialQuery)
+    }
 
     LaunchedEffect(initialCategoryId, state.categories) {
         if (initialCategoryId != null) {
