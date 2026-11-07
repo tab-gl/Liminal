@@ -26,14 +26,13 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Storefront
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.LinearProgressIndicator
+import app.tab.store.core.ui.TextButton
+import app.tab.store.core.ui.SnackbarHost
+import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -168,7 +167,7 @@ fun ProductDetailScreen(
                         Surface(
                             onClick = onBack,
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                            color = Tokens.colorScheme.surface.copy(alpha = 0.92f),
                             modifier = Modifier.size(40.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -179,7 +178,7 @@ fun ProductDetailScreen(
                             Surface(
                                 onClick = viewModel::toggleWishlist,
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                                color = Tokens.colorScheme.surface.copy(alpha = 0.92f),
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -188,7 +187,7 @@ fun ProductDetailScreen(
                                         else PhosphorIcons.Favourite,
                                         contentDescription =
                                             if (state.isWishlisted) "Remove from wishlist" else "Add to wishlist",
-                                        tint = MaterialTheme.colorScheme.primary,
+                                        tint = Tokens.colorScheme.primary,
                                     )
                                 }
                             }
@@ -196,7 +195,7 @@ fun ProductDetailScreen(
                             Surface(
                                 onClick = {},
                                 shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                                color = Tokens.colorScheme.surface.copy(alpha = 0.92f),
                                 modifier = Modifier.size(40.dp),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -219,9 +218,9 @@ fun ProductDetailScreen(
                                         .clip(CircleShape)
                                         .background(
                                             if (pagerState.currentPage == index) {
-                                                MaterialTheme.colorScheme.primary
+                                                Tokens.colorScheme.primary
                                             } else {
-                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                                                Tokens.colorScheme.surface.copy(alpha = 0.7f)
                                             },
                                         ),
                                 )
@@ -237,28 +236,28 @@ fun ProductDetailScreen(
                             Spacer(Modifier.width(6.dp))
                             SproutlyTag(
                                 text = "REMOVED",
-                                container = MaterialTheme.colorScheme.errorContainer,
-                                content = MaterialTheme.colorScheme.onErrorContainer,
+                                container = Tokens.colorScheme.errorContainer,
+                                content = Tokens.colorScheme.onErrorContainer,
                             )
                         } else if (false) {
                             Spacer(Modifier.width(6.dp))
                             SproutlyTag(
                                 text = "LIMITED AVAILABILITY",
-                                container = MaterialTheme.colorScheme.tertiaryContainer,
-                                content = MaterialTheme.colorScheme.onTertiaryContainer,
+                                container = Tokens.colorScheme.tertiaryContainer,
+                                content = Tokens.colorScheme.onTertiaryContainer,
                             )
                         }
                     }
                     Spacer(Modifier.height(10.dp))
-                    Text(product.title, style = MaterialTheme.typography.headlineLarge)
+                    Text(product.title, style = Tokens.typography.headlineLarge)
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RatingBadge(product.rating, product.ratingCount)
                         Spacer(Modifier.width(10.dp))
                         Text(
                             "${product.unitsSold} downloads",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onSurfaceVariant,
                         )
                     }
                     Spacer(Modifier.height(14.dp))
@@ -272,7 +271,7 @@ fun ProductDetailScreen(
                     Surface(
                         onClick = { onStore(product.storeId) },
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        color = Tokens.colorScheme.surfaceContainerHigh,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Row(
@@ -283,12 +282,12 @@ fun ProductDetailScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                    .background(Tokens.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 SproutlyIcon(PhosphorIcons.Store,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    tint = Tokens.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(20.dp),
                                 )
                             }
@@ -296,19 +295,19 @@ fun ProductDetailScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     product.storeName.ifBlank { "Sproutly developer" },
-                                    style = MaterialTheme.typography.titleSmall,
+                                    style = Tokens.typography.titleSmall,
                                 )
                                 Text(
                                     "About the developer",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
                             SproutlyIcon(
                                 PhosphorIcons.ArrowRight,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = Tokens.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -336,19 +335,19 @@ fun ProductDetailScreen(
                         Spacer(Modifier.height(10.dp))
                         Surface(
                             shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.primaryContainer,
+                            color = Tokens.colorScheme.primaryContainer,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Column(Modifier.padding(14.dp)) {
                                 Text(
                                     "Android is installing it",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = Tokens.typography.titleSmall,
+                                    color = Tokens.colorScheme.onPrimaryContainer,
                                 )
                                 Text(
                                     "Tap Install on the Android prompt, then open it here.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onPrimaryContainer,
                                 )
                                 Spacer(Modifier.height(6.dp))
                                 TextButton(onClick = viewModel::openInstalledApp) {
@@ -361,8 +360,8 @@ fun ProductDetailScreen(
                         Spacer(Modifier.height(8.dp))
                         Text(
                             "Android needs permission to install apps from Sproutly.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onSurfaceVariant,
                         )
                         TextButton(onClick = viewModel::openInstallPermission) {
                             Text("Open settings")
@@ -372,7 +371,7 @@ fun ProductDetailScreen(
                     Surface(
                         onClick = { shareProduct() },
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        color = Tokens.colorScheme.surfaceContainerLow,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Row(
@@ -383,13 +382,13 @@ fun ProductDetailScreen(
                                 PhosphorIcons.Share,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = Tokens.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 "Share this app",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = Tokens.typography.bodyMedium,
+                                color = Tokens.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -398,7 +397,7 @@ fun ProductDetailScreen(
                     Surface(
                         onClick = { showReportDialog = true },
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        color = Tokens.colorScheme.surfaceContainerLow,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Row(
@@ -409,13 +408,13 @@ fun ProductDetailScreen(
                                 PhosphorIcons.Tag,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = Tokens.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 "Report this app",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = Tokens.typography.bodyMedium,
+                                color = Tokens.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -427,20 +426,20 @@ fun ProductDetailScreen(
                                 PhosphorIcons.Tag,
                                 contentDescription = null,
                                 modifier = Modifier.size(15.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = Tokens.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 "Version ${product.versionName}",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = Tokens.typography.labelMedium,
+                                color = Tokens.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
 
                     if (product.builds.size > 1) {
                         Spacer(Modifier.height(14.dp))
-                        Text("Builds", style = MaterialTheme.typography.titleSmall)
+                        Text("Builds", style = Tokens.typography.titleSmall)
                         Spacer(Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             product.builds.forEachIndexed { index, build ->
@@ -463,22 +462,22 @@ fun ProductDetailScreen(
 
                     if (product.releaseNotes.isNotBlank()) {
                         Spacer(Modifier.height(16.dp))
-                        Text("What's new", style = MaterialTheme.typography.titleSmall)
+                        Text("What's new", style = Tokens.typography.titleSmall)
                         Spacer(Modifier.height(4.dp))
                         Text(
                             product.releaseNotes,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = Tokens.typography.bodyMedium,
+                            color = Tokens.colorScheme.onSurfaceVariant,
                         )
                     }
 
                     Spacer(Modifier.height(20.dp))
-                    Text("About this app", style = MaterialTheme.typography.headlineSmall)
+                    Text("About this app", style = Tokens.typography.headlineSmall)
                     Spacer(Modifier.height(8.dp))
                     Text(
                         product.description.ifBlank { "No description provided by the developer yet." },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodyLarge,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
 
                     if (product.tags.isNotEmpty()) {
@@ -497,7 +496,7 @@ fun ProductDetailScreen(
 
             if (product.screenshots.isNotEmpty()) {
                 Spacer(Modifier.height(22.dp))
-                Text("Screenshots", style = MaterialTheme.typography.titleSmall)
+                Text("Screenshots", style = Tokens.typography.titleSmall)
                 Spacer(Modifier.height(10.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     itemsIndexed(product.screenshots) { index, shot ->
@@ -544,7 +543,7 @@ fun ProductDetailScreen(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.background)
+                        .background(Tokens.colorScheme.background)
                         .padding(horizontal = 20.dp, vertical = 12.dp),
                 ) {
                     if (state.isInstalling) {
@@ -615,7 +614,7 @@ private fun ScreenshotViewer(urls: List<String>, startIndex: Int, onDismiss: () 
             }
             Text(
                 "${pager.currentPage + 1} / ${urls.size}",
-                style = MaterialTheme.typography.labelLarge,
+                style = Tokens.typography.labelLarge,
                 color = androidx.compose.ui.graphics.Color.White,
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = 28.dp),
             )
@@ -649,30 +648,30 @@ private fun ReportDialog(onDismiss: () -> Unit, onReport: (String) -> Unit) {
     )
     var chosen by remember { mutableStateOf(reasons.first()) }
 
-    androidx.compose.material3.AlertDialog(
+    app.tab.store.core.ui.AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Report this app") },
         text = {
             Column {
                 Text(
                     "Goes to moderators. The developer does not see who reported.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
                 reasons.forEach { reason ->
                     Surface(
                         onClick = { chosen = reason },
                         shape = SproutlyRadii.pill,
-                        color = if (chosen == reason) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.surfaceContainerLow,
+                        color = if (chosen == reason) Tokens.colorScheme.primaryContainer
+                        else Tokens.colorScheme.surfaceContainerLow,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 3.dp),
                     ) {
                         Text(
                             reason,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = Tokens.typography.bodyMedium,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                         )
                     }
@@ -680,12 +679,12 @@ private fun ReportDialog(onDismiss: () -> Unit, onReport: (String) -> Unit) {
             }
         },
         confirmButton = {
-            androidx.compose.material3.TextButton(onClick = { onReport(chosen) }) {
+            app.tab.store.core.ui.TextButton(onClick = { onReport(chosen) }) {
                 Text("Send report")
             }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancel") }
+            app.tab.store.core.ui.TextButton(onClick = onDismiss) { Text("Cancel") }
         },
     )
 }
@@ -699,7 +698,7 @@ private fun RatingRow(
     val mine = summary.mine?.rating ?: 0
     val shown = mine.takeIf { it > 0 } ?: summary.average.roundToInt()
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(summary.display, style = MaterialTheme.typography.titleMedium)
+        Text(summary.display, style = Tokens.typography.titleMedium)
         Spacer(Modifier.width(6.dp))
         repeat(5) { index ->
             val star = index + 1
@@ -710,9 +709,9 @@ private fun RatingRow(
                     .size(18.dp)
                     .clickable { onRate(star) },
                 tint = if (star <= shown) {
-                    MaterialTheme.colorScheme.primary
+                    Tokens.colorScheme.primary
                 } else {
-                    MaterialTheme.colorScheme.outlineVariant
+                    Tokens.colorScheme.outlineVariant
                 },
             )
         }
@@ -723,8 +722,8 @@ private fun RatingRow(
                 summary.hasRatings -> "${summary.count} rating${if (summary.count == 1) "" else "s"}"
                 else -> "No ratings yet"
             },
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = Tokens.typography.bodySmall,
+            color = Tokens.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -739,14 +738,14 @@ private fun AdminActions(
 ) {
     Surface(
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = Tokens.colorScheme.surfaceContainerHigh,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(12.dp)) {
             Text(
                 "ADMIN",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.labelSmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 letterSpacing = 1.4.sp,
             )
             Spacer(Modifier.height(8.dp))
@@ -773,11 +772,11 @@ private fun AdminChip(label: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.pill,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
     ) {
         Text(
             label,
-            style = MaterialTheme.typography.labelMedium,
+            style = Tokens.typography.labelMedium,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
         )
     }

@@ -17,10 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.HorizontalDivider
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -68,7 +67,7 @@ fun SettingsScreen(
  * Settings as a sheet: it is reference information, not a destination, so it
  * rises over the profile instead of replacing it.
  */
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(app.tab.store.core.ui.ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsSheet(
     onDismiss: () -> Unit,
@@ -81,9 +80,9 @@ fun SettingsSheet(
     val lastCrash = remember { app.tab.store.core.utils.CrashLogHolder.last }
     val themeViewModel: ThemeViewModel = hiltViewModel()
     val themeMode by themeViewModel.mode.collectAsStateWithLifecycle()
-    androidx.compose.material3.ModalBottomSheet(
+    app.tab.store.core.ui.ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = Tokens.colorScheme.surface,
         shape = SproutlyRadii.sheet,
     ) {
         Column(
@@ -93,7 +92,7 @@ fun SettingsSheet(
         ) {
             Text(
                 "Settings",
-                style = MaterialTheme.typography.titleMedium,
+                style = Tokens.typography.titleMedium,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
             )
             SettingsContent(
@@ -121,11 +120,11 @@ private fun SettingsContent(
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
                 shape = SproutlyRadii.card,
-                color = MaterialTheme.colorScheme.surface,
+                color = Tokens.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Theme", style = MaterialTheme.typography.titleSmall)
+                    Text("Theme", style = Tokens.typography.titleSmall)
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         ThemeMode.entries.forEach { option ->
@@ -138,41 +137,41 @@ private fun SettingsContent(
                     }
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = Tokens.colorScheme.outlineVariant,
                     )
                     SettingRow("Account email", state.user?.email.orEmpty())
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = Tokens.colorScheme.outlineVariant,
                     )
                     SettingRow("Role", state.user?.role?.name?.lowercase()?.replaceFirstChar { it.uppercase() }.orEmpty())
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = Tokens.colorScheme.outlineVariant,
                     )
                     SettingRow("App version", BuildConfig.VERSION_NAME)
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = Tokens.colorScheme.outlineVariant,
                     )
                     SettingLink("Clear image cache") { onClearCache() }
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = Tokens.colorScheme.outlineVariant,
                     )
                     SettingLink("Send feedback") { onFeedback() }
                     if (!lastCrash.isNullOrBlank()) {
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 12.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant,
+                            color = Tokens.colorScheme.outlineVariant,
                         )
                         Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                            Text("Last crash", style = MaterialTheme.typography.titleSmall)
+                            Text("Last crash", style = Tokens.typography.titleSmall)
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 lastCrash,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = Tokens.typography.bodySmall,
+                                color = Tokens.colorScheme.onSurfaceVariant,
                                 maxLines = 8,
                             )
                         }
@@ -183,14 +182,14 @@ private fun SettingsContent(
             Spacer(Modifier.height(18.dp))
             Surface(
                 shape = SproutlyRadii.card,
-                color = MaterialTheme.colorScheme.surface,
+                color = Tokens.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(16.dp)) {
                     SettingLink("Privacy policy") { onLegal(false) }
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = Tokens.colorScheme.outlineVariant,
                     )
                     SettingLink("Terms of service") { onLegal(true) }
                 }
@@ -199,7 +198,7 @@ private fun SettingsContent(
             Spacer(Modifier.height(18.dp))
             Surface(
                 shape = SproutlyRadii.card,
-                color = MaterialTheme.colorScheme.surface,
+                color = Tokens.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(16.dp)) {
@@ -208,16 +207,16 @@ private fun SettingsContent(
                         Spacer(Modifier.height(10.dp))
                     }
                     Spacer(Modifier.height(10.dp))
-                    Text("Sproutly ${app.tab.store.BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleSmall)
+                    Text("Sproutly ${app.tab.store.BuildConfig.VERSION_NAME}", style = Tokens.typography.titleSmall)
                     Text(
                         "An app store for independent developers.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(
                         "Palette — Lime ${"#DBE6A1"} · Olive ${"#3F4C06"}",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = Tokens.typography.bodySmall,
                         color = SproutlyPalette.OliveMid,
                     )
                 }
@@ -229,11 +228,11 @@ private fun SettingsContent(
 @Composable
 private fun SettingRow(title: String, value: String) {
     Column {
-        Text(title, style = MaterialTheme.typography.titleSmall)
+        Text(title, style = Tokens.typography.titleSmall)
         Text(
             value,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = Tokens.typography.bodySmall,
+            color = Tokens.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -246,12 +245,12 @@ private fun SettingLink(title: String, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        Text(title, style = Tokens.typography.titleSmall, modifier = Modifier.weight(1f))
         SproutlyIcon(
             PhosphorIcons.ChevronRight,
             contentDescription = null,
             modifier = Modifier.size(18.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = Tokens.colorScheme.onSurfaceVariant,
         )
     }
 }

@@ -17,10 +17,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import app.tab.store.core.ui.Surface
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -128,8 +127,8 @@ fun StoreScreen(
                             .background(
                                 androidx.compose.ui.graphics.Brush.linearGradient(
                                     listOf(
-                                        MaterialTheme.colorScheme.primaryContainer,
-                                        MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        Tokens.colorScheme.primaryContainer,
+                                        Tokens.colorScheme.surfaceContainerHigh,
                                     ),
                                 ),
                             ),
@@ -139,8 +138,8 @@ fun StoreScreen(
                                 .split(" ").take(2).joinToString(" ") { word ->
                                     word.firstOrNull()?.uppercase()?.toString().orEmpty()
                                 },
-                            style = MaterialTheme.typography.displayLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.35f),
+                            style = Tokens.typography.displayLarge,
+                            color = Tokens.colorScheme.onPrimaryContainer.copy(alpha = 0.35f),
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
                                 .padding(20.dp),
@@ -159,7 +158,7 @@ fun StoreScreen(
                 Surface(
                     onClick = onBack,
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                    color = Tokens.colorScheme.surface.copy(alpha = 0.92f),
                     modifier = Modifier
                         .padding(14.dp)
                         .size(40.dp),
@@ -189,7 +188,7 @@ fun StoreScreen(
                     Column(Modifier.weight(1f)) {
                         Text(
                             store?.name ?: "Loading developer…",
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = Tokens.typography.headlineMedium,
                         )
                         if (store != null) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -197,8 +196,8 @@ fun StoreScreen(
                                 Spacer(Modifier.size(8.dp))
                                 Text(
                                     store.city.ifBlank { "India" },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
@@ -207,8 +206,8 @@ fun StoreScreen(
                         SproutlyTag(
                             text = if (state.products.size == 1) "1 app"
                             else "${state.products.size} apps",
-                            container = MaterialTheme.colorScheme.primaryContainer,
-                            content = MaterialTheme.colorScheme.onPrimaryContainer,
+                            container = Tokens.colorScheme.primaryContainer,
+                            content = Tokens.colorScheme.onPrimaryContainer,
                         )
                     }
                 }
@@ -216,23 +215,23 @@ fun StoreScreen(
                     Spacer(Modifier.height(12.dp))
                     Text(
                         store?.tagline.orEmpty(),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodyLarge,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (!store?.description.isNullOrBlank()) {
                     Spacer(Modifier.height(8.dp))
                     Text(
                         store?.description.orEmpty(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodyMedium,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
                 Spacer(Modifier.height(18.dp))
                 Text(
                     if (state.products.isEmpty()) "Apps"
                     else "Apps (${state.products.size})",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = Tokens.typography.headlineSmall,
                 )
                 Spacer(Modifier.height(6.dp))
             }
@@ -287,7 +286,7 @@ fun StoreAdminActions(
 ) {
     Surface(
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = Tokens.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
@@ -295,8 +294,8 @@ fun StoreAdminActions(
         Column(Modifier.padding(12.dp)) {
             Text(
                 "ADMIN",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.labelSmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 letterSpacing = 1.4.sp,
             )
             Spacer(Modifier.height(8.dp))
@@ -320,11 +319,11 @@ private fun AdminChip(label: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.pill,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
     ) {
         Text(
             label,
-            style = MaterialTheme.typography.labelMedium,
+            style = Tokens.typography.labelMedium,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
         )
     }

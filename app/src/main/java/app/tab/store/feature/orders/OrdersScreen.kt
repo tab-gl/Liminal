@@ -15,12 +15,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Receipt
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.SnackbarHost
+import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -111,22 +110,22 @@ private fun OrderCard(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     "Installed",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.labelMedium,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.weight(1f))
                 SproutlyIcon(
                     PhosphorIcons.ChevronRight,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(Modifier.height(10.dp))
@@ -141,7 +140,7 @@ private fun OrderCard(
                 Column(Modifier.weight(1f)) {
                     Text(
                         order.items.firstOrNull()?.title ?: "Install",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = Tokens.typography.titleSmall,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
@@ -152,21 +151,21 @@ private fun OrderCard(
                                 ?.takeIf { it.isNotBlank() }?.let { "v$it" },
                             DateFormatters.date(order.placedAt),
                         ).joinToString(" · "),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     if (order.total > 0) {
-                        Text(formatPrice(order.total), style = MaterialTheme.typography.titleMedium)
+                        Text(formatPrice(order.total), style = Tokens.typography.titleMedium)
                     }
                     if (order.canCancel) {
                         TextButton(onClick = onCancel, enabled = !cancelling) {
                             Text(
                                 if (cancelling) "Cancelling…" else "Cancel",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.error,
+                                style = Tokens.typography.labelMedium,
+                                color = Tokens.colorScheme.error,
                             )
                         }
                     }

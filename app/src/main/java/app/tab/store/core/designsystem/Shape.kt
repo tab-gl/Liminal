@@ -1,7 +1,7 @@
 package app.tab.store.core.designsystem
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Shapes
+import app.tab.store.core.ui.SkShapes
 import androidx.compose.ui.unit.dp
 
 /**
@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
  * Material 3 Expressive tokens: the shape scale leans further than the baseline
  * set, so cards and sheets read as soft objects rather than boxes.
  */
-val SproutlyShapes = Shapes(
+val SproutlyShapes = SkShapes(
     extraSmall = RoundedCornerShape(20.dp),
     small = RoundedCornerShape(24.dp),
     medium = RoundedCornerShape(30.dp),

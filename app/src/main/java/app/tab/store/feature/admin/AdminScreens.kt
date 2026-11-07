@@ -28,14 +28,13 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.HorizontalDivider
+import app.tab.store.core.ui.OutlinedTextField
+import app.tab.store.core.ui.SnackbarHost
+import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
@@ -92,13 +91,13 @@ fun AdminDashboardScreen(
                 Column(Modifier.padding(20.dp)) {
                     Text(
                         "TOTAL APP SALES",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = Tokens.typography.labelSmall,
                         color = SproutlyPalette.LimeSoft,
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         formatCompact(state.overview.grossMerchandiseValue / 100),
-                        style = MaterialTheme.typography.displaySmall,
+                        style = Tokens.typography.displaySmall,
                         color = SproutlyPalette.Lime,
                     )
                     Spacer(Modifier.height(14.dp))
@@ -115,28 +114,28 @@ fun AdminDashboardScreen(
             if (pendingCount > 0 || state.overview.blockedProducts > 0) {
                 Surface(
                     shape = SproutlyRadii.card,
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                    color = Tokens.colorScheme.primaryContainer,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text(
                             "Needs attention",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = Tokens.typography.titleSmall,
+                            color = Tokens.colorScheme.onPrimaryContainer,
                         )
                         Spacer(Modifier.height(6.dp))
                         if (pendingCount > 0) {
                             Text(
                                 "$pendingCount store${if (pendingCount == 1) "" else "s"} waiting for approval",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = Tokens.typography.bodySmall,
+                                color = Tokens.colorScheme.onPrimaryContainer,
                             )
                         }
                         if (state.overview.blockedProducts > 0) {
                             Text(
                                 "${state.overview.blockedProducts} app${if (state.overview.blockedProducts == 1) "" else "s"} currently blocked",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = Tokens.typography.bodySmall,
+                                color = Tokens.colorScheme.onPrimaryContainer,
                             )
                         }
                     }
@@ -157,7 +156,7 @@ fun AdminDashboardScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("Moderation", style = MaterialTheme.typography.headlineSmall)
+            Text("Moderation", style = Tokens.typography.headlineSmall)
             Spacer(Modifier.height(10.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -206,12 +205,12 @@ fun AdminDashboardScreen(
 
             if (state.pendingStores.isNotEmpty()) {
                 Spacer(Modifier.height(20.dp))
-                Text("Awaiting approval", style = MaterialTheme.typography.headlineSmall)
+                Text("Awaiting approval", style = Tokens.typography.headlineSmall)
                 Spacer(Modifier.height(8.dp))
                 state.pendingStores.take(3).forEach { store ->
                     Surface(
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surface,
+                        color = Tokens.colorScheme.surface,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -230,11 +229,11 @@ fun AdminDashboardScreen(
                             )
                             Spacer(Modifier.width(10.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(store.name, style = MaterialTheme.typography.titleSmall)
+                                Text(store.name, style = Tokens.typography.titleSmall)
                                 Text(
                                     store.city.ifBlank { "India" },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
                             TextButton(onClick = { viewModel.approve(store) }) { Text("Approve") }
@@ -250,8 +249,8 @@ fun AdminDashboardScreen(
 @Composable
 private fun AdminStat(label: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier) {
-        Text(value, style = MaterialTheme.typography.titleLarge, color = SproutlyPalette.Lime)
-        Text(label, style = MaterialTheme.typography.bodySmall, color = SproutlyPalette.LimeSoft)
+        Text(value, style = Tokens.typography.titleLarge, color = SproutlyPalette.Lime)
+        Text(label, style = Tokens.typography.bodySmall, color = SproutlyPalette.LimeSoft)
     }
 }
 
@@ -264,16 +263,16 @@ private fun MetricBox(
 ) {
     Surface(
         shape = SproutlyRadii.card,
-        color = if (highlight) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surface,
+        color = if (highlight) Tokens.colorScheme.primaryContainer
+        else Tokens.colorScheme.surface,
         modifier = modifier,
     ) {
         Column(Modifier.padding(12.dp)) {
-            Text(value, style = MaterialTheme.typography.headlineSmall)
+            Text(value, style = Tokens.typography.headlineSmall)
             Text(
                 label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -284,7 +283,7 @@ private fun AdminRow(@DrawableRes icon: Int, title: String, subtitle: String, on
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
@@ -297,28 +296,28 @@ private fun AdminRow(@DrawableRes icon: Int, title: String, subtitle: String, on
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Tokens.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 SproutlyIcon(icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = Tokens.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(19.dp),
                 )
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(title, style = Tokens.typography.titleSmall)
                 Text(
                     subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             SproutlyIcon(
                 PhosphorIcons.ArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -355,7 +354,7 @@ fun AdminStoresScreen(
                     items(state.stores, key = { it.id }) { store ->
                         Surface(
                             shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Column(Modifier.padding(12.dp)) {
@@ -370,29 +369,29 @@ fun AdminStoresScreen(
                                     )
                                     Spacer(Modifier.width(10.dp))
                                     Column(Modifier.weight(1f)) {
-                                        Text(store.name, style = MaterialTheme.typography.titleSmall)
+                                        Text(store.name, style = Tokens.typography.titleSmall)
                                         Text(
                                             "${store.name.ifBlank { "India" }} · ${store.productCount} apps",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = Tokens.typography.bodySmall,
+                                            color = Tokens.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                     SproutlyTag(
                                         text = store.status.name,
                                         container = when (store.status) {
-                                            StoreStatus.ACTIVE -> MaterialTheme.colorScheme.primaryContainer
-                                            StoreStatus.PENDING -> MaterialTheme.colorScheme.tertiaryContainer
-                                            StoreStatus.SUSPENDED -> MaterialTheme.colorScheme.errorContainer
+                                            StoreStatus.ACTIVE -> Tokens.colorScheme.primaryContainer
+                                            StoreStatus.PENDING -> Tokens.colorScheme.tertiaryContainer
+                                            StoreStatus.SUSPENDED -> Tokens.colorScheme.errorContainer
                                         },
                                         content = when (store.status) {
-                                            StoreStatus.ACTIVE -> MaterialTheme.colorScheme.onPrimaryContainer
-                                            StoreStatus.PENDING -> MaterialTheme.colorScheme.onTertiaryContainer
-                                            StoreStatus.SUSPENDED -> MaterialTheme.colorScheme.onErrorContainer
+                                            StoreStatus.ACTIVE -> Tokens.colorScheme.onPrimaryContainer
+                                            StoreStatus.PENDING -> Tokens.colorScheme.onTertiaryContainer
+                                            StoreStatus.SUSPENDED -> Tokens.colorScheme.onErrorContainer
                                         },
                                     )
                                 }
                                 Spacer(Modifier.height(6.dp))
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                HorizontalDivider(color = Tokens.colorScheme.outlineVariant)
                                 Row {
                                     if (store.status != StoreStatus.ACTIVE) {
                                         TextButton(
@@ -418,7 +417,7 @@ fun AdminStoresScreen(
                                         TextButton(
                                             onClick = { viewModel.setStatus(store, StoreStatus.SUSPENDED) },
                                         ) {
-                                            Text("Suspend", color = MaterialTheme.colorScheme.error)
+                                            Text("Suspend", color = Tokens.colorScheme.error)
                                         }
                                     }
                                 }
@@ -480,7 +479,7 @@ fun AdminUsersScreen(
                 items(visible, key = { it.uid }) { user ->
                     Surface(
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surface,
+                        color = Tokens.colorScheme.surface,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Column(Modifier.padding(12.dp)) {
@@ -490,12 +489,12 @@ fun AdminUsersScreen(
                                 Column(Modifier.weight(1f)) {
                                     Text(
                                         user.displayName.ifBlank { "Unnamed" },
-                                        style = MaterialTheme.typography.titleSmall,
+                                        style = Tokens.typography.titleSmall,
                                     )
                                     Text(
                                         user.email,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = Tokens.typography.bodySmall,
+                                        color = Tokens.colorScheme.onSurfaceVariant,
                                     )
                                 }
                                 SproutlyTag(text = user.role.name)
@@ -511,7 +510,7 @@ fun AdminUsersScreen(
                                         ) {
                                             Text(
                                                 "Make ${role.label.lowercase()}",
-                                                style = MaterialTheme.typography.labelMedium,
+                                                style = Tokens.typography.labelMedium,
                                             )
                                         }
                                     }
@@ -567,7 +566,7 @@ fun AdminProductsScreen(
                     items(state.reported, key = { it.id }) { product ->
                         Surface(
                             shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Row(
@@ -584,14 +583,14 @@ fun AdminProductsScreen(
                                 Column(Modifier.weight(1f)) {
                                     Text(
                                         product.title,
-                                        style = MaterialTheme.typography.titleSmall,
+                                        style = Tokens.typography.titleSmall,
                                         maxLines = 2,
                                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                     )
                                     Text(
                                         "${product.storeName} · ${formatPrice(product.price)}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = Tokens.typography.bodySmall,
+                                        color = Tokens.colorScheme.onSurfaceVariant,
                                     )
                                 }
                                 // Resolving clears the flag and tells the developer
@@ -602,7 +601,7 @@ fun AdminProductsScreen(
                                 TextButton(
                                     onClick = { viewModel.resolve(product, keepListed = false) },
                                 ) {
-                                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                                    Text("Remove", color = Tokens.colorScheme.error)
                                 }
                                 TextButton(
                                     onClick = { viewModel.setStatus(product, ProductStatus.ACTIVE) },
@@ -649,8 +648,8 @@ fun AdminCategoriesScreen(
             SproutlyTopBar(title = "Categories", onBack = onBack)
             Text(
                 "Used for home rails and search filters.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(16.dp))
 
@@ -659,21 +658,21 @@ fun AdminCategoriesScreen(
             // makes tools/seed impossible to run against such a project.
             Surface(
                 shape = SproutlyRadii.card,
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = Tokens.colorScheme.primaryContainer,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Text(
                         "Start from the standard set",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = Tokens.typography.titleSmall,
+                        color = Tokens.colorScheme.onPrimaryContainer,
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         "Adds the eight app-store categories: Productivity, Games, " +
                             "Photography, Finance, Education, Health & Fitness, Social, Tools.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onPrimaryContainer,
                     )
                     Spacer(Modifier.height(12.dp))
                     SproutlyButton(
@@ -686,8 +685,8 @@ fun AdminCategoriesScreen(
             Spacer(Modifier.height(20.dp))
             Text(
                 "Or add one yourself",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.labelLarge,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(8.dp))
             SproutlyTextField(
@@ -704,14 +703,14 @@ fun AdminCategoriesScreen(
             )
             if (state.error != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.errorContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         state.error.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }
@@ -748,8 +747,8 @@ private fun AdminTile(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = if (emphasise) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surface,
+        color = if (emphasise) Tokens.colorScheme.primaryContainer
+        else Tokens.colorScheme.surface,
         modifier = modifier,
     ) {
         Column(Modifier.padding(14.dp)) {
@@ -758,8 +757,8 @@ private fun AdminTile(
                     .size(34.dp)
                     .clip(CircleShape)
                     .background(
-                        if (emphasise) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.primaryContainer,
+                        if (emphasise) Tokens.colorScheme.primary
+                        else Tokens.colorScheme.primaryContainer,
                     ),
                 contentAlignment = Alignment.Center,
             ) {
@@ -767,21 +766,21 @@ private fun AdminTile(
                     icon = icon,
                     contentDescription = null,
                     modifier = Modifier.size(17.dp),
-                    tint = if (emphasise) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = if (emphasise) Tokens.colorScheme.onPrimary
+                    else Tokens.colorScheme.onPrimaryContainer,
                 )
             }
             if (count.isNotBlank()) {
                 Spacer(Modifier.height(10.dp))
-                Text(count, style = MaterialTheme.typography.headlineSmall)
+                Text(count, style = Tokens.typography.headlineSmall)
             } else {
                 Spacer(Modifier.height(10.dp))
             }
-            Text(label, style = MaterialTheme.typography.titleSmall)
+            Text(label, style = Tokens.typography.titleSmall)
             Text(
                 detail,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 maxLines = 2,
             )
         }

@@ -7,9 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,8 +36,8 @@ fun ForgotPasswordScreen(
         Column(Modifier.padding(horizontal = 24.dp)) {
             Text(
                 "We will email you a reset link.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodyMedium,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(22.dp))
             SproutlyTextField(
@@ -49,14 +48,14 @@ fun ForgotPasswordScreen(
             )
             if (state.info != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.primaryContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         state.info.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }
@@ -64,14 +63,14 @@ fun ForgotPasswordScreen(
             }
             if (state.error != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.errorContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         state.error.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }

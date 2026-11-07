@@ -13,12 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.HorizontalDivider
+import app.tab.store.core.ui.SnackbarHost
+import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,7 +73,7 @@ fun OrderDetailScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             statusLabel(order.status),
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = Tokens.typography.headlineSmall,
                         )
                         Spacer(Modifier.weight(1f))
                         OrderStatusChip(order.status)
@@ -84,7 +83,7 @@ fun OrderDetailScreen(
                     // A digital install is one event, not a delivery chain. The
                     // five-step timeline belonged to a shop.
                     Spacer(Modifier.height(14.dp))
-                    Text("Installed", style = MaterialTheme.typography.titleSmall)
+                    Text("Installed", style = Tokens.typography.titleSmall)
                     Spacer(Modifier.height(8.dp))
                     order.items.forEach { item ->
                         Row(
@@ -103,20 +102,20 @@ fun OrderDetailScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     item.title,
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = Tokens.typography.bodyMedium,
                                     maxLines = 2,
                                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 )
                                 Text(
                                     "${item.storeName}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
                             Text(
                                 "v${item.versionName.ifBlank { item.versionCode.toString() }}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = Tokens.typography.bodySmall,
+                                color = Tokens.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -143,10 +142,10 @@ private fun PriceRow(label: String, value: String) {
     ) {
         Text(
             label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = Tokens.typography.bodyMedium,
+            color = Tokens.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.weight(1f))
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+        Text(value, style = Tokens.typography.bodyMedium)
     }
 }

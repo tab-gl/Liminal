@@ -32,13 +32,12 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.TextButton
 import app.tab.store.core.utils.InstallCount
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -99,12 +98,12 @@ fun SellerSetupScreen(
                     Spacer(Modifier.height(10.dp))
                     Text(
                         "Build it. Publish it. Grow it.",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = Tokens.typography.headlineMedium,
                         color = SproutlyPalette.OliveDeep,
                     )
                     Text(
                         "Set up a developer profile in under a minute, publish your first app and track installs.",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = Tokens.typography.bodySmall,
                         color = SproutlyPalette.Olive,
                     )
                 }
@@ -128,14 +127,14 @@ fun SellerSetupScreen(
 
             if (state.error != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.errorContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         state.error.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }
@@ -152,8 +151,8 @@ fun SellerSetupScreen(
             Spacer(Modifier.height(12.dp))
             Text(
                 "New stores start in review. You can add products right away; they go live once the store is approved.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(32.dp))
         }
@@ -211,13 +210,13 @@ fun SellerDashboardScreen(
 
         if (tab == SellerTab.OFFERS) {
             Column(Modifier.padding(horizontal = 20.dp)) {
-                Text("Offers", style = MaterialTheme.typography.headlineSmall)
+                Text("Offers", style = Tokens.typography.headlineSmall)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     "Put any of your apps on offer, or take one off. People see the " +
                         "discount on the app and on the Offers tab.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
 
@@ -232,7 +231,7 @@ fun SellerDashboardScreen(
                 state.products.forEach { product ->
                     Surface(
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        color = Tokens.colorScheme.surfaceContainerLow,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -244,7 +243,7 @@ fun SellerDashboardScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     product.title,
-                                    style = MaterialTheme.typography.titleSmall,
+                                    style = Tokens.typography.titleSmall,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
@@ -256,26 +255,26 @@ fun SellerDashboardScreen(
                                     } else {
                                         "${formatPrice(product.price)} · no offer"
                                     },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
                             Surface(
                                 onClick = { offerFor = product },
                                 shape = SproutlyRadii.pill,
                                 color = if (product.hasActiveOffer) {
-                                    MaterialTheme.colorScheme.primary
+                                    Tokens.colorScheme.primary
                                 } else {
-                                    MaterialTheme.colorScheme.primaryContainer
+                                    Tokens.colorScheme.primaryContainer
                                 },
                             ) {
                                 Text(
                                     if (product.hasActiveOffer) "Edit" else "Add offer",
-                                    style = MaterialTheme.typography.labelLarge,
+                                    style = Tokens.typography.labelLarge,
                                     color = if (product.hasActiveOffer) {
-                                        MaterialTheme.colorScheme.onPrimary
+                                        Tokens.colorScheme.onPrimary
                                     } else {
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        Tokens.colorScheme.onPrimaryContainer
                                     },
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                                 )
@@ -303,7 +302,7 @@ fun SellerDashboardScreen(
                         Surface(
                             onClick = onProducts,
                             shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 8.dp),
@@ -320,19 +319,19 @@ fun SellerDashboardScreen(
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Column(Modifier.weight(1f)) {
-                                    Text(product.title, style = MaterialTheme.typography.titleSmall)
+                                    Text(product.title, style = Tokens.typography.titleSmall)
                                     Text(
                                         product.status.name.lowercase()
                                             .replaceFirstChar { it.uppercase() },
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = Tokens.typography.bodySmall,
+                                        color = Tokens.colorScheme.onSurfaceVariant,
                                     )
                                 }
                                 SproutlyIcon(
                                     PhosphorIcons.ChevronRight,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    tint = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
@@ -357,7 +356,7 @@ fun SellerDashboardScreen(
                     state.recentOrders.forEach { order ->
                         Surface(
                             shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 8.dp),
@@ -369,12 +368,12 @@ fun SellerDashboardScreen(
                                 Column(Modifier.weight(1f)) {
                                     Text(
                                         order.items.firstOrNull()?.title ?: "An app",
-                                        style = MaterialTheme.typography.titleSmall,
+                                        style = Tokens.typography.titleSmall,
                                     )
                                     Text(
                                         app.tab.store.core.utils.DateFormatters.relative(order.placedAt),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = Tokens.typography.bodySmall,
+                                        color = Tokens.colorScheme.onSurfaceVariant,
                                     )
                                 }
                             }
@@ -397,13 +396,13 @@ fun SellerDashboardScreen(
                 Column(Modifier.padding(20.dp)) {
                     Text(
                         "INSTALLS",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = Tokens.typography.labelSmall,
                         color = SproutlyPalette.LimeSoft,
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         InstallCount.label(state.stats.orderCount),
-                        style = MaterialTheme.typography.displaySmall,
+                        style = Tokens.typography.displaySmall,
                         color = SproutlyPalette.Lime,
                     )
                     Spacer(Modifier.height(14.dp))
@@ -420,7 +419,7 @@ fun SellerDashboardScreen(
             // Bento: one tall tile for the main action, then pairs. The grid is
             // built from rows rather than a LazyVerticalGrid so it scrolls with
             // the rest of the page instead of fighting it.
-            Text("Publish", style = MaterialTheme.typography.titleSmall)
+            Text("Publish", style = Tokens.typography.titleSmall)
             Spacer(Modifier.height(10.dp))
 
             Bento(
@@ -489,12 +488,12 @@ fun SellerDashboardScreen(
             }
             Spacer(Modifier.height(18.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Developer profile", style = MaterialTheme.typography.headlineSmall)
+                Text("Developer profile", style = Tokens.typography.headlineSmall)
                 Spacer(Modifier.weight(1f))
                 Surface(
                     onClick = onStoreEdit,
                     shape = SproutlyRadii.pill,
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                    color = Tokens.colorScheme.primaryContainer,
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
@@ -502,14 +501,14 @@ fun SellerDashboardScreen(
                     ) {
                         SproutlyIcon(PhosphorIcons.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Edit developer profile", style = MaterialTheme.typography.labelMedium)
+                        Text("Edit developer profile", style = Tokens.typography.labelMedium)
                     }
                 }
             }
             Spacer(Modifier.height(8.dp))
             Surface(
                 shape = SproutlyRadii.card,
-                color = MaterialTheme.colorScheme.surface,
+                color = Tokens.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
@@ -528,20 +527,20 @@ fun SellerDashboardScreen(
                     Column(Modifier.weight(1f)) {
                         Text(
                             state.store?.name.orEmpty(),
-                            style = MaterialTheme.typography.titleSmall,
+                            style = Tokens.typography.titleSmall,
                         )
                         Text(
                             if (state.stats.activeProducts == 1) "1 live app"
                             else "${state.stats.activeProducts} live apps",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onSurfaceVariant,
                         )
                     }
                     if (state.stats.pendingOrders > 0) {
                         SproutlyTag(
                             text = "${state.stats.pendingOrders} new",
-                            container = MaterialTheme.colorScheme.primary,
-                            content = MaterialTheme.colorScheme.onPrimary,
+                            container = Tokens.colorScheme.primary,
+                            content = Tokens.colorScheme.onPrimary,
                         )
                     }
                 }
@@ -551,26 +550,26 @@ fun SellerDashboardScreen(
                 Spacer(Modifier.height(16.dp))
                 Surface(
                     shape = SproutlyRadii.card,
-                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    color = Tokens.colorScheme.tertiaryContainer,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(Modifier.padding(14.dp)) {
                         Text(
                             "Not published yet",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            style = Tokens.typography.titleSmall,
+                            color = Tokens.colorScheme.onTertiaryContainer,
                         )
                         Text(
                             if (state.drafts.size == 1) "1 draft is not published"
                             else "${state.drafts.size} drafts are not published",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onTertiaryContainer,
                         )
                         state.drafts.take(3).forEach { product ->
                             Text(
                                 product.title,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                style = Tokens.typography.bodySmall,
+                                color = Tokens.colorScheme.onTertiaryContainer,
                             )
                         }
                         Spacer(Modifier.height(8.dp))
@@ -578,12 +577,12 @@ fun SellerDashboardScreen(
                         Surface(
                             onClick = { onProducts() },
                             shape = SproutlyRadii.pill,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            color = Tokens.colorScheme.onTertiaryContainer,
                         ) {
                             Text(
                                 "Open drafts",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.tertiaryContainer,
+                                style = Tokens.typography.labelMedium,
+                                color = Tokens.colorScheme.tertiaryContainer,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                             )
                         }
@@ -592,19 +591,19 @@ fun SellerDashboardScreen(
             }
 
             Spacer(Modifier.height(18.dp))
-            Text("Recent installs", style = MaterialTheme.typography.headlineSmall)
+            Text("Recent installs", style = Tokens.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             if (state.recentOrders.isEmpty()) {
                 Text(
                     "No installs yet. Share an app link to get your first one.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             } else {
                 state.recentOrders.forEach { order ->
                     Surface(
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surface,
+                        color = Tokens.colorScheme.surface,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -616,12 +615,12 @@ fun SellerDashboardScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     "#${order.id.take(8).uppercase()} · ${order.buyerName.ifBlank { "Customer" }}",
-                                    style = MaterialTheme.typography.titleSmall,
+                                    style = Tokens.typography.titleSmall,
                                 )
                                 Text(
                                     DateFormatters.dateTime(order.placedAt),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
                             OrderStatusChip(order.status)
@@ -648,12 +647,12 @@ private fun DashStat(label: String, value: String, modifier: Modifier = Modifier
     Column(modifier) {
         Text(
             value,
-            style = MaterialTheme.typography.titleLarge,
+            style = Tokens.typography.titleLarge,
             color = SproutlyPalette.Lime,
         )
         Text(
             label,
-            style = MaterialTheme.typography.bodySmall,
+            style = Tokens.typography.bodySmall,
             color = SproutlyPalette.LimeSoft,
         )
     }
@@ -669,7 +668,7 @@ private fun QuickAction(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = modifier,
     ) {
         Column(
@@ -680,17 +679,17 @@ private fun QuickAction(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Tokens.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 SproutlyIcon(icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = Tokens.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(18.dp),
                 )
             }
             Spacer(Modifier.height(6.dp))
-            Text(label, style = MaterialTheme.typography.labelMedium)
+            Text(label, style = Tokens.typography.labelMedium)
         }
     }
 }
@@ -722,11 +721,11 @@ fun SellerAnalyticsScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("Revenue, last 7 days", style = MaterialTheme.typography.headlineSmall)
+            Text("Revenue, last 7 days", style = Tokens.typography.headlineSmall)
             Spacer(Modifier.height(12.dp))
             Surface(
                 shape = SproutlyRadii.card,
-                color = MaterialTheme.colorScheme.surface,
+                color = Tokens.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
@@ -752,30 +751,30 @@ fun SellerAnalyticsScreen(
                                     .clip(SproutlyRadii.pill)
                                     .background(
                                         if (revenue > 0) SproutlyPalette.Olive
-                                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                        else Tokens.colorScheme.surfaceContainerHigh,
                                     ),
                             )
                             Spacer(Modifier.height(6.dp))
-                            Text(day, style = MaterialTheme.typography.labelSmall)
+                            Text(day, style = Tokens.typography.labelSmall)
                         }
                     }
                 }
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("Top products", style = MaterialTheme.typography.headlineSmall)
+            Text("Top products", style = Tokens.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             if (stats.topProducts.isEmpty()) {
                 Text(
                     "No sales recorded yet.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             } else {
                 stats.topProducts.forEach { product ->
                     Surface(
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surface,
+                        color = Tokens.colorScheme.surface,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -794,17 +793,17 @@ fun SellerAnalyticsScreen(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     product.title,
-                                    style = MaterialTheme.typography.titleSmall,
+                                    style = Tokens.typography.titleSmall,
                                     maxLines = 1,
                                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 )
                                 Text(
                                     "${product.unitsSold} downloads",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            Text(formatPrice(product.revenue), style = MaterialTheme.typography.titleSmall)
+                            Text(formatPrice(product.revenue), style = Tokens.typography.titleSmall)
                         }
                     }
                 }
@@ -818,15 +817,15 @@ fun SellerAnalyticsScreen(
 private fun MetricTile(label: String, value: String, modifier: Modifier = Modifier) {
     Surface(
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = modifier,
     ) {
         Column(Modifier.padding(14.dp)) {
-            Text(value, style = MaterialTheme.typography.headlineMedium)
+            Text(value, style = Tokens.typography.headlineMedium)
             Text(
                 label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -845,8 +844,8 @@ private fun Bento(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = if (emphasis) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surfaceContainerLow,
+        color = if (emphasis) Tokens.colorScheme.primaryContainer
+        else Tokens.colorScheme.surfaceContainerLow,
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -855,8 +854,8 @@ private fun Bento(
                     .size(34.dp)
                     .clip(CircleShape)
                     .background(
-                        if (emphasis) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        if (emphasis) Tokens.colorScheme.primary
+                        else Tokens.colorScheme.surfaceContainerHigh,
                     ),
                 contentAlignment = Alignment.Center,
             ) {
@@ -864,22 +863,22 @@ private fun Bento(
                     icon = icon,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
-                    tint = if (emphasis) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = if (emphasis) Tokens.colorScheme.onPrimary
+                    else Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(Modifier.height(12.dp))
             Text(
                 label,
-                style = MaterialTheme.typography.titleSmall,
-                color = if (emphasis) MaterialTheme.colorScheme.onPrimaryContainer
-                else MaterialTheme.colorScheme.onSurface,
+                style = Tokens.typography.titleSmall,
+                color = if (emphasis) Tokens.colorScheme.onPrimaryContainer
+                else Tokens.colorScheme.onSurface,
             )
             Text(
                 detail,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (emphasis) MaterialTheme.colorScheme.onPrimaryContainer
-                else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = if (emphasis) Tokens.colorScheme.onPrimaryContainer
+                else Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -896,11 +895,11 @@ private fun SellerConsoleBar(
     Surface(
         modifier = modifier,
         shape = SproutlyRadii.nav,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         shadowElevation = 10.dp,
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            Tokens.colorScheme.outlineVariant.copy(alpha = 0.5f),
         ),
     ) {
         Row(
@@ -913,7 +912,7 @@ private fun SellerConsoleBar(
                 Surface(
                     onClick = { onSelect(entry) },
                     shape = SproutlyRadii.pill,
-                    color = if (active) MaterialTheme.colorScheme.primary
+                    color = if (active) Tokens.colorScheme.primary
                     else Color.Transparent,
                 ) {
                     Row(
@@ -924,15 +923,15 @@ private fun SellerConsoleBar(
                             icon = entry.icon,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = if (active) MaterialTheme.colorScheme.onPrimary
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (active) Tokens.colorScheme.onPrimary
+                            else Tokens.colorScheme.onSurfaceVariant,
                         )
                         if (active) {
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 entry.label,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                style = Tokens.typography.labelMedium,
+                                color = Tokens.colorScheme.onPrimary,
                             )
                         }
                     }

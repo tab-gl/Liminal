@@ -20,10 +20,9 @@ import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.outlined.Receipt
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -119,7 +118,7 @@ fun NotificationsScreen(
             actions = {
                 if (state.unread > 0) {
                     TextButton(onClick = viewModel::markAllRead) {
-                        Text("Mark all read", style = MaterialTheme.typography.labelMedium)
+                        Text("Mark all read", style = Tokens.typography.labelMedium)
                     }
                 }
             },
@@ -142,7 +141,7 @@ fun NotificationsScreen(
                     item {
                         Text(
                             "Recently installed",
-                            style = MaterialTheme.typography.titleSmall,
+                            style = Tokens.typography.titleSmall,
                             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
                         )
                     }
@@ -160,7 +159,7 @@ fun NotificationsScreen(
                         Spacer(Modifier.height(12.dp))
                         Text(
                             "Updates",
-                            style = MaterialTheme.typography.titleSmall,
+                            style = Tokens.typography.titleSmall,
                             modifier = Modifier.padding(bottom = 4.dp),
                         )
                     }
@@ -191,8 +190,8 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = if (item.read) MaterialTheme.colorScheme.surface
-        else MaterialTheme.colorScheme.primaryContainer,
+        color = if (item.read) Tokens.colorScheme.surface
+        else Tokens.colorScheme.primaryContainer,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -203,24 +202,24 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
+                    .background(Tokens.colorScheme.surface.copy(alpha = 0.6f)),
                 contentAlignment = Alignment.Center,
             ) {
                 SproutlyIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(item.title, style = MaterialTheme.typography.titleSmall)
+                Text(item.title, style = Tokens.typography.titleSmall)
                 Text(
                     item.body,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(
                     DateFormatters.relative(item.createdAt),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.labelSmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -239,7 +238,7 @@ private fun InstallRow(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -254,21 +253,21 @@ private fun InstallRow(
             )
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(title, style = Tokens.typography.titleSmall)
                 Text(
                     listOfNotNull(
                         version.takeIf { it.isNotBlank() }?.let { "v$it" },
                         DateFormatters.relative(when_),
                     ).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             SproutlyIcon(
                 PhosphorIcons.ChevronRight,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }

@@ -13,11 +13,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.LinearProgressIndicator
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -52,8 +51,8 @@ fun RegisterScreen(
         Column(Modifier.padding(horizontal = 24.dp)) {
             Text(
                 "One account for installing and publishing.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodyMedium,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(22.dp))
 
@@ -98,8 +97,8 @@ fun RegisterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(5.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    color = Tokens.colorScheme.primary,
+                    trackColor = Tokens.colorScheme.surfaceContainerHigh,
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
@@ -109,22 +108,22 @@ fun RegisterScreen(
                         3 -> "Good password."
                         else -> "Strong password."
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
             }
 
             if (state.error != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.errorContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         state.error.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }
@@ -144,8 +143,8 @@ fun RegisterScreen(
             ) {
                 Text(
                     "You can open a developer profile any time.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(Modifier.height(32.dp))

@@ -16,9 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -53,11 +52,11 @@ fun RankingsScreen(
     ) {
         item {
             Column {
-                Text("Top charts", style = MaterialTheme.typography.headlineMedium)
+                Text("Top charts", style = Tokens.typography.headlineMedium)
                 Text(
                     "Ranked by installs, updated live",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodyMedium,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(8.dp))
             }
@@ -89,7 +88,7 @@ private fun RankedRow(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = Tokens.colorScheme.surfaceContainerLow,
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(
@@ -100,18 +99,18 @@ private fun RankedRow(
                 modifier = Modifier
                     .size(30.dp)
                     .background(
-                        if (rank <= 3) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        if (rank <= 3) Tokens.colorScheme.primary
+                        else Tokens.colorScheme.surfaceContainerHigh,
                         CircleShape,
                     ),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = rank.toString(),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = Tokens.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    color = if (rank <= 3) MaterialTheme.colorScheme.onPrimary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (rank <= 3) Tokens.colorScheme.onPrimary
+                    else Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(Modifier.width(12.dp))
@@ -123,22 +122,22 @@ private fun RankedRow(
             )
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(product.title, style = MaterialTheme.typography.titleSmall, maxLines = 1)
+                Text(product.title, style = Tokens.typography.titleSmall, maxLines = 1)
                 Text(
                     product.storeName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                 )
                 Text(
                     app.tab.store.core.utils.InstallCount.phrase(product.unitsSold),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.labelSmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             Text(
                 text = if (product.isFree) "Free" else formatPrice(product.price),
-                style = MaterialTheme.typography.labelLarge,
+                style = Tokens.typography.labelLarge,
             )
         }
     }

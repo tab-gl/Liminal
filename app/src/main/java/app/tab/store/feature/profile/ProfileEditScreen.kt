@@ -13,9 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,7 +69,7 @@ fun ProfileEditScreen(
                     Surface(
                         onClick = { picker.launch(pickImageRequest()) },
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = Tokens.colorScheme.primary,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(2.dp),
@@ -78,7 +77,7 @@ fun ProfileEditScreen(
                         Box(Modifier.padding(8.dp)) {
                             SproutlyIcon(PhosphorIcons.Image,
                                 contentDescription = "Change photo",
-                                tint = MaterialTheme.colorScheme.onPrimary,
+                                tint = Tokens.colorScheme.onPrimary,
                                 modifier = Modifier.height(18.dp),
                             )
                         }
@@ -103,14 +102,14 @@ fun ProfileEditScreen(
 
             if (state.error != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.errorContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         state.error.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }

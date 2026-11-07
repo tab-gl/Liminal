@@ -32,23 +32,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import app.tab.store.core.ui.ExperimentalMaterial3ExpressiveApi
+import app.tab.store.core.ui.LoadingIndicator
+import app.tab.store.core.ui.ExperimentalMaterial3Api
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
+import app.tab.store.core.ui.TopAppBar
+import app.tab.store.core.ui.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -104,8 +96,8 @@ fun SproutlyTopBar(
     TopAppBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onBackground,
+            containerColor = Tokens.colorScheme.background,
+            titleContentColor = Tokens.colorScheme.onBackground,
         ),
         navigationIcon = {
             if (onBack != null) {
@@ -118,15 +110,15 @@ fun SproutlyTopBar(
             Column {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = Tokens.typography.headlineSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -156,10 +148,10 @@ fun SproutlyButton(
             .height(54.dp),
         enabled = enabled && !loading,
         shape = SproutlyRadii.pill,
-        color = if (enabled) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.surfaceContainerHigh,
-        contentColor = if (enabled) MaterialTheme.colorScheme.onPrimary
-        else MaterialTheme.colorScheme.onSurfaceVariant,
+        color = if (enabled) Tokens.colorScheme.primary
+        else Tokens.colorScheme.surfaceContainerHigh,
+        contentColor = if (enabled) Tokens.colorScheme.onPrimary
+        else Tokens.colorScheme.onSurfaceVariant,
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),
@@ -171,18 +163,18 @@ fun SproutlyButton(
                 // a spinner alone says nothing about what is happening.
                 LoadingIndicator(
                     modifier = Modifier.size(22.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = Tokens.colorScheme.onPrimary,
                 )
                 if (text.isNotBlank()) {
                     Spacer(Modifier.width(10.dp))
-                    Text(text, style = MaterialTheme.typography.labelLarge)
+                    Text(text, style = Tokens.typography.labelLarge)
                 }
             } else {
                 if (icon != null) {
                     SproutlyIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                     Spacer(Modifier.width(8.dp))
                 }
-                Text(text, style = MaterialTheme.typography.labelLarge)
+                Text(text, style = Tokens.typography.labelLarge)
             }
         }
     }
@@ -201,8 +193,8 @@ fun SproutlySecondaryButton(
         modifier = modifier.height(54.dp),
         enabled = enabled,
         shape = SproutlyRadii.pill,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        color = Tokens.colorScheme.primaryContainer,
+        contentColor = Tokens.colorScheme.onPrimaryContainer,
     ) {
         Row(
             modifier = Modifier
@@ -215,7 +207,7 @@ fun SproutlySecondaryButton(
                 SproutlyIcon(icon, contentDescription = null, modifier = Modifier.size(19.dp))
                 Spacer(Modifier.width(8.dp))
             }
-            Text(text, style = MaterialTheme.typography.labelLarge)
+            Text(text, style = Tokens.typography.labelLarge)
         }
     }
 }
@@ -228,8 +220,8 @@ fun SproutlySecondaryButton(
 fun SproutlyTag(
     text: String,
     modifier: Modifier = Modifier,
-    container: Color = MaterialTheme.colorScheme.primaryContainer,
-    content: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    container: Color = Tokens.colorScheme.primaryContainer,
+    content: Color = Tokens.colorScheme.onPrimaryContainer,
 ) {
     Box(
         modifier = modifier
@@ -237,7 +229,7 @@ fun SproutlyTag(
             .background(container)
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
-        Text(text, style = MaterialTheme.typography.labelSmall, color = content)
+        Text(text, style = Tokens.typography.labelSmall, color = content)
     }
 }
 
@@ -252,16 +244,16 @@ fun SproutlyChip(
         onClick = onClick,
         modifier = modifier,
         shape = SproutlyRadii.pill,
-        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary
-        else MaterialTheme.colorScheme.onSurface,
+        color = if (selected) Tokens.colorScheme.primary else Tokens.colorScheme.surface,
+        contentColor = if (selected) Tokens.colorScheme.onPrimary
+        else Tokens.colorScheme.onSurface,
         border = if (selected) null else androidx.compose.foundation.BorderStroke(
-            1.dp, MaterialTheme.colorScheme.outline,
+            1.dp, Tokens.colorScheme.outline,
         ),
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge,
+            style = Tokens.typography.labelLarge,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
         )
     }
@@ -278,15 +270,15 @@ fun RatingBadge(rating: Double, count: Int, modifier: Modifier = Modifier) {
         Spacer(Modifier.width(3.dp))
         Text(
             text = "%.1f".format(rating),
-            style = MaterialTheme.typography.labelMedium,
+            style = Tokens.typography.labelMedium,
             fontWeight = FontWeight.Bold,
         )
         if (count > 0) {
             Spacer(Modifier.width(3.dp))
             Text(
                 text = "($count)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -302,24 +294,24 @@ fun PriceText(
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = formatPrice(paise),
-            style = if (large) MaterialTheme.typography.headlineMedium
-            else MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = if (large) Tokens.typography.headlineMedium
+            else Tokens.typography.titleLarge,
+            color = Tokens.colorScheme.onSurface,
         )
         if (compareAt != null && compareAt > paise) {
             Spacer(Modifier.width(7.dp))
             Text(
                 text = formatPrice(compareAt),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough,
             )
             val off = ((compareAt - paise) * 100 / compareAt).toInt()
             Spacer(Modifier.width(7.dp))
             SproutlyTag(
                 text = "$off% off",
-                container = MaterialTheme.colorScheme.tertiaryContainer,
-                content = MaterialTheme.colorScheme.onTertiaryContainer,
+                container = Tokens.colorScheme.tertiaryContainer,
+                content = Tokens.colorScheme.onTertiaryContainer,
             )
         }
     }
@@ -341,20 +333,20 @@ fun SproutlyImage(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            .background(Tokens.colorScheme.surfaceContainerHigh),
     ) {
         if (url.isNullOrBlank()) {
             // No artwork yet: an initial, not a broken-image glyph.
             Box(
                 Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Tokens.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     contentDescription?.trim()?.firstOrNull()?.uppercase()?.toString() ?: "·",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.55f),
+                    style = Tokens.typography.headlineSmall,
+                    color = Tokens.colorScheme.onPrimaryContainer.copy(alpha = 0.55f),
                 )
             }
         } else {
@@ -425,13 +417,13 @@ fun EmptyState(
                 modifier = Modifier
                     .size(84.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Tokens.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 SproutlyIcon(
                     icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = Tokens.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(34.dp),
                 )
             }
@@ -439,14 +431,14 @@ fun EmptyState(
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineSmall,
+            style = Tokens.typography.headlineSmall,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(6.dp))
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = Tokens.typography.bodyMedium,
+            color = Tokens.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         if (actionLabel != null && onAction != null) {
@@ -483,7 +475,7 @@ fun SproutlyLoader(
     modifier: Modifier = Modifier,
     label: String? = null,
     size: Dp = 44.dp,
-    color: Color = MaterialTheme.colorScheme.primary,
+    color: Color = Tokens.colorScheme.primary,
 ) {
     Column(
         modifier = modifier,
@@ -497,8 +489,8 @@ fun SproutlyLoader(
             Spacer(Modifier.height(14.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -530,13 +522,13 @@ fun SectionHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(title, style = MaterialTheme.typography.headlineMedium)
+        Text(title, style = Tokens.typography.headlineMedium)
         if (actionLabel != null && onAction != null) {
             TextButton(onClick = onAction) {
                 Text(
                     actionLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = Tokens.typography.labelLarge,
+                    color = Tokens.colorScheme.primary,
                 )
             }
         }
@@ -559,8 +551,8 @@ fun QuantityStepper(
     Surface(
         modifier = modifier,
         shape = SproutlyRadii.pill,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        color = Tokens.colorScheme.surfaceContainerHigh,
+        contentColor = Tokens.colorScheme.onSurface,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onDecrease, enabled = enabled) {
@@ -568,7 +560,7 @@ fun QuantityStepper(
             }
             Text(
                 text = quantity.toString(),
-                style = MaterialTheme.typography.titleMedium,
+                style = Tokens.typography.titleMedium,
                 modifier = Modifier.width(22.dp),
                 textAlign = TextAlign.Center,
             )
@@ -605,10 +597,10 @@ fun ProductCard(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = Tokens.colorScheme.surfaceContainerLow,
         border = BorderStroke(
             1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            Tokens.colorScheme.outlineVariant.copy(alpha = 0.5f),
         ),
         interactionSource = interaction,
         modifier = modifier.graphicsLayer {
@@ -651,7 +643,7 @@ fun ProductCard(
             ) {
                 Text(
                     text = product.title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = Tokens.typography.titleSmall,
                     maxLines = if (compact) 1 else 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
@@ -663,8 +655,8 @@ fun ProductCard(
             }
             Text(
                 text = product.storeName.ifBlank { product.categoryLabel },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.labelSmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = 3.dp),
@@ -676,7 +668,7 @@ fun ProductCard(
             ) {
                 Text(
                     text = if (product.isFree) "Free" else formatPrice(product.price),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = Tokens.typography.labelLarge,
                 )
                 Spacer(Modifier.weight(1f))
                 if (product.rating > 0) {
@@ -684,13 +676,13 @@ fun ProductCard(
                         PhosphorIcons.Star,
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = Tokens.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.width(3.dp))
                     Text(
                         text = "%.1f".format(product.rating),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.labelSmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -710,7 +702,7 @@ fun ProductRowCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
     ) {
         Row(modifier = Modifier.padding(10.dp)) {
             SproutlyImage(
@@ -723,19 +715,19 @@ fun ProductRowCard(
             Column(Modifier.weight(1f)) {
                 Text(
                     product.storeName,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.labelSmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     product.title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = Tokens.typography.titleSmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     formatPrice(product.price),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = Tokens.typography.titleMedium,
                     fontWeight = FontWeight.ExtraBold,
                 )
             }
@@ -817,8 +809,8 @@ fun BrandWordmark(
         Spacer(Modifier.width(9.dp))
         Text(
             text = "Sproutly",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
+            style = Tokens.typography.headlineMedium,
+            color = Tokens.colorScheme.onBackground,
         )
     }
 }
@@ -834,14 +826,14 @@ fun Avatar(
         modifier = modifier
             .size(size)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .background(Tokens.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
         if (url.isNullOrBlank()) {
             Text(
                 text = name.trim().take(1).uppercase().ifBlank { "S" },
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                style = Tokens.typography.titleMedium,
+                color = Tokens.colorScheme.onPrimaryContainer,
             )
         } else {
             AsyncImage(
@@ -866,14 +858,14 @@ fun UploadProgressBar(fraction: Float, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .height(4.dp)
                 .clip(SproutlyRadii.pill)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                .background(Tokens.colorScheme.surfaceContainerHigh),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(fraction.coerceIn(0f, 1f))
                     .height(4.dp)
                     .clip(SproutlyRadii.pill)
-                    .background(MaterialTheme.colorScheme.primary),
+                    .background(Tokens.colorScheme.primary),
             )
         }
     }
@@ -885,12 +877,12 @@ fun SuccessCheck(modifier: Modifier = Modifier, size: Dp = 64.dp) {
         modifier = modifier
             .size(size)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .background(Tokens.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
         SproutlyIcon(PhosphorIcons.Tick,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            tint = Tokens.colorScheme.onPrimaryContainer,
             modifier = Modifier.size(size / 2),
         )
     }
@@ -906,7 +898,7 @@ fun SoftCard(
             .fillMaxWidth()
             .shadow(1.dp, SproutlyRadii.card, clip = false)
             .clip(SproutlyRadii.card)
-            .background(MaterialTheme.colorScheme.surface)
+            .background(Tokens.colorScheme.surface)
             .padding(16.dp),
         content = content,
     )
@@ -930,9 +922,9 @@ fun RiskMeter(
     // Nothing under 61 is treated as a warning. An app that asks for a camera and
     // notifications is ordinary; colouring that amber taught people to ignore it.
     val (container, content) = if (clamped > 60) {
-        MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        Tokens.colorScheme.errorContainer to Tokens.colorScheme.onErrorContainer
     } else {
-        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+        Tokens.colorScheme.primaryContainer to Tokens.colorScheme.onPrimaryContainer
     }
     val label = if (clamped > 60) "High reach" else "Low reach"
 
@@ -950,11 +942,11 @@ fun RiskMeter(
                     tint = content,
                 )
                 Spacer(Modifier.width(6.dp))
-                Text("Sprout Safe", style = MaterialTheme.typography.titleSmall, color = content)
+                Text("Sprout Safe", style = Tokens.typography.titleSmall, color = content)
                 Spacer(Modifier.weight(1f))
                 Text(
                     "$clamped / 100 · $label",
-                    style = MaterialTheme.typography.labelMedium,
+                    style = Tokens.typography.labelMedium,
                     color = content,
                 )
             }
@@ -977,7 +969,7 @@ fun RiskMeter(
             if (!compact && reasons.isNotEmpty()) {
                 Spacer(Modifier.height(10.dp))
                 reasons.take(2).forEach { reason ->
-                    Text("· $reason", style = MaterialTheme.typography.bodySmall, color = content)
+                    Text("· $reason", style = Tokens.typography.bodySmall, color = content)
                 }
             }
         }
@@ -989,7 +981,7 @@ fun RiskMeter(
 fun OfficialBadge(modifier: Modifier = Modifier) {
     Surface(
         shape = SproutlyRadii.pill,
-        color = MaterialTheme.colorScheme.primary,
+        color = Tokens.colorScheme.primary,
         modifier = modifier,
     ) {
         Row(
@@ -1000,13 +992,13 @@ fun OfficialBadge(modifier: Modifier = Modifier) {
                 PhosphorIcons.Verified,
                 contentDescription = null,
                 modifier = Modifier.size(12.dp),
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = Tokens.colorScheme.onPrimary,
             )
             Spacer(Modifier.width(4.dp))
             Text(
                 "Official",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimary,
+                style = Tokens.typography.labelSmall,
+                color = Tokens.colorScheme.onPrimary,
             )
         }
     }
@@ -1028,13 +1020,13 @@ fun InitialArt(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(corner))
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .background(Tokens.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             letter,
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.55f),
+            style = Tokens.typography.displaySmall,
+            color = Tokens.colorScheme.onPrimaryContainer.copy(alpha = 0.55f),
         )
     }
 }

@@ -3,7 +3,7 @@ package app.tab.store.feature.library
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import app.tab.store.core.ui.Tokens
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,21 +54,21 @@ fun MyAppsScreen(onProduct: (String) -> Unit, onBrowse: () -> Unit, viewModel: M
                     Surface(
                         onClick = { onProduct(app.productId) },
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surface,
+                        color = Tokens.colorScheme.surface,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                             SproutlyImage(app.imageUrl, app.title, Modifier.size(54.dp), corner = 12.dp)
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(app.title, style = MaterialTheme.typography.titleSmall, maxLines = 1)
+                                Text(app.title, style = Tokens.typography.titleSmall, maxLines = 1)
                                 Text(
                                     listOfNotNull(app.storeName.takeIf(String::isNotBlank), app.versionName.takeIf(String::isNotBlank)?.let { "v$it" }).joinToString(" · "),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            Text("Open", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                            Text("Open", style = Tokens.typography.labelMedium, color = Tokens.colorScheme.primary)
                         }
                     }
                 }

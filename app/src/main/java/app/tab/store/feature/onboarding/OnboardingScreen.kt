@@ -23,9 +23,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +54,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
         ActivityResultContracts.RequestPermission(),
     ) { step = 2 }
 
-    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
+    Surface(color = Tokens.colorScheme.background, modifier = Modifier.fillMaxSize()) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -71,7 +70,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                             .weight(1f)
                             .height(4.dp)
                             .clip(SproutlyRadii.pill)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                            .background(Tokens.colorScheme.surfaceContainerHigh),
                     ) {
                         if (active) {
                             Box(
@@ -79,7 +78,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                                     .fillMaxWidth()
                                     .height(4.dp)
                                     .clip(SproutlyRadii.pill)
-                                    .background(MaterialTheme.colorScheme.primary),
+                                    .background(Tokens.colorScheme.primary),
                             )
                         }
                     }
@@ -155,33 +154,33 @@ private fun Panel(
             modifier = Modifier
                 .size(64.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
+                .background(Tokens.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
             SproutlyIcon(
                 icon = icon,
                 contentDescription = null,
                 modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                tint = Tokens.colorScheme.onPrimaryContainer,
             )
         }
         Spacer(Modifier.height(24.dp))
         Text(
             eyebrow.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = Tokens.typography.labelSmall,
+            color = Tokens.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(8.dp))
         Text(
             title,
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = Tokens.typography.displaySmall,
+            color = Tokens.colorScheme.onSurface,
         )
         Spacer(Modifier.height(16.dp))
         Text(
             body,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = Tokens.typography.bodyMedium,
+            color = Tokens.colorScheme.onSurfaceVariant,
         )
 
         Spacer(Modifier.weight(1f))
@@ -191,14 +190,14 @@ private fun Panel(
             Surface(
                 onClick = secondary.second,
                 shape = SproutlyRadii.pill,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                color = Tokens.colorScheme.surfaceContainerLow,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Box(Modifier.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
                     Text(
                         secondary.first,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.labelLarge,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
             }

@@ -14,9 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -58,12 +57,12 @@ fun OffersScreen(
 
         item {
             Column {
-                Text("Offers", style = MaterialTheme.typography.headlineMedium)
+                Text("Offers", style = Tokens.typography.headlineMedium)
                 Text(
                     if (state.hasOffers) "${state.offers.size} apps on offer right now"
                     else "Price drops from developers, in one place",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodyMedium,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(8.dp))
             }
@@ -94,7 +93,7 @@ private fun OfferRow(
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(
@@ -111,27 +110,27 @@ private fun OfferRow(
             Column(Modifier.weight(1f)) {
                 Text(
                     product.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = Tokens.typography.titleMedium,
                     maxLines = 1,
                 )
                 Text(
                     product.storeName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                 )
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         formatPrice(product.price),
-                        style = MaterialTheme.typography.titleSmall,
+                        style = Tokens.typography.titleSmall,
                     )
                     product.compareAtPrice?.let { was ->
                         Spacer(Modifier.width(8.dp))
                         Text(
                             formatPrice(was),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onSurfaceVariant,
                             textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough,
                         )
                     }
@@ -140,8 +139,8 @@ private fun OfferRow(
             Box(Modifier.padding(start = 8.dp)) {
                 SproutlyTag(
                     text = "-${product.discountPercent}%",
-                    container = MaterialTheme.colorScheme.primary,
-                    content = MaterialTheme.colorScheme.onPrimary,
+                    container = Tokens.colorScheme.primary,
+                    content = Tokens.colorScheme.onPrimary,
                 )
             }
         }
@@ -158,7 +157,7 @@ private fun OfferBanner(product: Product, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.hero,
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = Tokens.colorScheme.primaryContainer,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column {
@@ -180,24 +179,24 @@ private fun OfferBanner(product: Product, onClick: () -> Unit) {
                     }
                     Text(
                         product.title,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = Tokens.typography.labelLarge,
+                        color = Tokens.colorScheme.onPrimaryContainer,
                     )
                 }
                 if (product.promoHeadline.isNotBlank()) {
                     Spacer(Modifier.height(6.dp))
                     Text(
                         product.promoHeadline,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = Tokens.typography.headlineSmall,
+                        color = Tokens.colorScheme.onPrimaryContainer,
                     )
                 }
                 if (product.promoBody.isNotBlank()) {
                     Spacer(Modifier.height(4.dp))
                     Text(
                         product.promoBody,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = Tokens.typography.bodyMedium,
+                        color = Tokens.colorScheme.onPrimaryContainer,
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -210,8 +209,8 @@ private fun OfferBanner(product: Product, onClick: () -> Unit) {
                         product.offerKind == "IN_APP" -> "In-app perk — open the app to see it"
                         else -> formatPrice(product.price)
                     },
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    style = Tokens.typography.labelLarge,
+                    color = Tokens.colorScheme.onPrimaryContainer,
                 )
             }
         }

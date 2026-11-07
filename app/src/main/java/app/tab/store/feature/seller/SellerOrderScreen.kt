@@ -14,13 +14,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.HorizontalDivider
+import app.tab.store.core.ui.SnackbarHost
+import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -83,7 +82,7 @@ fun SellerOrdersScreen(
                     items(state.orders, key = { it.id }) { order ->
                         Surface(
                             shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Column(Modifier.padding(14.dp)) {
@@ -91,12 +90,12 @@ fun SellerOrdersScreen(
                                     Column(Modifier.weight(1f)) {
                                         Text(
                                             "#${order.id.take(8).uppercase()}",
-                                            style = MaterialTheme.typography.titleSmall,
+                                            style = Tokens.typography.titleSmall,
                                         )
                                         Text(
                                             DateFormatters.dateTime(order.placedAt),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = Tokens.typography.bodySmall,
+                                            color = Tokens.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                     OrderStatusChip(order.status)
@@ -116,30 +115,30 @@ fun SellerOrdersScreen(
                                         Spacer(Modifier.width(8.dp))
                                         Text(
                                             "${item.title}",
-                                            style = MaterialTheme.typography.bodySmall,
+                                            style = Tokens.typography.bodySmall,
                                             modifier = Modifier.weight(1f),
                                             maxLines = 1,
                                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                         )
                                         Text(
                                             formatPrice(item.lineTotal),
-                                            style = MaterialTheme.typography.bodySmall,
+                                            style = Tokens.typography.bodySmall,
                                         )
                                     }
                                 }
                                 Spacer(Modifier.height(6.dp))
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                HorizontalDivider(color = Tokens.colorScheme.outlineVariant)
                                 Spacer(Modifier.height(6.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Column(Modifier.weight(1f)) {
                                         Text(
                                             order.buyerName.ifBlank { "Customer" },
-                                            style = MaterialTheme.typography.titleSmall,
+                                            style = Tokens.typography.titleSmall,
                                         )
                                         Text(
                                             "${order.itemCount} app${if (order.itemCount == 1) "" else "s"} installed",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = Tokens.typography.bodySmall,
+                                            color = Tokens.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                     nextStatus(order)?.let { (next, label) ->
@@ -149,7 +148,7 @@ fun SellerOrdersScreen(
                                         ) {
                                             Text(
                                                 if (state.updatingId == order.id) "Updating…" else label,
-                                                style = MaterialTheme.typography.labelMedium,
+                                                style = Tokens.typography.labelMedium,
                                             )
                                         }
                                     }

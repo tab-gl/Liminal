@@ -13,21 +13,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import app.tab.store.core.ui.ExperimentalMaterial3Api
+import app.tab.store.core.ui.HorizontalDivider
+import app.tab.store.core.ui.DropdownMenu
+import app.tab.store.core.ui.DropdownMenuItem
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import app.tab.store.core.ui.AlertDialog
+import app.tab.store.core.ui.TextButton
+import app.tab.store.core.ui.ModalBottomSheet
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +74,7 @@ fun AccountSwitcherSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = Tokens.colorScheme.surface,
         shape = SproutlyRadii.sheet,
     ) {
         Column(
@@ -85,15 +84,15 @@ fun AccountSwitcherSheet(
         ) {
             Text(
                 "Accounts",
-                style = MaterialTheme.typography.titleMedium,
+                style = Tokens.typography.titleMedium,
             )
             Spacer(Modifier.height(10.dp))
 
             if (accounts.isEmpty()) {
                 Text(
                     "No other accounts on this device yet.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -109,8 +108,8 @@ fun AccountSwitcherSheet(
                         if (isGoogle) onSelectAccount(account.uid) else confirm = account
                     },
                     shape = SproutlyRadii.card,
-                    color = if (isCurrent) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceContainerLow,
+                    color = if (isCurrent) Tokens.colorScheme.primaryContainer
+                    else Tokens.colorScheme.surfaceContainerLow,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
@@ -128,23 +127,23 @@ fun AccountSwitcherSheet(
                         Column(Modifier.weight(1f)) {
                             Text(
                                 account.displayName.ifBlank { account.email },
-                                style = MaterialTheme.typography.titleSmall,
+                                style = Tokens.typography.titleSmall,
                                 maxLines = 1,
-                                color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurface,
+                                color = if (isCurrent) Tokens.colorScheme.onPrimaryContainer
+                                else Tokens.colorScheme.onSurface,
                             )
                             Text(
                                 account.email,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = Tokens.typography.bodySmall,
                                 maxLines = 1,
-                                color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = if (isCurrent) Tokens.colorScheme.onPrimaryContainer
+                                else Tokens.colorScheme.onSurfaceVariant,
                             )
                             if (!isCurrent) {
                                 Text(
                                     "Tap to switch",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    style = Tokens.typography.labelSmall,
+                                    color = Tokens.colorScheme.primary,
                                 )
                             }
                         }
@@ -153,14 +152,14 @@ fun AccountSwitcherSheet(
                                 icon = PhosphorIcons.Tick,
                                 contentDescription = "Signed in",
                                 modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                tint = Tokens.colorScheme.onPrimaryContainer,
                             )
                         } else {
                             Box {
                                 Surface(
                                     onClick = { menuFor = account.uid },
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surface,
+                                    color = Tokens.colorScheme.surface,
                                     modifier = Modifier.size(28.dp),
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
@@ -168,7 +167,7 @@ fun AccountSwitcherSheet(
                                             icon = PhosphorIcons.More,
                                             contentDescription = "Options for ${account.email}",
                                             modifier = Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            tint = Tokens.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                 }
@@ -193,10 +192,10 @@ fun AccountSwitcherSheet(
             SheetAction(PhosphorIcons.Plus, "Add another account", onAddAccount)
 
             Spacer(Modifier.height(8.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = Tokens.colorScheme.outlineVariant)
             Spacer(Modifier.height(12.dp))
 
-            Text("Workspace", style = MaterialTheme.typography.titleMedium)
+            Text("Workspace", style = Tokens.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
 
             Workspace.entries.forEach { workspace ->
@@ -214,8 +213,8 @@ fun AccountSwitcherSheet(
                         if (!selected) onSwitchWorkspace(workspace)
                     },
                     shape = SproutlyRadii.card,
-                    color = if (selected) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceContainerLow,
+                    color = if (selected) Tokens.colorScheme.primaryContainer
+                    else Tokens.colorScheme.surfaceContainerLow,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
@@ -232,22 +231,22 @@ fun AccountSwitcherSheet(
                             },
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
-                            tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (selected) Tokens.colorScheme.onPrimaryContainer
+                            else Tokens.colorScheme.onSurfaceVariant,
                         )
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
                                 workspace.label,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurface,
+                                style = Tokens.typography.titleSmall,
+                                color = if (selected) Tokens.colorScheme.onPrimaryContainer
+                                else Tokens.colorScheme.onSurface,
                             )
                             Text(
                                 workspace.blurb,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = Tokens.typography.bodySmall,
+                                color = if (selected) Tokens.colorScheme.onPrimaryContainer
+                                else Tokens.colorScheme.onSurfaceVariant,
                             )
                         }
                         if (selected) {
@@ -255,7 +254,7 @@ fun AccountSwitcherSheet(
                                 icon = PhosphorIcons.Tick,
                                 contentDescription = "Current workspace",
                                 modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                tint = Tokens.colorScheme.onPrimaryContainer,
                             )
                         }
                     }
@@ -263,7 +262,7 @@ fun AccountSwitcherSheet(
             }
 
             Spacer(Modifier.height(8.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = Tokens.colorScheme.outlineVariant)
             Spacer(Modifier.height(6.dp))
             SheetAction(PhosphorIcons.ArrowRight, "Sign out", onSignOut)
 
@@ -300,7 +299,7 @@ private fun SheetAction(icon: Int, label: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -310,18 +309,18 @@ private fun SheetAction(icon: Int, label: String, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(30.dp)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
+                    .background(Tokens.colorScheme.surfaceContainerHigh, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 SproutlyIcon(
                     icon = icon,
                     contentDescription = null,
                     modifier = Modifier.size(17.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(Modifier.width(12.dp))
-            Text(label, style = MaterialTheme.typography.titleSmall)
+            Text(label, style = Tokens.typography.titleSmall)
         }
     }
 }

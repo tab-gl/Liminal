@@ -29,9 +29,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,12 +94,12 @@ fun ProfileScreen(
                 Column(Modifier.weight(1f)) {
                     Text(
                         user?.displayName?.ifBlank { "Sproutly shopper" } ?: "Sproutly shopper",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = Tokens.typography.headlineSmall,
                         color = SproutlyPalette.OliveDeep,
                     )
                     Text(
                         user?.email.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = Tokens.typography.bodySmall,
                         color = SproutlyPalette.Olive,
                     )
                     if (user?.role != null && user.role.name != "CUSTOMER") {
@@ -140,14 +139,14 @@ fun ProfileScreen(
         }
 
         Column(Modifier.padding(horizontal = 20.dp)) {
-            Text("Account", style = MaterialTheme.typography.headlineSmall)
+            Text("Account", style = Tokens.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             ProfileRow(PhosphorIcons.Receipt, "My apps", "Installed and updates", onOrders)
             ProfileRow(PhosphorIcons.Favourite, "Wishlist", "Saved for later", onWishlist)
             ProfileRow(PhosphorIcons.Notification, "Notifications", "Updates and offers", onNotifications)
 
             Spacer(Modifier.height(18.dp))
-            Text("Publishing", style = MaterialTheme.typography.headlineSmall)
+            Text("Publishing", style = Tokens.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             ProfileRow(
                 PhosphorIcons.Store,
@@ -168,7 +167,7 @@ fun ProfileScreen(
             }
 
             Spacer(Modifier.height(18.dp))
-            Text("Preferences", style = MaterialTheme.typography.headlineSmall)
+            Text("Preferences", style = Tokens.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
             ProfileRow(PhosphorIcons.Settings, "Settings", "App preferences") { showSettings = true }
 
@@ -176,7 +175,7 @@ fun ProfileScreen(
             Surface(
                 onClick = viewModel::signOut,
                 shape = SproutlyRadii.card,
-                color = MaterialTheme.colorScheme.surface,
+                color = Tokens.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
@@ -185,21 +184,21 @@ fun ProfileScreen(
                 ) {
                     SproutlyIcon(PhosphorIcons.ArrowRight,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
+                        tint = Tokens.colorScheme.error,
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
                         if (state.isSigningOut) "Signing out…" else "Sign out",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.error,
+                        style = Tokens.typography.titleSmall,
+                        color = Tokens.colorScheme.error,
                     )
                 }
             }
             Spacer(Modifier.height(28.dp))
             Text(
                 "Sproutly · v1.0.0",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(24.dp))
@@ -249,15 +248,15 @@ fun ProfileScreen(
 private fun StatTile(label: String, value: String, modifier: Modifier = Modifier) {
     Surface(
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = modifier,
     ) {
         Column(Modifier.padding(14.dp)) {
-            Text(value, style = MaterialTheme.typography.headlineMedium)
+            Text(value, style = Tokens.typography.headlineMedium)
             Text(
                 label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -268,7 +267,7 @@ private fun ProfileRow(@DrawableRes icon: Int, title: String, subtitle: String, 
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
@@ -281,27 +280,27 @@ private fun ProfileRow(@DrawableRes icon: Int, title: String, subtitle: String, 
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Tokens.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
                 SproutlyIcon(icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = Tokens.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(19.dp),
                 )
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(title, style = Tokens.typography.titleSmall)
                 Text(
                     subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
             SproutlyIcon(PhosphorIcons.ArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = Tokens.colorScheme.onSurfaceVariant,
             )
         }
     }

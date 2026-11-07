@@ -13,8 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,18 +46,18 @@ fun GamesScreen(
         item {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Games", style = MaterialTheme.typography.headlineMedium)
+                    Text("Games", style = Tokens.typography.headlineMedium)
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "${state.games.size}",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.labelLarge,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
                 Text(
                     "Play something new",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodyMedium,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
         }

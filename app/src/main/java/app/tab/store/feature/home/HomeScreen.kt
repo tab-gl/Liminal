@@ -43,14 +43,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Badge
+import app.tab.store.core.ui.BadgedBox
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.SnackbarHost
+import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -207,8 +206,8 @@ fun HomeScreen(
                             badge = {
                                 if (unread > 0) {
                                     Badge(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = Tokens.colorScheme.primary,
+                                        contentColor = Tokens.colorScheme.onPrimary,
                                     ) { Text(if (unread > 99) "99+" else unread.toString()) }
                                 }
                             },
@@ -224,7 +223,7 @@ fun HomeScreen(
                             icon = PhosphorIcons.Download,
                             contentDescription = "Downloads",
                             modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = Tokens.colorScheme.onSurface,
                         )
                     }
                     // One tap on the avatar opens the account switcher; the
@@ -244,21 +243,21 @@ fun HomeScreen(
                 Column(Modifier.padding(horizontal = 20.dp, vertical = 14.dp)) {
                     Text(
                         text = "${state.greeting}, ${state.firstName}",
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = Tokens.typography.headlineLarge,
                     )
                     Spacer(Modifier.height(3.dp))
                     Text(
                         text = "Find your next favourite app.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodyMedium,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(16.dp))
                     Surface(
                         onClick = onSearch,
                         shape = SproutlyRadii.pill,
-                        color = MaterialTheme.colorScheme.surface,
+                        color = Tokens.colorScheme.surface,
                         border = androidx.compose.foundation.BorderStroke(
-                            1.dp, MaterialTheme.colorScheme.outlineVariant,
+                            1.dp, Tokens.colorScheme.outlineVariant,
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -270,14 +269,14 @@ fun HomeScreen(
                         ) {
                             SproutlyIcon(PhosphorIcons.Search,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = Tokens.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp),
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 "Search apps, developers, categories",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = Tokens.typography.bodyMedium,
+                                color = Tokens.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -327,21 +326,21 @@ fun HomeScreen(
                         Column(Modifier.align(Alignment.CenterStart)) {
                             Text(
                                 promo.eyebrow,
-                                style = MaterialTheme.typography.labelSmall,
+                                style = Tokens.typography.labelSmall,
                                 color = if (page % 2 == 0) SproutlyPalette.Olive
                                 else SproutlyPalette.Lime,
                             )
                             Spacer(Modifier.height(6.dp))
                             Text(
                                 promo.title,
-                                style = MaterialTheme.typography.headlineMedium,
+                                style = Tokens.typography.headlineMedium,
                                 color = if (page % 2 == 0) SproutlyPalette.OliveDeep
                                 else SproutlyPalette.Lime,
                             )
                             Spacer(Modifier.height(6.dp))
                             Text(
                                 promo.body,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = Tokens.typography.bodySmall,
                                 color = if (page % 2 == 0) SproutlyPalette.Olive
                                 else SproutlyPalette.LimeSoft,
                                 modifier = Modifier.fillMaxWidth(0.72f),
@@ -357,7 +356,7 @@ fun HomeScreen(
                             ) {
                                 Text(
                                     promo.cta,
-                                    style = MaterialTheme.typography.labelMedium,
+                                    style = Tokens.typography.labelMedium,
                                     color = if (page % 2 == 0) SproutlyPalette.Lime
                                     else SproutlyPalette.OliveDeep,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -393,7 +392,7 @@ fun HomeScreen(
                         Surface(
                             onClick = onRankings,
                             shape = SproutlyRadii.pill,
-                            color = MaterialTheme.colorScheme.primaryContainer,
+                            color = Tokens.colorScheme.primaryContainer,
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
@@ -403,13 +402,13 @@ fun HomeScreen(
                                     PhosphorIcons.Analytics,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    tint = Tokens.colorScheme.onPrimaryContainer,
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
                                     "Top charts",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = Tokens.typography.labelLarge,
+                                    color = Tokens.colorScheme.onPrimaryContainer,
                                 )
                             }
                         }
@@ -515,7 +514,7 @@ fun HomeScreen(
                                     modifier = Modifier
                                         .width(200.dp)
                                         .clip(SproutlyRadii.card)
-                                        .background(MaterialTheme.colorScheme.surface)
+                                        .background(Tokens.colorScheme.surface)
                                         .clickable { onProduct(product.id) }
                                         .padding(10.dp),
                                 ) {
@@ -524,8 +523,8 @@ fun HomeScreen(
                                         Spacer(Modifier.width(6.dp))
                                         Text(
                                             product.storeName,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = Tokens.typography.labelSmall,
+                                            color = Tokens.colorScheme.onSurfaceVariant,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                         )
@@ -533,14 +532,14 @@ fun HomeScreen(
                                     Spacer(Modifier.height(8.dp))
                                     Text(
                                         product.title,
-                                        style = MaterialTheme.typography.titleSmall,
+                                        style = Tokens.typography.titleSmall,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                     Spacer(Modifier.height(6.dp))
                                     Text(
                                         app.tab.store.core.designsystem.formatPrice(product.price),
-                                        style = MaterialTheme.typography.titleMedium,
+                                        style = Tokens.typography.titleMedium,
                                     )
                                 }
                             }
@@ -593,13 +592,13 @@ fun HomeScreen(
                                     Spacer(Modifier.height(6.dp))
                                     Text(
                                         product.title,
-                                        style = MaterialTheme.typography.bodySmall,
+                                        style = Tokens.typography.bodySmall,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                     Text(
                                         app.tab.store.core.designsystem.formatPrice(product.price),
-                                        style = MaterialTheme.typography.labelLarge,
+                                        style = Tokens.typography.labelLarge,
                                     )
                                 }
                             }
@@ -626,8 +625,8 @@ fun HomeScreen(
                 SmallFab(
                     icon = PhosphorIcons.ArrowRight,
                     contentDescription = "Back to top",
-                    container = MaterialTheme.colorScheme.surface,
-                    content = MaterialTheme.colorScheme.onSurface,
+                    container = Tokens.colorScheme.surface,
+                    content = Tokens.colorScheme.onSurface,
                     rotate = 270f,
                     onClick = {
                         scope.launch { listState.animateScrollToItem(0) }
@@ -637,8 +636,8 @@ fun HomeScreen(
                 SmallFab(
                     icon = PhosphorIcons.Search,
                     contentDescription = "Search apps",
-                    container = MaterialTheme.colorScheme.primary,
-                    content = MaterialTheme.colorScheme.onPrimary,
+                    container = Tokens.colorScheme.primary,
+                    content = Tokens.colorScheme.onPrimary,
                     onClick = onSearch,
                 )
             }
@@ -658,9 +657,9 @@ private fun CategoryChip(category: Category, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.pill,
-        color = MaterialTheme.colorScheme.surface,
+        color = Tokens.colorScheme.surface,
         border = androidx.compose.foundation.BorderStroke(
-            1.dp, MaterialTheme.colorScheme.outlineVariant,
+            1.dp, Tokens.colorScheme.outlineVariant,
         ),
     ) {
         Row(
@@ -671,10 +670,10 @@ private fun CategoryChip(category: Category, onClick: () -> Unit) {
                 icon = categoryIcon(category.iconKey),
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.width(7.dp))
-            Text(category.name, style = MaterialTheme.typography.labelLarge)
+            Text(category.name, style = Tokens.typography.labelLarge)
         }
     }
 }
@@ -716,7 +715,7 @@ private fun PromoBanner(product: Product, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.hero,
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = Tokens.colorScheme.primaryContainer,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 4.dp),
@@ -733,15 +732,15 @@ private fun PromoBanner(product: Product, onClick: () -> Unit) {
             Column(Modifier.padding(14.dp)) {
                 Text(
                     product.promoHeadline.ifBlank { "${product.discountPercent}% off ${product.title}" },
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    style = Tokens.typography.titleSmall,
+                    color = Tokens.colorScheme.onPrimaryContainer,
                 )
                 if (product.promoBody.isNotBlank()) {
                     Spacer(Modifier.height(3.dp))
                     Text(
                         product.promoBody,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onPrimaryContainer,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -749,8 +748,8 @@ private fun PromoBanner(product: Product, onClick: () -> Unit) {
                 Spacer(Modifier.height(6.dp))
                 Text(
                     "Open",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = Tokens.typography.labelLarge,
+                    color = Tokens.colorScheme.primary,
                 )
             }
         }

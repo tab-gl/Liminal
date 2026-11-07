@@ -2,7 +2,7 @@ package app.tab.store.core.designsystem
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.material3.LocalContentColor
+import app.tab.store.core.ui.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color

@@ -13,8 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,12 +30,12 @@ import app.tab.store.domain.model.OrderStatus
 @Composable
 fun OrderStatusChip(status: OrderStatus, modifier: Modifier = Modifier) {
     val (container, content) = when (status) {
-        OrderStatus.PENDING -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        OrderStatus.CONFIRMED -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
-        OrderStatus.PACKED -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+        OrderStatus.PENDING -> Tokens.colorScheme.tertiaryContainer to Tokens.colorScheme.onTertiaryContainer
+        OrderStatus.CONFIRMED -> Tokens.colorScheme.primaryContainer to Tokens.colorScheme.onPrimaryContainer
+        OrderStatus.PACKED -> Tokens.colorScheme.primaryContainer to Tokens.colorScheme.onPrimaryContainer
         OrderStatus.SHIPPED -> SproutlyPalette.LimeSoft to SproutlyPalette.Olive
         OrderStatus.DELIVERED -> SproutlyPalette.Lime to SproutlyPalette.OliveDeep
-        OrderStatus.CANCELLED -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        OrderStatus.CANCELLED -> Tokens.colorScheme.errorContainer to Tokens.colorScheme.onErrorContainer
     }
     SproutlyTag(
         text = status.name,
@@ -77,15 +76,15 @@ fun OrderTimeline(events: List<OrderEvent>, currentStatus: OrderStatus, modifier
                             .size(22.dp)
                             .clip(CircleShape)
                             .background(
-                                if (done) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                if (done) Tokens.colorScheme.primary
+                                else Tokens.colorScheme.surfaceContainerHigh,
                             ),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (done) {
                             SproutlyIcon(PhosphorIcons.Tick,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
+                                tint = Tokens.colorScheme.onPrimary,
                                 modifier = Modifier.size(13.dp),
                             )
                         }
@@ -96,8 +95,8 @@ fun OrderTimeline(events: List<OrderEvent>, currentStatus: OrderStatus, modifier
                                 .width(2.dp)
                                 .height(34.dp)
                                 .background(
-                                    if (index < currentIndex) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    if (index < currentIndex) Tokens.colorScheme.primary
+                                    else Tokens.colorScheme.surfaceContainerHigh,
                                 ),
                         )
                     }
@@ -106,14 +105,14 @@ fun OrderTimeline(events: List<OrderEvent>, currentStatus: OrderStatus, modifier
                 Column(Modifier.padding(bottom = 18.dp)) {
                     Text(
                         statusLabel(step),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = if (done) MaterialTheme.colorScheme.onSurface
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.titleSmall,
+                        color = if (done) Tokens.colorScheme.onSurface
+                        else Tokens.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         event?.let { DateFormatters.dateTime(it.at) } ?: "Pending",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -121,8 +120,8 @@ fun OrderTimeline(events: List<OrderEvent>, currentStatus: OrderStatus, modifier
         if (currentStatus == OrderStatus.CANCELLED) {
             Text(
                 "Cancelled.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.error,
             )
         }
     }

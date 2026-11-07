@@ -12,9 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -53,34 +52,34 @@ fun OrderPlacedScreen(
         Spacer(Modifier.height(20.dp))
         Text(
             "Order placed",
-            style = MaterialTheme.typography.displaySmall,
+            style = Tokens.typography.displaySmall,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
             "Installed. We will tell you when there is an update.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = Tokens.typography.bodyMedium,
+            color = Tokens.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
 
         Surface(
             shape = SproutlyRadii.card,
-            color = MaterialTheme.colorScheme.surface,
+            color = Tokens.colorScheme.surface,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Column(Modifier.padding(16.dp)) {
                 Row {
                     Text(
                         "Install",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodyMedium,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.weight(1f))
                     Text(
                         "#${orderId.take(8).uppercase()}",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = Tokens.typography.titleSmall,
                     )
                 }
                 if (order != null) {
@@ -99,12 +98,12 @@ fun OrderPlacedScreen(
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 "${item.title} × ${item.quantity}",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = Tokens.typography.bodySmall,
                                 modifier = Modifier.weight(1f),
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             )
-                            Text(formatPrice(item.lineTotal), style = MaterialTheme.typography.bodySmall)
+                            Text(formatPrice(item.lineTotal), style = Tokens.typography.bodySmall)
                         }
                     }
                     Spacer(Modifier.height(8.dp))
@@ -112,13 +111,13 @@ fun OrderPlacedScreen(
                         Modifier
                             .fillMaxWidth()
                             .height(1.dp)
-                            .background(MaterialTheme.colorScheme.outlineVariant),
+                            .background(Tokens.colorScheme.outlineVariant),
                     )
                     Spacer(Modifier.height(8.dp))
                     Row {
-                        Text("Total", style = MaterialTheme.typography.titleSmall)
+                        Text("Total", style = Tokens.typography.titleSmall)
                         Spacer(Modifier.weight(1f))
-                        Text(formatPrice(order.total), style = MaterialTheme.typography.titleSmall)
+                        Text(formatPrice(order.total), style = Tokens.typography.titleSmall)
                     }
                 }
             }

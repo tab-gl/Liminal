@@ -1,6 +1,6 @@
 package app.tab.store.core.designsystem
 
-import androidx.compose.material3.Typography
+import app.tab.store.core.ui.sproutlyTypography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -36,7 +36,7 @@ private val Trim = LineHeightStyle(
     trim = LineHeightStyle.Trim.None,
 )
 
-val SproutlyTypography = Typography(
+val SproutlyTypography = sproutlyTypography(
     displayLarge = TextStyle(
         fontFamily = Sans, fontWeight = FontWeight.Black,
         fontSize = 46.sp, lineHeight = 50.sp, letterSpacing = (-1.4).sp,

@@ -17,9 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.background
@@ -127,12 +126,12 @@ private fun PillGroup(
 
     Surface(
         shape = RoundedCornerShape(36.dp),
-        color = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        color = Tokens.colorScheme.surface,
+        contentColor = Tokens.colorScheme.onSurface,
         shadowElevation = 12.dp,
         border = BorderStroke(
             1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+            Tokens.colorScheme.outlineVariant.copy(alpha = 0.6f),
         ),
         modifier = modifier,
     ) {
@@ -143,7 +142,7 @@ private fun PillGroup(
                         .offset(x = indicatorX)
                         .size(width = indicatorWidth, height = 46.dp)
                         .background(
-                            MaterialTheme.colorScheme.primaryContainer,
+                            Tokens.colorScheme.primaryContainer,
                             RoundedCornerShape(30.dp),
                         ),
                 )
@@ -179,8 +178,8 @@ private fun FloatingTab(
     modifier: Modifier = Modifier,
 ) {
     val content by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-        else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (selected) Tokens.colorScheme.onPrimaryContainer
+        else Tokens.colorScheme.onSurfaceVariant,
         animationSpec = spring(dampingRatio = 0.9f, stiffness = 1400f),
         label = "tabContent",
     )
@@ -224,7 +223,7 @@ private fun FloatingTab(
                 Spacer(Modifier.width(6.dp))
                 Text(
                     text = tab.label,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = Tokens.typography.labelMedium,
                     maxLines = 1,
                     softWrap = false,
                     overflow = TextOverflow.Clip,

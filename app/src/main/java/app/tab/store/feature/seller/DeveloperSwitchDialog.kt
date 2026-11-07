@@ -5,12 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.AlertDialog
+import app.tab.store.core.ui.Button
+import app.tab.store.core.ui.ButtonDefaults
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,26 +34,26 @@ fun DeveloperSwitchDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = SproutlyRadii.hero,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = Tokens.colorScheme.surface,
         icon = {
             Box(
                 modifier = Modifier
                     .size(52.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                    .background(Tokens.colorScheme.primaryContainer, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 SproutlyIcon(
                     icon = PhosphorIcons.Sparkles,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = Tokens.colorScheme.onPrimaryContainer,
                 )
             }
         },
         title = {
             Text(
                 text = "Switch to a developer account?",
-                style = MaterialTheme.typography.headlineSmall,
+                style = Tokens.typography.headlineSmall,
             )
         },
         text = {
@@ -62,8 +61,8 @@ fun DeveloperSwitchDialog(
                 text = "Publishing needs a developer account. " +
                     "you already have — you also get Developer Studio to publish apps, " +
                     "manage releases and track installs.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodyMedium,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
         },
         confirmButton = {
@@ -71,8 +70,8 @@ fun DeveloperSwitchDialog(
                 onClick = onConfirm,
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = Tokens.colorScheme.primary,
+                    contentColor = Tokens.colorScheme.onPrimary,
                 ),
             ) {
                 Text("Switch to developer", modifier = Modifier.padding(horizontal = 6.dp))

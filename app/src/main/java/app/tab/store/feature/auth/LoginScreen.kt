@@ -18,11 +18,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -63,7 +62,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Tokens.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .imePadding(),
     ) {
@@ -80,31 +79,31 @@ fun LoginScreen(
                 Spacer(Modifier.width(10.dp))
                 Text(
                     text = "Sproutly",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = Tokens.typography.headlineSmall,
                     color = SproutlyPalette.OliveDeep,
                 )
             }
             Spacer(Modifier.height(22.dp))
             Text(
                 text = "Build it.\nPublish it.\nGrow it.",
-                style = MaterialTheme.typography.displaySmall,
+                style = Tokens.typography.displaySmall,
                 color = SproutlyPalette.OliveDeep,
             )
             Spacer(Modifier.height(10.dp))
             Text(
                 text = "An app store for independent developers.",
-                style = MaterialTheme.typography.bodyMedium,
+                style = Tokens.typography.bodyMedium,
                 color = SproutlyPalette.Olive,
             )
         }
 
         Column(Modifier.padding(horizontal = 24.dp, vertical = 22.dp)) {
-            Text("Welcome back", style = MaterialTheme.typography.headlineLarge)
+            Text("Welcome back", style = Tokens.typography.headlineLarge)
             Spacer(Modifier.height(4.dp))
             Text(
                 "Sign in to install and publish.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodyMedium,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(20.dp))
 
@@ -134,14 +133,14 @@ fun LoginScreen(
 
             if (state.error != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.errorContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = state.error.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }
@@ -161,7 +160,7 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.End,
             ) {
                 TextButton(onClick = onForgotPassword) {
-                    Text("Forgot password?", style = MaterialTheme.typography.labelLarge)
+                    Text("Forgot password?", style = Tokens.typography.labelLarge)
                 }
             }
 
@@ -173,19 +172,19 @@ fun LoginScreen(
                     Modifier
                         .weight(1f)
                         .height(1.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant),
+                        .background(Tokens.colorScheme.outlineVariant),
                 )
                 Text(
                     "or",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.labelMedium,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 12.dp),
                 )
                 Box(
                     Modifier
                         .weight(1f)
                         .height(1.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant),
+                        .background(Tokens.colorScheme.outlineVariant),
                 )
             }
             Spacer(Modifier.height(16.dp))
@@ -196,9 +195,9 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = SproutlyRadii.pill,
-                color = MaterialTheme.colorScheme.surface,
+                color = Tokens.colorScheme.surface,
                 border = androidx.compose.foundation.BorderStroke(
-                    1.dp, MaterialTheme.colorScheme.outline,
+                    1.dp, Tokens.colorScheme.outline,
                 ),
             ) {
                 Row(
@@ -212,7 +211,7 @@ fun LoginScreen(
                         modifier = Modifier.size(20.dp),
                     )
                     Spacer(Modifier.width(10.dp))
-                    Text("Continue with Google", style = MaterialTheme.typography.labelLarge)
+                    Text("Continue with Google", style = Tokens.typography.labelLarge)
                 }
             }
 
@@ -224,19 +223,19 @@ fun LoginScreen(
             ) {
                 Text(
                     "New to Sproutly?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodyMedium,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 TextButton(onClick = onRegister) {
-                    Text("Create account", style = MaterialTheme.typography.labelLarge)
+                    Text("Create account", style = Tokens.typography.labelLarge)
                 }
             }
             Spacer(Modifier.height(10.dp))
             Text(
                 "By continuing you agree to Sproutly's Terms of Service and Privacy Policy. " +
                     "Tap to read either.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()

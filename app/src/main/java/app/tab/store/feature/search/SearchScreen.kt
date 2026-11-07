@@ -23,18 +23,17 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
+import app.tab.store.core.ui.ExperimentalMaterial3ExpressiveApi
+import app.tab.store.core.ui.LoadingIndicator
+import app.tab.store.core.ui.ExperimentalMaterial3Api
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.ModalBottomSheet
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
+import app.tab.store.core.ui.TextField
+import app.tab.store.core.ui.TextFieldDefaults
+import app.tab.store.core.ui.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -94,7 +93,7 @@ fun SearchScreen(
                 .padding(start = 20.dp, end = 8.dp, top = 14.dp, bottom = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Search", style = MaterialTheme.typography.headlineLarge)
+            Text("Search", style = Tokens.typography.headlineLarge)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { showSortSheet = true }) {
                 SproutlyIcon(PhosphorIcons.Filter, contentDescription = "Sort and filter")
@@ -103,9 +102,9 @@ fun SearchScreen(
 
         Surface(
             shape = SproutlyRadii.pill,
-            color = MaterialTheme.colorScheme.surface,
+            color = Tokens.colorScheme.surface,
             border = androidx.compose.foundation.BorderStroke(
-                1.dp, MaterialTheme.colorScheme.outlineVariant,
+                1.dp, Tokens.colorScheme.outlineVariant,
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,7 +117,7 @@ fun SearchScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .focusRequester(focusRequester),
-                placeholder = { Text("Search apps", style = MaterialTheme.typography.bodyMedium) },
+                placeholder = { Text("Search apps", style = Tokens.typography.bodyMedium) },
                 leadingIcon = {
                     SproutlyIcon(PhosphorIcons.Search, contentDescription = null, modifier = Modifier.size(20.dp))
                 },
@@ -138,11 +137,11 @@ fun SearchScreen(
                     },
                 ),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = Tokens.colorScheme.surface,
+                    unfocusedContainerColor = Tokens.colorScheme.surface,
                     focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
                     unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = Tokens.colorScheme.primary,
                 ),
             )
         }
@@ -183,12 +182,12 @@ fun SearchScreen(
                     state.results.isEmpty() -> "No results yet"
                     else -> "${state.results.size} results"
                 },
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.labelMedium,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.weight(1f))
             TextButton(onClick = { showSortSheet = true }) {
-                Text(state.sortLabel, style = MaterialTheme.typography.labelMedium)
+                Text(state.sortLabel, style = Tokens.typography.labelMedium)
             }
         }
 
@@ -231,7 +230,7 @@ fun SearchScreen(
                             Surface(
                                 onClick = { onStore(store.id) },
                                 shape = SproutlyRadii.card,
-                                color = MaterialTheme.colorScheme.surface,
+                                color = Tokens.colorScheme.surface,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 3.dp),
@@ -248,11 +247,11 @@ fun SearchScreen(
                                     )
                                     Spacer(Modifier.width(10.dp))
                                     Column(Modifier.weight(1f)) {
-                                        Text(store.name, style = MaterialTheme.typography.titleSmall)
+                                        Text(store.name, style = Tokens.typography.titleSmall)
                                         Text(
                                             store.tagline.ifBlank { "Developer" },
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = Tokens.typography.bodySmall,
+                                            color = Tokens.colorScheme.onSurfaceVariant,
                                             maxLines = 1,
                                         )
                                     }
@@ -290,7 +289,7 @@ fun SearchScreen(
                             ) {
                                 LoadingIndicator(
                                     modifier = Modifier.size(28.dp),
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = Tokens.colorScheme.primary,
                                 )
                             }
                         }
@@ -305,10 +304,10 @@ fun SearchScreen(
             onDismissRequest = { showSortSheet = false },
             sheetState = rememberModalBottomSheetState(),
             shape = SproutlyRadii.sheet,
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = Tokens.colorScheme.surface,
         ) {
             Column(Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
-                Text("Sort by", style = MaterialTheme.typography.headlineSmall)
+                Text("Sort by", style = Tokens.typography.headlineSmall)
                 Spacer(Modifier.height(10.dp))
                 ProductSort.entries.forEach { sort ->
                     SortRow(
@@ -327,7 +326,7 @@ fun SearchScreen(
                     )
                 }
                 Spacer(Modifier.height(14.dp))
-                Text("Price", style = MaterialTheme.typography.headlineSmall)
+                Text("Price", style = Tokens.typography.headlineSmall)
                 Spacer(Modifier.height(10.dp))
                 priceBands.forEach { band ->
                     SortRow(
@@ -350,17 +349,17 @@ private fun SortRow(label: String, selected: Boolean, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = SproutlyRadii.pill,
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surface,
+        color = if (selected) Tokens.colorScheme.primaryContainer
+        else Tokens.colorScheme.surface,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp),
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-            else MaterialTheme.colorScheme.onSurface,
+            style = Tokens.typography.bodyLarge,
+            color = if (selected) Tokens.colorScheme.onPrimaryContainer
+            else Tokens.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
         )
     }

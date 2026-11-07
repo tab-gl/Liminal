@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
+import app.tab.store.core.ui.OutlinedTextField
+import app.tab.store.core.ui.OutlinedTextFieldDefaults
+import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,17 +41,17 @@ fun SproutlyTextField(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
-            label = { Text(label, style = MaterialTheme.typography.bodyMedium) },
+            label = { Text(label, style = Tokens.typography.bodyMedium) },
             placeholder = placeholder?.let {
-                { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                { Text(it, style = Tokens.typography.bodyMedium) }
             },
             singleLine = singleLine,
             minLines = minLines,
             isError = isError,
-            shape = MaterialTheme.shapes.medium,
-            textStyle = MaterialTheme.typography.bodyLarge,
+            shape = Tokens.shapes.medium,
+            textStyle = Tokens.typography.bodyLarge,
             prefix = prefix?.let {
-                { Text(it, style = MaterialTheme.typography.bodyLarge) }
+                { Text(it, style = Tokens.typography.bodyLarge) }
             },
             trailingIcon = trailing,
             visualTransformation = when {
@@ -62,12 +61,12 @@ fun SproutlyTextField(
             },
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedBorderColor = Tokens.colorScheme.primary,
+                unfocusedBorderColor = Tokens.colorScheme.outline,
+                focusedLabelColor = Tokens.colorScheme.primary,
+                cursorColor = Tokens.colorScheme.primary,
+                focusedContainerColor = Tokens.colorScheme.surface,
+                unfocusedContainerColor = Tokens.colorScheme.surface,
             ),
         )
         val note = when {
@@ -78,9 +77,9 @@ fun SproutlyTextField(
         if (note != null) {
             Text(
                 text = note,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (isError) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = if (isError) Tokens.colorScheme.error
+                else Tokens.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 14.dp, top = 5.dp),
             )
         }

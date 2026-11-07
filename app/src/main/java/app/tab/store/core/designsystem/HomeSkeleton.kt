@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,7 +46,7 @@ fun HomeSkeleton(modifier: Modifier = Modifier) {
         ),
         label = "skeletonAlpha",
     )
-    val bone = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = alpha)
+    val bone = Tokens.colorScheme.surfaceContainerHigh.copy(alpha = alpha)
 
     Column(
         modifier = modifier

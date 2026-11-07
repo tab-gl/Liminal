@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(app.tab.store.core.ui.ExperimentalMaterial3ExpressiveApi::class)
 
 package app.tab.store.feature.seller
 
@@ -33,17 +33,16 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.AlertDialog
+import app.tab.store.core.ui.HorizontalDivider
+import app.tab.store.core.ui.IconButton
+import app.tab.store.core.ui.LoadingIndicator
+import app.tab.store.core.ui.AlertDialog
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import app.tab.store.core.ui.SnackbarHost
+import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.Surface
+import app.tab.store.core.ui.Text
+import app.tab.store.core.ui.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,9 +52,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.LinearProgressIndicator
+import app.tab.store.core.ui.DropdownMenu
+import app.tab.store.core.ui.DropdownMenuItem
+import app.tab.store.core.ui.LinearProgressIndicator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -148,7 +147,7 @@ fun SellerProductsScreen(
                 onBack = onBack,
                 actions = {
                     TextButton(onClick = { onEdit(null) }) {
-                        Text("Add", style = MaterialTheme.typography.labelLarge)
+                        Text("Add", style = Tokens.typography.labelLarge)
                     }
                 },
             )
@@ -190,7 +189,7 @@ fun SellerProductsScreen(
                         Surface(
                             onClick = { onEdit(product.id) },
                             shape = SproutlyRadii.card,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Column(Modifier.padding(12.dp)) {
@@ -205,33 +204,33 @@ fun SellerProductsScreen(
                                     Column(Modifier.weight(1f)) {
                                         Text(
                                             product.title,
-                                            style = MaterialTheme.typography.titleSmall,
+                                            style = Tokens.typography.titleSmall,
                                             maxLines = 2,
                                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                         )
                                         Text(
                                             formatPrice(product.price),
-                                            style = MaterialTheme.typography.titleMedium,
+                                            style = Tokens.typography.titleMedium,
                                         )
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             SproutlyTag(
                                                 text = product.status.name,
                                                 container = if (product.status == ProductStatus.ACTIVE) {
-                                                    MaterialTheme.colorScheme.primaryContainer
+                                                    Tokens.colorScheme.primaryContainer
                                                 } else {
-                                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                                                    Tokens.colorScheme.surfaceContainerHigh
                                                 },
                                                 content = if (product.status == ProductStatus.ACTIVE) {
-                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                    Tokens.colorScheme.onPrimaryContainer
                                                 } else {
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                    Tokens.colorScheme.onSurfaceVariant
                                                 },
                                             )
                                             Spacer(Modifier.width(6.dp))
                                             Text(
                                                 app.tab.store.core.utils.InstallCount.phrase(product.unitsSold),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                style = Tokens.typography.bodySmall,
+                                                color = Tokens.colorScheme.onSurfaceVariant,
                                             )
                                         }
                                     }
@@ -257,7 +256,7 @@ fun SellerProductsScreen(
                                             } else {
                                                 "Publish"
                                             },
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            tint = Tokens.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(19.dp),
                                         )
                                     }
@@ -266,9 +265,9 @@ fun SellerProductsScreen(
                                             PhosphorIcons.Tag,
                                             contentDescription = "Offer",
                                             tint = if (product.hasActiveOffer) {
-                                                MaterialTheme.colorScheme.primary
+                                                Tokens.colorScheme.primary
                                             } else {
-                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                                Tokens.colorScheme.onSurfaceVariant
                                             },
                                             modifier = Modifier.size(19.dp),
                                         )
@@ -276,7 +275,7 @@ fun SellerProductsScreen(
                                     IconButton(onClick = { confirmDelete = product }) {
                                         SproutlyIcon(PhosphorIcons.Trash,
                                             contentDescription = "Delete",
-                                            tint = MaterialTheme.colorScheme.error,
+                                            tint = Tokens.colorScheme.error,
                                             modifier = Modifier.size(19.dp),
                                         )
                                     }
@@ -330,17 +329,17 @@ fun SellerProductEditScreen(
             Spacer(Modifier.height(8.dp))
             Text(
                 if (productId == null) "01" else "02",
-                style = MaterialTheme.typography.displayMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                style = Tokens.typography.displayMedium,
+                color = Tokens.colorScheme.onSurface,
             )
             Text(
                 if (productId == null) "PUBLISH A NEW APP" else "EDIT THIS LISTING",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.labelMedium,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 letterSpacing = 1.6.sp,
             )
             Spacer(Modifier.height(10.dp))
-            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.onSurface)
+            HorizontalDivider(thickness = 2.dp, color = Tokens.colorScheme.onSurface)
             Spacer(Modifier.height(18.dp))
 
             // Images — the icon tile sits first, as the anchor of the grid.
@@ -357,7 +356,7 @@ fun SellerProductEditScreen(
                         Surface(
                             onClick = { viewModel.removeImage(image.publicId) },
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(3.dp)
@@ -374,7 +373,7 @@ fun SellerProductEditScreen(
                     Surface(
                         onClick = { picker.launch(pickImageRequest()) },
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        color = Tokens.colorScheme.surfaceContainerHigh,
                         modifier = Modifier.size(96.dp),
                     ) {
                         Column(
@@ -383,7 +382,7 @@ fun SellerProductEditScreen(
                             verticalArrangement = Arrangement.Center,
                         ) {
                             SproutlyIcon(PhosphorIcons.Plus, contentDescription = "Add photo")
-                            Text("Photo", style = MaterialTheme.typography.labelSmall)
+                            Text("Photo", style = Tokens.typography.labelSmall)
                         }
                     }
                 }
@@ -444,7 +443,7 @@ fun SellerProductEditScreen(
                         Surface(
                             onClick = { viewModel.removeScreenshot(shot.publicId) },
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(3.dp)
@@ -464,7 +463,7 @@ fun SellerProductEditScreen(
                     Surface(
                         onClick = { screenshotPicker.launch(pickImageRequest()) },
                         shape = SproutlyRadii.card,
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        color = Tokens.colorScheme.surfaceContainerLow,
                         modifier = Modifier.size(width = 108.dp, height = 190.dp),
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -476,13 +475,13 @@ fun SellerProductEditScreen(
                                         PhosphorIcons.Plus,
                                         contentDescription = "Add screenshot",
                                         modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        tint = Tokens.colorScheme.onSurfaceVariant,
                                     )
                                     Spacer(Modifier.height(6.dp))
                                     Text(
                                         "${state.screenshots.size}/8",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = Tokens.typography.labelSmall,
+                                        color = Tokens.colorScheme.onSurfaceVariant,
                                     )
                                 }
                             }
@@ -609,7 +608,7 @@ fun SellerProductEditScreen(
                     Spacer(Modifier.height(8.dp))
                 }
                 state.flavourError?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    Text(it, style = Tokens.typography.bodySmall, color = Tokens.colorScheme.error)
                 }
                 if (state.flavours.size < 4) {
                     TextButton(onClick = viewModel::addFlavour) { Text("Add another build") }
@@ -619,13 +618,13 @@ fun SellerProductEditScreen(
             Spacer(Modifier.height(12.dp))
 
             // ---------------------------------------------------------- release
-            Text("Release", style = MaterialTheme.typography.titleSmall)
+            Text("Release", style = Tokens.typography.titleSmall)
             Spacer(Modifier.height(4.dp))
             Text(
                 if (productId == null) "The version you are publishing."
                 else "Raise the version and replace the build.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(10.dp))
             Row {
@@ -695,21 +694,21 @@ fun SellerProductEditScreen(
                 Spacer(Modifier.height(10.dp))
                 Surface(
                     shape = SproutlyRadii.card,
-                    color = MaterialTheme.colorScheme.errorContainer,
+                    color = Tokens.colorScheme.errorContainer,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(Modifier.padding(14.dp)) {
                         Text(
                             "Paid apps need a verified profile",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = Tokens.typography.titleSmall,
+                            color = Tokens.colorScheme.onErrorContainer,
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "Request verification from your profile, or " +
                                 "set the price to 0.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onErrorContainer,
                         )
                     }
                 }
@@ -719,21 +718,21 @@ fun SellerProductEditScreen(
                 Spacer(Modifier.height(10.dp))
                 Surface(
                     shape = SproutlyRadii.card,
-                    color = MaterialTheme.colorScheme.errorContainer,
+                    color = Tokens.colorScheme.errorContainer,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(Modifier.padding(14.dp)) {
                         Text(
                             "Your developer profile is still in review",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = Tokens.typography.titleSmall,
+                            color = Tokens.colorScheme.onErrorContainer,
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "An admin has to approve your profile first. " +
                                 "Save a draft meanwhile.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onErrorContainer,
                         )
                     }
                 }
@@ -742,14 +741,14 @@ fun SellerProductEditScreen(
 
             if (state.error != null) {
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
+                    color = Tokens.colorScheme.errorContainer,
+                    shape = Tokens.shapes.small,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         state.error.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(12.dp),
                     )
                 }
@@ -763,8 +762,8 @@ fun SellerProductEditScreen(
                     state.status == ProductStatus.DRAFT -> "Draft saves automatically as you edit"
                     else -> "Changes to a live app are saved when you publish them"
                 },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp),
             )
             SproutlyButton(
@@ -797,7 +796,7 @@ private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
         Surface(
             onClick = { expanded = true },
             shape = SproutlyRadii.card,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            color = Tokens.colorScheme.surfaceContainerLow,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(
@@ -808,26 +807,26 @@ private fun PricingDropdown(isFree: Boolean, onChange: (Boolean) -> Unit) {
                     icon = if (isFree) PhosphorIcons.Sparkles else PhosphorIcons.Bag,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         if (isFree) "Free" else "Paid",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = Tokens.typography.titleSmall,
                     )
                     Text(
                         if (isFree) "Anyone can install it at no cost"
                         else "Installs are charged at the price you set",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
                     )
                 }
                 SproutlyIcon(
                     icon = PhosphorIcons.ChevronDown,
                     contentDescription = "Change pricing",
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -935,11 +934,11 @@ private fun ApkSourcePicker(
             isUploading -> {
                 Surface(
                     shape = SproutlyRadii.card,
-                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    color = Tokens.colorScheme.surfaceContainerLow,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(Modifier.padding(16.dp)) {
-                        Text("Uploading build…", style = MaterialTheme.typography.titleSmall)
+                        Text("Uploading build…", style = Tokens.typography.titleSmall)
                         Spacer(Modifier.height(8.dp))
                         LinearProgressIndicator(
                             progress = { progress },
@@ -951,7 +950,7 @@ private fun ApkSourcePicker(
             apkUrl != null -> {
                 Surface(
                     shape = SproutlyRadii.card,
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                    color = Tokens.colorScheme.primaryContainer,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Row(
@@ -962,28 +961,28 @@ private fun ApkSourcePicker(
                             icon = PhosphorIcons.Verified,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            tint = Tokens.colorScheme.onPrimaryContainer,
                         )
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
                                 fileName.ifBlank { "Build attached" },
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = Tokens.typography.titleSmall,
+                                color = Tokens.colorScheme.onPrimaryContainer,
                                 maxLines = 1,
                             )
                             if (sizeBytes != null) {
                                 Text(
                                     formatBytes(sizeBytes),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onPrimaryContainer,
                                 )
                             }
                         }
                         Surface(
                             onClick = onClear,
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface,
+                            color = Tokens.colorScheme.surface,
                             modifier = Modifier.size(28.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -1006,8 +1005,8 @@ private fun ApkSourcePicker(
                 Spacer(Modifier.height(6.dp))
                 Text(
                     "Uploaded to Sproutly. 100 MB max.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -1032,7 +1031,7 @@ private fun VerificationGate(
 ) {
     Surface(
         shape = SproutlyRadii.card,
-        color = MaterialTheme.colorScheme.errorContainer,
+        color = Tokens.colorScheme.errorContainer,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -1041,13 +1040,13 @@ private fun VerificationGate(
                     icon = PhosphorIcons.Verified,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    tint = Tokens.colorScheme.onErrorContainer,
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     "Verification needed for paid apps",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = Tokens.typography.titleSmall,
+                    color = Tokens.colorScheme.onErrorContainer,
                 )
             }
             Spacer(Modifier.height(6.dp))
@@ -1057,8 +1056,8 @@ private fun VerificationGate(
                 } else {
                     "Paid apps can only be published by verified developers, so buyers know who they are paying. Free apps need no verification."
                 },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onErrorContainer,
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onErrorContainer,
             )
             if (status != "PENDING") {
                 Spacer(Modifier.height(12.dp))
@@ -1098,21 +1097,21 @@ private fun BentoTile(
         if (title != null) {
             Text(
                 title.uppercase(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Tokens.typography.labelSmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
                 letterSpacing = 1.4.sp,
             )
             Spacer(Modifier.height(6.dp))
             HorizontalDivider(
                 thickness = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f),
+                color = Tokens.colorScheme.onSurface.copy(alpha = 0.24f),
             )
             Spacer(Modifier.height(10.dp))
             if (hint != null) {
                 Text(
                     hint,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(10.dp))
             }
@@ -1163,11 +1162,11 @@ internal fun SellerOfferDialog(
                     } else {
                         "This app is free, so offer a code or something inside the app."
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = Tokens.typography.bodySmall,
+                    color = Tokens.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(12.dp))
-                Text("Offer kind", style = MaterialTheme.typography.labelSmall)
+                Text("Offer kind", style = Tokens.typography.labelSmall)
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     // A free app cannot have a price drop; offer a code or a perk.
@@ -1243,14 +1242,14 @@ private fun SproutSafeCard(
     packageName: String,
 ) {
     val colour = when (risk) {
-        "HIGH" -> MaterialTheme.colorScheme.errorContainer
-        "MEDIUM" -> MaterialTheme.colorScheme.secondaryContainer
-        else -> MaterialTheme.colorScheme.primaryContainer
+        "HIGH" -> Tokens.colorScheme.errorContainer
+        "MEDIUM" -> Tokens.colorScheme.secondaryContainer
+        else -> Tokens.colorScheme.primaryContainer
     }
     val onColour = when (risk) {
-        "HIGH" -> MaterialTheme.colorScheme.onErrorContainer
-        "MEDIUM" -> MaterialTheme.colorScheme.onSecondaryContainer
-        else -> MaterialTheme.colorScheme.onPrimaryContainer
+        "HIGH" -> Tokens.colorScheme.onErrorContainer
+        "MEDIUM" -> Tokens.colorScheme.onSecondaryContainer
+        else -> Tokens.colorScheme.onPrimaryContainer
     }
 
     Surface(
@@ -1267,7 +1266,7 @@ private fun SproutSafeCard(
                     tint = onColour,
                 )
                 Spacer(Modifier.width(6.dp))
-                Text("Sprout Safe", style = MaterialTheme.typography.titleSmall, color = onColour)
+                Text("Sprout Safe", style = Tokens.typography.titleSmall, color = onColour)
                 Spacer(Modifier.weight(1f))
                 Text(
                     when (risk) {
@@ -1275,7 +1274,7 @@ private fun SproutSafeCard(
                         "MEDIUM" -> "Worth a look"
                         else -> "Looks fine"
                     },
-                    style = MaterialTheme.typography.labelMedium,
+                    style = Tokens.typography.labelMedium,
                     color = onColour,
                 )
             }
@@ -1283,25 +1282,25 @@ private fun SproutSafeCard(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     packageName,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = Tokens.typography.bodySmall,
                     color = onColour,
                 )
             }
             Spacer(Modifier.height(8.dp))
             Text(
                 "${permissions.size} permission${if (permissions.size == 1) "" else "s"} requested",
-                style = MaterialTheme.typography.bodySmall,
+                style = Tokens.typography.bodySmall,
                 color = onColour,
             )
             warnings.forEach { warning ->
                 Spacer(Modifier.height(3.dp))
-                Text("· $warning", style = MaterialTheme.typography.bodySmall, color = onColour)
+                Text("· $warning", style = Tokens.typography.bodySmall, color = onColour)
             }
             if (warnings.isEmpty() && permissions.isNotEmpty()) {
                 Spacer(Modifier.height(3.dp))
                 Text(
                     "· None of them are unusual for an app.",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = Tokens.typography.bodySmall,
                     color = onColour,
                 )
             }
