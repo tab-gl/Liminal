@@ -237,6 +237,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             ) { entry ->
                 SearchScreen(
                     initialCategoryId = entry.arguments?.getString("categoryId"),
+                    initialQuery = entry.arguments?.getString("query").orEmpty(),
                     initialQuery = entry.arguments?.getString("query"),
                     onProduct = { go(Routes.product(it)) },
                     onStore = { go(Routes.store(it)) },
