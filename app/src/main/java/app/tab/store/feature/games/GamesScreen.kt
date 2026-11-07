@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.ui.IconButton
 import app.tab.store.core.ui.Surface
 import app.tab.store.core.utils.InstallCount
