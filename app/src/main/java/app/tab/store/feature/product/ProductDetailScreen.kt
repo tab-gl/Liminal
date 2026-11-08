@@ -26,6 +26,7 @@ import app.tab.store.core.ui.LinearProgressIndicator
 import app.tab.store.core.ui.TextButton
 import app.tab.store.core.ui.SnackbarHost
 import app.tab.store.core.ui.SnackbarHostState
+import app.tab.store.core.ui.AlertDialog
 import app.tab.store.core.ui.Surface
 import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
