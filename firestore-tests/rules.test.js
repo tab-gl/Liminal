@@ -715,15 +715,20 @@ describe("editing a live listing", () => {
     await assertSucceeds(updateDoc(doc(dev(), "products", "app1"), { status: "DRAFT" }));
   });
 
-  it("lets a clean scan publish without an approved store", async () => {
+  it("refuses to let a clean-looking scan publish on its own", async () => {
+    // This is the audit's finding: scanScore comes from the client, so it cannot
+    // be what unlocks a listing. The developer can submit; only an admin approves.
     const reviewer = env.authenticatedContext(DEV2).firestore();
-    await assertSucceeds(
+    await assertFails(
       updateDoc(doc(reviewer, "products", "app-pending"), {
         status: "ACTIVE",
         scanRisk: "LOW",
         scanScore: 20,
         apkUrl: "https://sproutly-apk-upload.example.workers.dev/apks/x/app.apk",
       }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(admin(), "products", "app-pending"), { status: "ACTIVE" }),
     );
   });
 
