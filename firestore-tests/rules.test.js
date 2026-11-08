@@ -215,8 +215,12 @@ describe("paid apps", () => {
   });
 
   it("lets an admin approve a submitted paid listing", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "products", "paid-review"),
+        product({ price: 9900, status: "PENDING" }));
+    });
     await assertSucceeds(
-      updateDoc(doc(admin(), "products", "paid1"), { status: "ACTIVE" }),
+      updateDoc(doc(admin(), "products", "paid-review"), { status: "ACTIVE" }),
     );
   });
 
