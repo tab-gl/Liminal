@@ -258,7 +258,7 @@ service cloud.firestore {
               || request.resource.data.offerEndsAt is int)
           && request.resource.data.screenshots is list
           && request.resource.data.screenshots.size() <= 8
-          && request.resource.data.status in ['DRAFT', 'ACTIVE', 'ARCHIVED']
+          && request.resource.data.status in ['DRAFT', 'PENDING', 'ACTIVE', 'ARCHIVED']
           // Extra builds, if any: a name and a real link each, at most four.
           && (!request.resource.data.keys().hasAny(['flavours'])
               || validFlavours(request.resource.data.flavours))
