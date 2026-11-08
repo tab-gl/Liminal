@@ -217,6 +217,10 @@ service cloud.firestore {
         return resource.data.status == 'ACTIVE';
       }
 
+      // A submitted listing is visible to its developer and to admins, not to the
+      // store: PENDING is not public. The existing isPublic()/isSeller()/isAdmin()
+      // branches already give exactly that.
+
       // One extra build: a name and a direct https link.
       function validFlavour(f) {
         return f is map
@@ -319,10 +323,10 @@ service cloud.firestore {
         && request.resource.data.get('ratingCount', 0) == 0
         && request.resource.data.get('featured', false) == false
         && request.resource.data.get('reported', false) == false
-        && (request.resource.data.status != 'ACTIVE'
-            || storeIsApproved()
-            || (request.resource.data.get('scanScore', 100) <= 50
-                && request.resource.data.get('scanRisk', '') in ['LOW', 'MEDIUM']))
+        // A listing never goes live on the strength of the client's own scan.
+        // scanScore and scanRisk come from the app, so a modified client could
+        // claim anything; publishing is now a decision an admin makes.
+        && request.resource.data.status != 'ACTIVE' 
         && validProduct()
         && paidNeedsVerification();
 
@@ -347,10 +351,10 @@ service cloud.firestore {
         // back clean from Sprout Safe (score of 50 or below), in which case it may
         // go live on its own. The score is client-reported, so this is a quality
         // gate, not a security boundary: it shortens the queue for ordinary apps.
-        && (request.resource.data.status != 'ACTIVE'
-            || storeIsApproved()
-            || (request.resource.data.get('scanScore', 100) <= 50
-                && request.resource.data.get('scanRisk', '') in ['LOW', 'MEDIUM']))
+        // A listing never goes live on the strength of the client's own scan.
+        // scanScore and scanRisk come from the app, so a modified client could
+        // claim anything; publishing is now a decision an admin makes.
+        && request.resource.data.status != 'ACTIVE' 
         && validProduct()
         && paidNeedsVerification();
 

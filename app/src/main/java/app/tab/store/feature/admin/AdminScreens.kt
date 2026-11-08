@@ -555,14 +555,60 @@ fun AdminProductsScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             SproutlyTopBar(
-                title = "Reported apps",
-                subtitle = "${state.reported.size} flagged",
+                title = "Moderation",
+                subtitle = "${state.pending.size} awaiting review · ${state.reported.size} flagged",
                 onBack = onBack,
             )
-            if (!state.isLoading && state.reported.isEmpty()) {
+            if (state.pending.isNotEmpty()) {
+                Text(
+                    "Waiting for review",
+                    style = Tokens.typography.headlineSmall,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                )
+                state.pending.forEach { product ->
+                    Surface(
+                        shape = SproutlyRadii.card,
+                        color = Tokens.colorScheme.surface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 4.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            SproutlyImage(
+                                url = product.primaryImage,
+                                contentDescription = product.title,
+                                modifier = Modifier.size(48.dp),
+                                corner = 12.dp,
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(product.title, style = Tokens.typography.titleSmall, maxLines = 1)
+                                Text(
+                                    "${product.storeName} · scan ${product.scanScore}/100 (self-reported)",
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
+                                    maxLines = 2,
+                                )
+                            }
+                            TextButton(onClick = { viewModel.approve(product) }) {
+                                Text("Approve")
+                            }
+                        }
+                    }
+                }
+                Text(
+                    "Flagged",
+                    style = Tokens.typography.headlineSmall,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                )
+            }
+            if (!state.isLoading && state.reported.isEmpty() && state.pending.isEmpty()) {
                 EmptyState(
-                    title = "Nothing reported",
-                    message = "Flagged apps will appear here for review.",
+                    title = "Nothing to moderate",
+                    message = "New listings and flagged apps both land here.",
                     icon = PhosphorIcons.Verified,
                 )
             } else {

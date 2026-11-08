@@ -33,7 +33,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
@@ -79,6 +78,30 @@ class CatalogRepositoryImpl @Inject constructor(
             .snapshotFlow()
             .map { snap -> snap.documents.map { it.toProduct() } }
             .orFallback(emptyList())
+
+    /**
+     * Every active listing, read in pages.
+     *
+     * Ordering by document id uses the automatic index, so this needs no composite
+     * index to deploy and cannot fail the way a status+orderBy query does. It walks
+     * until the catalogue ends, with a ceiling so one huge catalogue cannot turn a
+     * search into an unbounded download.
+     */
+    private suspend fun allActiveProducts(pageSize: Long = 200, maxPages: Int = 10): List<Product> {
+        val collected = mutableListOf<Product>()
+        var last: com.google.firebase.firestore.DocumentSnapshot? = null
+        repeat(maxPages) {
+            var query = products.whereEqualTo("status", ProductStatus.ACTIVE.name)
+                .orderBy(com.google.firebase.firestore.FieldPath.documentId())
+                .limit(pageSize)
+            if (last != null) query = query.startAfter(last)
+            val page = query.get().await()
+            collected += page.documents.map { it.toProduct() }
+            if (page.size() < pageSize) return collected
+            last = page.documents.lastOrNull() ?: return collected
+        }
+        return collected
+    }
 
     override fun observeCatalogue(limit: Int): Flow<List<Product>> = activePage(limit)
 
@@ -131,7 +154,9 @@ class CatalogRepositoryImpl @Inject constructor(
         pageToken: String?,
     ): DataResult<ProductPage> = try {
         val needle = query.trim().lowercase()
-        var items = activePage(limit = 200).first()
+        // Paginated, not the first page of a single query: a listing outside the
+        // sample could not be found at all before this.
+        var items = allActiveProducts()
 
         if (needle.isNotBlank()) {
             items = items.filter { product ->

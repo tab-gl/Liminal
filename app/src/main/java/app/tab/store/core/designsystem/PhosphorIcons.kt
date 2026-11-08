@@ -46,9 +46,9 @@ object PhosphorIcons {
     @DrawableRes val Star = R.drawable.ic_ph_star
     @DrawableRes val Store = R.drawable.ic_ph_store
     @DrawableRes val Tag = R.drawable.ic_ph_tag
-    /** Traced from supplied artwork: a price tag with its string. */
+    /** Drawn from the supplied reference: an outlined price tag. */
     @DrawableRes val TagAlt = R.drawable.ic_ph_tag_alt
-    /** Traced from supplied artwork: a gamepad with a d-pad and buttons. */
+    /** Drawn from the supplied reference: an outlined gamepad. */
     @DrawableRes val GamepadAlt = R.drawable.ic_ph_gamepad_alt
     @DrawableRes val Tick = R.drawable.ic_ph_tick
     @DrawableRes val Trash = R.drawable.ic_ph_trash

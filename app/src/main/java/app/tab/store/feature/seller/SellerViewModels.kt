@@ -938,7 +938,13 @@ class SellerProductEditViewModel @Inject constructor(
                 scanPermissions = state.scanPermissions,
                 scanWarnings = state.scanWarnings,
                 releaseNotes = state.releaseNotes.trim(),
-                status = state.status,
+                // A publish request, not a publish: the store's own scan is the
+                // developer's, so a listing waits for an admin to approve it.
+                status = if (state.status == ProductStatus.ACTIVE) {
+                    ProductStatus.PENDING
+                } else {
+                    state.status
+                },
                 tags = state.tags.split(",").map { it.trim() }.filter { it.isNotBlank() },
             )
             when (val res = sellerRepository.upsertProduct(product)) {
@@ -946,7 +952,17 @@ class SellerProductEditViewModel @Inject constructor(
                     it.copy(isSaving = false, error = res.message)
                 }
                 is DataResult.Success -> _uiState.update {
-                    it.copy(isSaving = false, saved = true, productId = res.value)
+                    it.copy(
+                        isSaving = false,
+                        saved = true,
+                        productId = res.value,
+                        status = product.status,
+                        message = if (product.status == ProductStatus.PENDING) {
+                            "Sent for review. An admin approves it before it goes live."
+                        } else {
+                            "Draft saved."
+                        },
+                    )
                 }
             }
         }

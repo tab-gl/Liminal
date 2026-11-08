@@ -1,6 +1,13 @@
 package app.tab.store.domain.model
 
-enum class ProductStatus { DRAFT, ACTIVE, ARCHIVED, BLOCKED;
+enum class ProductStatus {
+    DRAFT,
+    /** Submitted for review: visible to its developer and to admins only. */
+    PENDING,
+    ACTIVE,
+    ARCHIVED,
+    BLOCKED;
+
     companion object {
         fun from(value: String?): ProductStatus =
             entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: DRAFT

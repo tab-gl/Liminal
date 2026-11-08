@@ -162,6 +162,8 @@ class AdminUsersViewModel @Inject constructor(
 
 data class AdminProductsUiState(
     val reported: List<Product> = emptyList(),
+    /** Listings a developer has submitted and nobody has approved yet. */
+    val pending: List<Product> = emptyList(),
     val isLoading: Boolean = true,
     val message: String? = null,
 )
@@ -178,6 +180,23 @@ class AdminProductsViewModel @Inject constructor(
         viewModelScope.launch {
             adminRepository.observeReportedProducts().collect { products ->
                 _uiState.update { it.copy(reported = products, isLoading = false) }
+            }
+        }
+        viewModelScope.launch {
+            adminRepository.observePendingProducts().collect { products ->
+                _uiState.update { it.copy(pending = products) }
+            }
+        }
+    }
+
+    /** Approves a submitted listing, which is the only way one goes live now. */
+    fun approve(product: Product) {
+        viewModelScope.launch {
+            when (val result = adminRepository.setProductStatus(product.id, ProductStatus.ACTIVE)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(message = "${product.title} is live.")
+                }
             }
         }
     }

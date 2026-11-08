@@ -343,6 +343,11 @@ describe("loopholes", () => {
     await assertSucceeds(deleteDoc(doc(admin(), "products", "app1")));
   });
 
+  it("cannot publish straight to ACTIVE: a listing waits for review", async () => {
+    await assertFails(setDoc(doc(dev(), "products", "live"), product({ status: "ACTIVE" })));
+    await assertSucceeds(setDoc(doc(dev(), "products", "queued"), product({ status: "PENDING" })));
+  });
+
   it("refuses a new listing that seeds its own installs or rating", async () => {
     await assertFails(setDoc(doc(dev(), "products", "fake"), product({ unitsSold: 5000 })));
     await assertFails(setDoc(doc(dev(), "products", "fake2"), product({ rating: 5, ratingCount: 900 })));
