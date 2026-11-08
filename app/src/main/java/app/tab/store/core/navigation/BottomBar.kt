@@ -49,15 +49,15 @@ data class TabDestination(
 
 /** Browsing destinations, in the left pill. */
 val primaryTabs = listOf(
-    TabDestination(Routes.HOME, "Apps", PhosphorIcons.Apps, PhosphorIcons.Apps),
-    // Outline and filled must be the same glyph: the controller, not a die.
-    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Gamepad, PhosphorIcons.Gamepad, iconScale = 0.88f),
-    TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.Gift, PhosphorIcons.Gift),
+    TabDestination(Routes.HOME, "Apps", PhosphorIcons.Apps),
+    // The controller, not a die — and scaled down, because it fills its box.
+    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Gamepad, iconScale = 0.88f),
+    TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.Gift),
 )
 
 /** You, in the right pill. Search is a FAB, not a tab. */
 val utilityTabs = listOf(
-    TabDestination(Routes.PROFILE, "Profile", PhosphorIcons.User, PhosphorIcons.User),
+    TabDestination(Routes.PROFILE, "Profile", PhosphorIcons.User),
 )
 
 val mainTabs = primaryTabs + utilityTabs
