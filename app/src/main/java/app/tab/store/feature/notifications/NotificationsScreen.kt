@@ -180,7 +180,9 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
     val icon: Int = when (item.type) {
         NotificationType.ORDER -> PhosphorIcons.Receipt
         NotificationType.STORE -> PhosphorIcons.Store
-        NotificationType.PROMO -> PhosphorIcons.Notification
+        NotificationType.PROMO -> PhosphorIcons.Tag
+        NotificationType.CHECK_IN -> PhosphorIcons.Sparkles
+        NotificationType.UPDATE -> PhosphorIcons.Download
         NotificationType.SYSTEM -> PhosphorIcons.Notification
     }
     Surface(
@@ -194,14 +196,25 @@ private fun NotificationRow(item: AppNotification, onClick: () -> Unit) {
             modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(CircleShape)
-                    .background(Tokens.colorScheme.surface.copy(alpha = 0.6f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                SproutlyIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+            if (!item.imageUrl.isNullOrBlank()) {
+                // A notification about an app shows the app. A bell icon next to
+                // "The Visitor was updated" tells you nothing you did not know.
+                SproutlyImage(
+                    url = item.imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.size(46.dp),
+                    corner = 14.dp,
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .background(Tokens.colorScheme.surface.copy(alpha = 0.6f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    SproutlyIcon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                }
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {

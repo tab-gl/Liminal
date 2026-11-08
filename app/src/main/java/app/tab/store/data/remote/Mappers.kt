@@ -212,6 +212,7 @@ fun DocumentSnapshot.toNotification(): AppNotification = AppNotification(
     type = runCatching { NotificationType.valueOf(str("type")) }.getOrDefault(NotificationType.SYSTEM),
     read = bool("read"),
     deepLink = strOrNull("deepLink"),
+    imageUrl = strOrNull("imageUrl"),
     createdAt = long("createdAt"),
 )
 

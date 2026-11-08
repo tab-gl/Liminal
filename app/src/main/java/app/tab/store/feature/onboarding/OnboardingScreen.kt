@@ -103,7 +103,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                 0 -> Panel(
                     eyebrow = "Welcome",
                     title = "Apps from\nindependent\ndevelopers",
-                    body = "Build it. Publish it. Grow it. Install what you like, and " +
+                    body = "Beyond the ordinary. Into discovery. Install what you like, and " +
                         "publish your own when you are ready.",
                     icon = PhosphorIcons.Store,
                     primary = "Continue" to { step = 1 },

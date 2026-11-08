@@ -32,15 +32,39 @@ data class HomeUiState(
     val error: String? = null,
     val message: String? = null,
 ) {
+    /**
+     * A greeting that varies, but not on every recomposition.
+     *
+     * The day and the hour pick the phrase, so it is stable while you are on the
+     * screen and different tomorrow — the way a person says hello, rather than one
+     * string baked into the layout.
+     */
     val greeting: String
         get() {
-            val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-            return when (hour) {
-                in 5..11 -> "Good morning"
-                in 12..16 -> "Good afternoon"
-                in 17..20 -> "Good evening"
-                else -> "Welcome back"
+            val now = java.util.Calendar.getInstance()
+            val hour = now.get(java.util.Calendar.HOUR_OF_DAY)
+            val day = now.get(java.util.Calendar.DAY_OF_YEAR)
+            val openers = when (hour) {
+                in 5..11 -> listOf("Good morning", "Morning", "Hello, early bird", "Good morning")
+                in 12..16 -> listOf("Good afternoon", "Afternoon", "Hello again", "Good afternoon")
+                in 17..20 -> listOf("Good evening", "Evening", "Hello again", "Good evening")
+                else -> listOf("Still up", "Late one", "Good night", "Welcome back")
             }
+            return openers[day % openers.size]
+        }
+
+    /** The line under the greeting: what this screen is for, said differently each day. */
+    val subtitle: String
+        get() {
+            val day = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR)
+            val lines = listOf(
+                "Beyond the ordinary. Into discovery.",
+                "Something new was published today.",
+                "Find the app nobody has told you about yet.",
+                "Small studios, interesting things.",
+                "Beyond the ordinary. Into discovery.",
+            )
+            return lines[day % lines.size]
         }
 
     val firstName: String get() = user?.displayName?.substringBefore(" ")?.ifBlank { "there" } ?: "there"

@@ -183,6 +183,8 @@ interface NotificationRepository {
         title: String,
         body: String,
         deepLink: String,
+        /** The app's own art, so the row shows the app rather than a bell. */
+        imageUrl: String? = null,
     ): DataResult<Unit>
 }
 

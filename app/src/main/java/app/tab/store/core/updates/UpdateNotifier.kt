@@ -29,8 +29,38 @@ class UpdateNotifier @Inject constructor(
                         " · ${current.releaseNotes.take(80)}"
                     } else ".",
                     deepLink = "product/${current.id}",
+                    imageUrl = current.primaryImage,
                 )
             }
         }
+
+        checkIn()
+    }
+
+    /**
+     * One nudge a day, and no more.
+     *
+     * The id is the date, so writing it twice in a day is a no-op and yesterday's
+     * is a different document. It carries the newest listing's art, which is the
+     * point of a check-in: something to look at, not a bell.
+     */
+    private suspend fun checkIn() {
+        val today = java.time.LocalDate.now().toString()
+        val newest = runCatching {
+            catalogRepository.observeCatalogue(20).first()
+                .sortedByDescending { it.createdAt }
+                .firstOrNull()
+        }.getOrNull()
+
+        notificationRepository.push(
+            id = "checkin_$today",
+            type = "CHECK_IN",
+            title = if (newest != null) "Something new since yesterday" else "Today on Liminal",
+            body = newest?.let {
+                "${it.title} from ${it.storeName.ifBlank { "an independent developer" }}."
+            } ?: "Have a look at what was published this week.",
+            deepLink = newest?.let { "product/${it.id}" } ?: "home",
+            imageUrl = newest?.primaryImage,
+        )
     }
 }

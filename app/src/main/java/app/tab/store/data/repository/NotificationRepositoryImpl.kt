@@ -64,6 +64,7 @@ class NotificationRepositoryImpl @Inject constructor(
         title: String,
         body: String,
         deepLink: String,
+        imageUrl: String?,
     ): DataResult<Unit> {
         val uid = uid ?: return DataResult.Failure("Sign in to see this.")
         return try {
@@ -75,6 +76,7 @@ class NotificationRepositoryImpl @Inject constructor(
                         "title" to title,
                         "body" to body.take(200),
                         "deepLink" to deepLink,
+                        "imageUrl" to imageUrl,
                         "read" to false,
                         "createdAt" to System.currentTimeMillis(),
                     ),

@@ -43,6 +43,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import app.tab.store.core.ui.Badge
@@ -249,7 +250,7 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        text = "Find your next favourite app.",
+                        text = state.subtitle,
                         style = Tokens.typography.bodyMedium,
                         color = Tokens.colorScheme.onSurfaceVariant,
                     )
@@ -299,6 +300,19 @@ fun HomeScreen(
             item {
                 val slides = heroSlides(state, onProduct, onSeeAll, onOffers, onBecomeDeveloper)
                 val pager = rememberPagerState(pageCount = { slides.size })
+
+                // The cards advance on their own, slowly enough to read. A drag
+                // pauses the timer, and it does not fight the user's own swipe.
+                val autoAdvance = slides.size > 1 && !pager.isScrollInProgress
+                LaunchedEffect(autoAdvance, pager.currentPage) {
+                    if (!autoAdvance) return@LaunchedEffect
+                    delay(6_000)
+                    if (!pager.isScrollInProgress) {
+                        val next = (pager.currentPage + 1) % slides.size
+                        pager.animateScrollToPage(next)
+                    }
+                }
+
                 HorizontalPager(
                     state = pager,
                     contentPadding = PaddingValues(horizontal = 20.dp),

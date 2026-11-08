@@ -783,13 +783,10 @@ fun BrandMark(
         ),
         label = "leafBreathValue",
     )
-    val nod by animateFloatAsState(
-        targetValue = 0f,
-        animationSpec = spring(dampingRatio = 0.35f, stiffness = 400f),
-        label = "leafNod",
-    )
-    val rotation = if (animateLeaf) -3f + breath * 6f else 0f
-    val scale = if (animateLeaf) 1f + breath * 0.04f else 1f
+    // Slow and small: a mark that visibly wobbles becomes a distraction in the
+    // corner of every screen.
+    val rotation = if (animateLeaf) -2.5f + breath * 5f else 0f
+    val scale = if (animateLeaf) 1f + breath * 0.03f else 1f
 
     Box(
         modifier = modifier
@@ -806,7 +803,9 @@ fun BrandMark(
             modifier = Modifier
                 .fillMaxSize(0.86f)
                 .graphicsLayer {
-                    rotationZ = rotation + nod
+                    // One spring for both axes, so the mark turns and settles as a
+                    // single movement instead of two animations overlapping.
+                    rotationZ = rotation
                     scaleX = scale
                     scaleY = scale
                 },

@@ -25,6 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.animateFloatAsState
+import kotlinx.coroutines.delay
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 
 /**
@@ -64,6 +71,8 @@ fun HomeSkeleton(modifier: Modifier = Modifier) {
         }
 
         Spacer(Modifier.height(26.dp))
+        LoadingLabel()
+        Spacer(Modifier.height(10.dp))
         Box(Modifier.fillMaxWidth(0.7f).height(30.dp).clip(SproutlyRadii.pill).background(bone))
         Spacer(Modifier.height(10.dp))
         Box(Modifier.fillMaxWidth(0.45f).height(16.dp).clip(SproutlyRadii.pill).background(bone))
@@ -92,4 +101,37 @@ fun HomeSkeleton(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+/**
+ * The words that sit in a skeleton.
+ *
+ * A screen of grey blocks reads as broken. These rotate on a slow cycle, which
+ * tells you the app is working without pretending to know how long it will take.
+ */
+@Composable
+private fun LoadingLabel() {
+    val lines = listOf(
+        "Fetching the shelves…",
+        "Checking what is new…",
+        "Almost there…",
+    )
+    var index by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2_400)
+            index = (index + 1) % lines.size
+        }
+    }
+    val alpha by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(400),
+        label = "loadingAlpha",
+    )
+    Text(
+        lines[index],
+        style = Tokens.typography.bodyMedium,
+        color = Tokens.colorScheme.onSurfaceVariant,
+        modifier = Modifier.graphicsLayer { this.alpha = alpha },
+    )
 }
