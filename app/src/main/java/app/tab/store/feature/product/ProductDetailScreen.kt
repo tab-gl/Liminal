@@ -449,12 +449,29 @@ fun ProductDetailScreen(
                         }
                     }
 
-                    if (product.scanRisk.isNotBlank()) {
-                        Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(14.dp))
+                    if (product.scanRisk.isNotBlank() || product.scanScore > 0) {
                         RiskMeter(
                             score = product.scanScore,
                             reasons = product.scanWarnings,
                         )
+                    } else {
+                        Surface(
+                            shape = SproutlyRadii.card,
+                            color = Tokens.colorScheme.surfaceContainerLow,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.padding(14.dp)) {
+                                Text("Sprout Safe", style = Tokens.typography.titleSmall)
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "This build was not scanned, so Sproutly cannot say what " +
+                                        "it can reach. Install it at your own discretion.",
+                                    style = Tokens.typography.bodySmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                     }
 
                     if (product.releaseNotes.isNotBlank()) {

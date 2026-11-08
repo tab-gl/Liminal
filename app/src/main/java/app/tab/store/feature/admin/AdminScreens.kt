@@ -55,6 +55,7 @@ import app.tab.store.core.designsystem.SproutlyTextField
 import app.tab.store.core.designsystem.SproutlyTopBar
 import app.tab.store.core.designsystem.formatCompact
 import app.tab.store.core.designsystem.formatPrice
+import app.tab.store.core.designsystem.priceLabel
 import app.tab.store.domain.model.ProductStatus
 import app.tab.store.domain.model.StoreStatus
 import app.tab.store.domain.model.UserRole
@@ -201,9 +202,9 @@ fun AdminDashboardScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AdminTile(
                     icon = PhosphorIcons.TagAlt,
-                    label = "Tags",
+                    label = "Curate",
                     count = "",
-                    detail = "Merge or drop duplicates",
+                    detail = "Rename or remove a shelf",
                     modifier = Modifier.weight(1f),
                     onClick = onTags,
                 )
@@ -641,7 +642,7 @@ fun AdminProductsScreen(
                                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                     )
                                     Text(
-                                        "${product.storeName} · ${formatPrice(product.price)}",
+                                        "${product.storeName} · ${priceLabel(product.price)}",
                                         style = Tokens.typography.bodySmall,
                                         color = Tokens.colorScheme.onSurfaceVariant,
                                     )
@@ -866,10 +867,10 @@ fun AdminTagsScreen(
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 32.dp),
         ) {
-            SproutlyTopBar(title = "Tags", onBack = onBack)
+            SproutlyTopBar(title = "Categories", onBack = onBack)
             Text(
-                "Tags are typed by developers, so the same idea arrives several ways. " +
-                    "Fold a duplicate into one name, or drop a tag entirely.",
+                "Categories are the shelves shoppers browse. Renaming one updates every " +
+                    "listing in it; deleting one leaves the listings in place.",
                 style = Tokens.typography.bodySmall,
                 color = Tokens.colorScheme.onSurfaceVariant,
             )
@@ -881,8 +882,8 @@ fun AdminTagsScreen(
                     Spacer(Modifier.height(12.dp))
                 }
                 state.tags.isEmpty() -> EmptyState(
-                    title = "No tags yet",
-                    message = "Tags appear here once developers add them to a listing.",
+                    title = "No categories yet",
+                    message = "Add one above, or seed the standard set.",
                     icon = PhosphorIcons.TagAlt,
                 )
                 else -> state.tags.forEach { (tag, count) ->

@@ -74,6 +74,9 @@ private val inr: NumberFormat = NumberFormat.getCurrencyInstance(Locale("en", "I
 
 fun formatPrice(paise: Long): String = inr.format(paise / 100.0)
 
+/** What a person pays: a free app says so rather than showing a zero. */
+fun priceLabel(paise: Long): String = if (paise <= 0L) "Free" else formatPrice(paise)
+
 fun formatCompact(value: Long): String = when {
     value >= 10_000_000 -> "₹${"%.2f".format(value / 10_000_000.0)}Cr"
     value >= 100_000 -> "₹${"%.2f".format(value / 100_000.0)}L"
@@ -269,15 +272,22 @@ fun RatingBadge(rating: Double, count: Int, modifier: Modifier = Modifier) {
             tint = LocalSproutlyExtra.current.ratingGold,
         )
         Spacer(Modifier.width(3.dp))
-        Text(
-            text = "%.1f".format(rating),
-            style = Tokens.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-        )
         if (count > 0) {
+            Text(
+                text = "%.1f".format(rating),
+                style = Tokens.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+            )
             Spacer(Modifier.width(3.dp))
             Text(
                 text = "($count)",
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            // "0.0" with a gold star reads as a bad score, not as "nobody rated it".
+            Text(
+                text = "No ratings yet",
                 style = Tokens.typography.bodySmall,
                 color = Tokens.colorScheme.onSurfaceVariant,
             )
@@ -294,7 +304,8 @@ fun PriceText(
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
-            text = formatPrice(paise),
+            // A free app says "Free"; a struck-through ₹0 next to it would be silly.
+            text = priceLabel(paise),
             style = if (large) Tokens.typography.headlineMedium
             else Tokens.typography.titleLarge,
             color = Tokens.colorScheme.onSurface,
@@ -733,7 +744,7 @@ fun ProductRowCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    formatPrice(product.price),
+                    priceLabel(product.price),
                     style = Tokens.typography.titleMedium,
                     fontWeight = FontWeight.ExtraBold,
                 )

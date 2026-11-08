@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class AdminDashboardUiState(
@@ -305,6 +306,8 @@ class AdminCategoriesViewModel @Inject constructor(
 
 data class AdminTagsUiState(
     val tags: List<Pair<String, Int>> = emptyList(),
+    /** Category name to its document id, so rename and delete can address it. */
+    val ids: Map<String, String> = emptyMap(),
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val editing: String? = null,
@@ -335,13 +338,15 @@ class AdminTagsViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            when (val res = adminRepository.listTags()) {
-                is DataResult.Failure -> _uiState.update {
-                    it.copy(isLoading = false, error = res.message)
-                }
-                is DataResult.Success -> _uiState.update {
-                    it.copy(isLoading = false, tags = res.value)
-                }
+            // Categories, not free-text tags: the shelf a listing sits on is what a
+            // shopper filters by, and it is what needs curating.
+            val categories = adminRepository.observeCategories().first()
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    tags = categories.map { category -> category.name to category.productCount },
+                    ids = categories.associate { category -> category.name to category.id },
+                )
             }
         }
     }
@@ -358,9 +363,10 @@ class AdminTagsViewModel @Inject constructor(
             cancelEdit()
             return
         }
+        val categoryId = state.ids[from] ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            when (val res = adminRepository.renameTag(from, to)) {
+            when (val res = adminRepository.renameCategory(categoryId, to)) {
                 is DataResult.Failure -> _uiState.update {
                     it.copy(isSaving = false, error = res.message)
                 }
@@ -380,9 +386,10 @@ class AdminTagsViewModel @Inject constructor(
     }
 
     fun delete(tag: String) {
+        val categoryId = _uiState.value.ids[tag] ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            when (val res = adminRepository.deleteTag(tag)) {
+            when (val res = adminRepository.deleteCategory(categoryId)) {
                 is DataResult.Failure -> _uiState.update {
                     it.copy(isSaving = false, error = res.message)
                 }

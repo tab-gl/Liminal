@@ -347,6 +347,37 @@ class AdminRepositoryImpl @Inject constructor(
         DataResult.Failure(t.toUserMessage(), t)
     }
 
+    override suspend fun renameCategory(categoryId: String, name: String): DataResult<Int> =
+        firestoreResultOf {
+            val clean = name.trim()
+            firestore.collection(FirestorePaths.CATEGORIES).document(categoryId)
+                .update("name", clean).await()
+            // Listings carry the label too, so it is rewritten rather than left to
+            // disagree with the category it points at.
+            val affected = products.whereEqualTo("categoryId", categoryId).get().await()
+            affected.documents.forEach { doc ->
+                doc.reference.update("categoryLabel", clean).await()
+            }
+            affected.size()
+        }
+
+    override suspend fun deleteCategory(categoryId: String): DataResult<Int> =
+        firestoreResultOf {
+            val affected = products.whereEqualTo("categoryId", categoryId).get().await()
+            // The listings survive: a category is a shelf, not a container. They
+            // keep the id so nothing breaks, and lose the label.
+            affected.documents.forEach { doc ->
+                doc.reference.update(
+                    mapOf(
+                        "categoryId" to "",
+                        "categoryLabel" to "",
+                    ),
+                ).await()
+            }
+            firestore.collection(FirestorePaths.CATEGORIES).document(categoryId).delete().await()
+            affected.size()
+        }
+
     override suspend fun createCategory(name: String, slug: String, iconKey: String): DataResult<Unit> {
         return firestoreResult {
             val snap = firestore.collection(FirestorePaths.CATEGORIES).orderBy("order", Query.Direction.DESCENDING).limit(1).get().await()

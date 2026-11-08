@@ -541,7 +541,7 @@ fun HomeScreen(
                                     )
                                     Spacer(Modifier.height(6.dp))
                                     Text(
-                                        app.tab.store.core.designsystem.formatPrice(product.price),
+                                        app.tab.store.core.designsystem.priceLabel(product.price),
                                         style = Tokens.typography.titleMedium,
                                     )
                                 }
@@ -600,7 +600,7 @@ fun HomeScreen(
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                     Text(
-                                        app.tab.store.core.designsystem.formatPrice(product.price),
+                                        app.tab.store.core.designsystem.priceLabel(product.price),
                                         style = Tokens.typography.labelLarge,
                                     )
                                 }

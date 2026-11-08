@@ -71,7 +71,9 @@ fun GamesScreen(
                     Text("Games", style = Tokens.typography.headlineMedium)
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        InstallCount.label(state.games.size),
+                        // A count of listings, not a bucket of installs: label()
+                        // turns 1 into "5+", which is wrong for "how many games".
+                        state.games.size.toString(),
                         style = Tokens.typography.labelLarge,
                         color = Tokens.colorScheme.onSurfaceVariant,
                     )

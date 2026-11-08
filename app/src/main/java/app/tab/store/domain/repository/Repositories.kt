@@ -156,6 +156,12 @@ interface AdminRepository {
     suspend fun resolveReport(productId: String, keepListed: Boolean): DataResult<Unit>
     suspend fun createCategory(name: String, slug: String, iconKey: String): DataResult<Unit>
 
+    /** Admin: rename a category and update the label on every listing in it. */
+    suspend fun renameCategory(categoryId: String, name: String): DataResult<Int>
+
+    /** Admin: remove a category. Listings keep their id, and lose the label. */
+    suspend fun deleteCategory(categoryId: String): DataResult<Int>
+
     /** Writes the standard app-store taxonomy; safe to run on a non-empty list. */
     suspend fun seedDefaultCategories(): DataResult<Int>
 }
