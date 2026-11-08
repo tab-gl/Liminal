@@ -304,13 +304,14 @@ fun HomeScreen(
                     pageSpacing = 12.dp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(168.dp),
+                        .heightIn(min = 200.dp),
                 ) { page ->
                     val promo = slides[page]
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(SproutlyRadii.hero)
+                            .clickable(onClick = promo.onClick)
                             .background(
                                 if (page % 2 == 0) {
                                     Brush.linearGradient(

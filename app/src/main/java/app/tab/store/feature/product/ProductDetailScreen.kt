@@ -178,7 +178,7 @@ fun ProductDetailScreen(
                             ) {
                                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     SproutlyIcon(
-                                        if (state.isWishlisted) PhosphorIcons.FavouriteFilled
+                                        if (state.isWishlisted) PhosphorIcons.Favourite
                                         else PhosphorIcons.Favourite,
                                         contentDescription =
                                             if (state.isWishlisted) "Remove from wishlist" else "Add to wishlist",

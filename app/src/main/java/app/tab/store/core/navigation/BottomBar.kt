@@ -43,23 +43,21 @@ data class TabDestination(
     val route: String,
     val label: String,
     @DrawableRes val icon: Int,
-    /** The filled variant of the same icon, shown while this tab is current. */
-    @DrawableRes val iconFilled: Int = icon,
     /** Some glyphs fill their whole box and look larger than their neighbours. */
     val iconScale: Float = 1f,
 )
 
 /** Browsing destinations, in the left pill. */
 val primaryTabs = listOf(
-    TabDestination(Routes.HOME, "Apps", PhosphorIcons.Apps, PhosphorIcons.AppsFilled),
+    TabDestination(Routes.HOME, "Apps", PhosphorIcons.Apps, PhosphorIcons.Apps),
     // Outline and filled must be the same glyph: the controller, not a die.
-    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Gamepad, PhosphorIcons.GamesFilled, iconScale = 0.88f),
-    TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.Gift, PhosphorIcons.OffersFilled),
+    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Gamepad, PhosphorIcons.Gamepad, iconScale = 0.88f),
+    TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.Gift, PhosphorIcons.Gift),
 )
 
 /** You, in the right pill. Search is a FAB, not a tab. */
 val utilityTabs = listOf(
-    TabDestination(Routes.PROFILE, "Profile", PhosphorIcons.User, PhosphorIcons.UserFilled),
+    TabDestination(Routes.PROFILE, "Profile", PhosphorIcons.User, PhosphorIcons.User),
 )
 
 val mainTabs = primaryTabs + utilityTabs

@@ -12,7 +12,6 @@ import app.tab.store.R
 object PhosphorIcons {
     @DrawableRes val Analytics = R.drawable.ic_ph_analytics
     @DrawableRes val Apps = R.drawable.ic_ph_apps
-    @DrawableRes val AppsFilled = R.drawable.ic_ph_apps_filled
     @DrawableRes val ArrowRight = R.drawable.ic_ph_arrow_right
     @DrawableRes val Bag = R.drawable.ic_ph_bag
     @DrawableRes val Book = R.drawable.ic_ph_book
@@ -28,12 +27,9 @@ object PhosphorIcons {
     @DrawableRes val Eye = R.drawable.ic_ph_eye
     @DrawableRes val EyeOff = R.drawable.ic_ph_eye_off
     @DrawableRes val Favourite = R.drawable.ic_ph_favourite
-    @DrawableRes val FavouriteFilled = R.drawable.ic_ph_favourite_filled
     @DrawableRes val Filter = R.drawable.ic_ph_filter
     @DrawableRes val Gamepad = R.drawable.ic_ph_gamepad
-    @DrawableRes val GamesFilled = R.drawable.ic_ph_games_filled
     @DrawableRes val Gift = R.drawable.ic_ph_gift
-    @DrawableRes val OffersFilled = R.drawable.ic_ph_offers_filled
     @DrawableRes val Grid = R.drawable.ic_ph_grid
     @DrawableRes val Home = R.drawable.ic_ph_home
     @DrawableRes val Image = R.drawable.ic_ph_image
@@ -54,7 +50,6 @@ object PhosphorIcons {
     @DrawableRes val Trash = R.drawable.ic_ph_trash
     @DrawableRes val Upload = R.drawable.ic_ph_upload
     @DrawableRes val User = R.drawable.ic_ph_user
-    @DrawableRes val UserFilled = R.drawable.ic_ph_user_filled
     @DrawableRes val Users = R.drawable.ic_ph_users
     @DrawableRes val Verified = R.drawable.ic_ph_verified
     @DrawableRes val Wallet = R.drawable.ic_ph_wallet

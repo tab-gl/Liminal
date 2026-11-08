@@ -21,7 +21,6 @@ BASE = "https://raw.githubusercontent.com/phosphor-icons/core/main/assets"
 ICONS = {
     "Analytics": ("regular", "chart-bar"),
     "Apps": ("regular", "squares-four"),
-    "AppsFilled": ("fill", "squares-four-fill"),
     "ArrowRight": ("regular", "arrow-right"),
     "Bag": ("regular", "shopping-bag"),
     "Book": ("regular", "book-open"),
@@ -37,12 +36,9 @@ ICONS = {
     "Eye": ("regular", "eye"),
     "EyeOff": ("regular", "eye-slash"),
     "Favourite": ("regular", "heart"),
-    "FavouriteFilled": ("fill", "heart-fill"),
     "Filter": ("regular", "funnel"),
     "Gamepad": ("regular", "game-controller"),
-    "GamesFilled": ("fill", "game-controller-fill"),
     "Gift": ("regular", "gift"),
-    "OffersFilled": ("fill", "gift-fill"),
     "Grid": ("regular", "squares-four"),
     "Home": ("regular", "house"),
     "Image": ("regular", "image"),
@@ -63,7 +59,6 @@ ICONS = {
     "Trash": ("regular", "trash"),
     "Upload": ("regular", "upload-simple"),
     "User": ("regular", "user"),
-    "UserFilled": ("fill", "user-fill"),
     "Users": ("regular", "users"),
     "Verified": ("regular", "seal-check"),
     "Wallet": ("regular", "wallet"),
@@ -87,11 +82,10 @@ DRAWABLE = """<?xml version="1.0" encoding="utf-8"?>
 </vector>
 """
 
-# Phosphor draws its holes with reverse-wound subpaths. Android's default
-# nonZero fill turns those into solid blobs, which is why the filled glyphs came
-# out malformed; evenOdd punches the holes back out.
+# Phosphor's SVGs carry no fill-rule, which means nonZero. Forcing evenOdd punched
+# holes into glyphs that have none and made them look broken, so the generated
+# vectors keep Android's default and only the outline set is used.
 PATH = """    <path
-        android:fillType="evenOdd"
         android:pathData="{d}"
         android:fillColor="#FF000000" />
 """
