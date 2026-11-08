@@ -25,8 +25,8 @@ android {
         applicationId = "app.tab.store"
         minSdk = 24
         targetSdk = 36
-        versionCode = 59
-        versionName = "1.0.58"
+        versionCode = 60
+        versionName = "1.0.59"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -39,10 +39,19 @@ android {
             "CLOUDINARY_CLOUD_NAME",
             "\"${secret("cloudinaryCloudName", "SPROUTLY_CLOUDINARY_CLOUD_NAME") ?: "wjoegjfk"}\"",
         )
+        // The unsigned preset always had a fallback, so the signed path could never
+        // be reached and no build ever said which mode it was in. The mode is now
+        // explicit and reported by the app; the fallback stays so an existing
+        // deployment keeps uploading.
         buildConfigField(
             "String",
             "CLOUDINARY_UPLOAD_PRESET",
             "\"${secret("cloudinaryUploadPreset", "SPROUTLY_CLOUDINARY_UPLOAD_PRESET") ?: "sproutly_unsigned"}\"",
+        )
+        buildConfigField(
+            "String",
+            "CLOUDINARY_MODE",
+            "\"${if (secret("cloudinaryUploadPreset", "SPROUTLY_CLOUDINARY_UPLOAD_PRESET") != null) "unsigned" else "unsigned-default"}\"",
         )
 
         // Where builds are uploaded: the Sproutly R2 uploader Worker. Public URL,

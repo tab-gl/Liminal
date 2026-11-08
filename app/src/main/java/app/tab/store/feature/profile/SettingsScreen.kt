@@ -151,6 +151,9 @@ private fun SettingsContent(
                         color = Tokens.colorScheme.outlineVariant,
                     )
                     SettingRow("App version", BuildConfig.VERSION_NAME)
+                    // The audit found the upload mode was never visible anywhere,
+                    // so nobody could tell which one a build used.
+                    SettingRow("Image uploads", app.tab.store.BuildConfig.CLOUDINARY_MODE)
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = Tokens.colorScheme.outlineVariant,

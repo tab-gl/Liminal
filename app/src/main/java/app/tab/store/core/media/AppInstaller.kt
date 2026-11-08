@@ -7,6 +7,8 @@ import android.provider.Settings
 import androidx.core.content.FileProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.HttpURLConnection
@@ -197,4 +199,39 @@ class AppInstaller @Inject constructor(
         }
         return file
     }
+
+    /**
+     * Waits for Android to actually finish installing [packageName].
+     *
+     * The installer being opened is not an install: a person can cancel the
+     * prompt, and the library used to record the app anyway. This watches for the
+     * package appearing and gives up quietly after [timeoutMs].
+     */
+    suspend fun awaitInstalled(packageName: String, timeoutMs: Long = 5 * 60_000L): Boolean =
+        withContext(Dispatchers.IO) {
+            val already = runCatching {
+                context.packageManager.getPackageInfo(packageName, 0)
+            }.isSuccess
+            if (already) return@withContext true
+
+            val installed = CompletableDeferred<Boolean>()
+            val receiver = object : android.content.BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: android.content.Intent?) {
+                    val added = intent?.getBooleanExtra(android.content.Intent.EXTRA_REPLACING, false) == false
+                    if (added && intent?.data?.schemeSpecificPart == packageName) {
+                        installed.complete(true)
+                    }
+                }
+            }
+            val filter = android.content.IntentFilter().apply {
+                addAction(android.content.Intent.ACTION_PACKAGE_ADDED)
+                addDataScheme("package")
+            }
+            context.registerReceiver(receiver, filter)
+            try {
+                withTimeoutOrNull(timeoutMs) { installed.await() } ?: false
+            } finally {
+                runCatching { context.unregisterReceiver(receiver) }
+            }
+        }
 }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.tab.store.core.ui.Surface
@@ -87,7 +88,6 @@ fun SproutlyBottomBar(
             tabs = primaryTabs,
             currentRoute = currentRoute,
             onNavigate = onNavigate,
-            modifier = Modifier.weight(1f, fill = false),
         )
         Spacer(Modifier.width(10.dp))
         PillGroup(
@@ -128,7 +128,7 @@ private fun PillGroup(
             1.dp,
             Tokens.colorScheme.outlineVariant.copy(alpha = 0.6f),
         ),
-        modifier = modifier,
+        modifier = modifier.wrapContentWidth(),
     ) {
         Box(Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
             Row(
@@ -151,11 +151,6 @@ private fun PillGroup(
                         tab = tab,
                         selected = tab.route == currentRoute,
                         onClick = { if (tab.route != currentRoute) onNavigate(tab.route) },
-                        modifier = if (tabs.size > 1) {
-                            Modifier.weight(if (tab.route == currentRoute) 1.6f else 1f)
-                        } else {
-                            Modifier
-                        },
                         onMeasured = { x, width ->
                             val next = x to width
                             if (bounds[tab.route] != next) bounds[tab.route] = next
@@ -216,7 +211,7 @@ private fun FloatingTab(
         // whatever width the tab takes.
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .wrapContentWidth()
                 .height(46.dp)
                 .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.Center,

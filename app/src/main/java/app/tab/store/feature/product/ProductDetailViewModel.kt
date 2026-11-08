@@ -183,9 +183,26 @@ class ProductDetailViewModel @Inject constructor(
             }
             when (outcome) {
                 is AppInstaller.Outcome.Launched -> {
-                    // A failed record must not undo an install that already started.
-                    (appLibraryRepository.recordInstall(product.id) as? DataResult.Failure)?.let { failure ->
-                        _uiState.update { it.copy(message = failure.message) }
+                    // Opened is not installed: wait for Android to finish, and only
+                    // then record it. Cancelling the prompt no longer counts.
+                    val pkg = outcome.packageName
+                    if (pkg == null) {
+                        (appLibraryRepository.recordInstall(product.id) as? DataResult.Failure)?.let { failure ->
+                            _uiState.update { it.copy(message = failure.message) }
+                        }
+                    } else {
+                        viewModelScope.launch {
+                            val installed = appInstaller.awaitInstalled(pkg)
+                            if (installed) {
+                                (appLibraryRepository.recordInstall(product.id) as? DataResult.Failure)?.let { failure ->
+                                    _uiState.update { it.copy(message = failure.message) }
+                                }
+                            } else {
+                                _uiState.update {
+                                    it.copy(message = "Install was not completed, so it was not recorded.")
+                                }
+                            }
+                        }
                     }
                 }
                 is AppInstaller.Outcome.Installed -> {

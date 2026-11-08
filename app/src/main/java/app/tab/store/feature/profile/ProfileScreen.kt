@@ -188,7 +188,8 @@ fun ProfileScreen(
             }
             Spacer(Modifier.height(28.dp))
             Text(
-                "Sproutly · v1.0.0",
+                "Sproutly · v${app.tab.store.BuildConfig.VERSION_NAME} " +
+                    "(${app.tab.store.BuildConfig.VERSION_CODE})",
                 style = Tokens.typography.bodySmall,
                 color = Tokens.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
