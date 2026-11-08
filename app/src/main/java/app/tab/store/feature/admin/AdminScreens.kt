@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import app.tab.store.core.ui.HorizontalDivider
+import app.tab.store.core.ui.LinearProgressIndicator
 import app.tab.store.core.ui.OutlinedTextField
 import app.tab.store.core.ui.SnackbarHost
 import app.tab.store.core.ui.SnackbarHostState
@@ -879,5 +880,21 @@ fun AdminTagsScreen(
             }
         }
         SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(16.dp))
+    }
+}
+
+/** A small pill action, local to the admin screens. */
+@Composable
+private fun AdminChip(label: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = SproutlyRadii.pill,
+        color = Tokens.colorScheme.surfaceContainerHigh,
+    ) {
+        Text(
+            label,
+            style = Tokens.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+        )
     }
 }
