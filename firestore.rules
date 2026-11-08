@@ -286,7 +286,9 @@ service cloud.firestore {
           // A studio cannot inflate its own install count, which was the cheapest
           // way to manipulate a ranking. True once-per-install idempotency needs a
           // server; this closes the obvious hole.
-          && resource.data.get('storeId', '') != myStoreId();
+          // Only a studio is blocked from bumping its own listing; a shopper has no
+          // store, and myStoreId() is null for them.
+          && (myStoreId() == null || resource.data.get('storeId', '') != myStoreId());
       }
 
       // Split so the storefront's list queries never depend on get(): Firestore
