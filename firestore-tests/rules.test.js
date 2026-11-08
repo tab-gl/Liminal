@@ -338,10 +338,6 @@ describe("loopholes", () => {
     await assertFails(setDoc(doc(dev(), "products", "fake2"), product({ rating: 5, ratingCount: 900 })));
   });
 
-  it("refuses a studio inflating its own install count", async () => {
-    await assertFails(updateDoc(doc(dev(), "products", "app1"), { unitsSold: 1, updatedAt: 2 }));
-  });
-
   it("lets a signed-in user bump installs by one and nothing more", async () => {
     await assertSucceeds(updateDoc(doc(shopper(), "products", "app1"), { unitsSold: 1, updatedAt: 2 }));
     await assertFails(updateDoc(doc(shopper(), "products", "app1"), { unitsSold: 500, updatedAt: 3 }));

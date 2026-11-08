@@ -282,13 +282,11 @@ service cloud.firestore {
         return request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['unitsSold', 'updatedAt'])
           && request.resource.data.unitsSold is int
-          && request.resource.data.unitsSold == resource.data.get('unitsSold', 0) + 1
-          // A studio cannot inflate its own install count, which was the cheapest
-          // way to manipulate a ranking. True once-per-install idempotency needs a
-          // server; this closes the obvious hole.
-          // Only a studio is blocked from bumping its own listing; a shopper has no
-          // store, and myStoreId() is null for them.
-          && (myStoreId() == null || resource.data.get('storeId', '') != myStoreId());
+          && request.resource.data.unitsSold == resource.data.get('unitsSold', 0) + 1;
+        // A studio can still bump its own listing once per request. Blocking that
+        // here needs myStoreId() — a get() inside an already large rule — which
+        // pushed evaluation past Firestore's 1000-expression limit and denied
+        // legitimate installs. Idempotent counting needs a server.
       }
 
       // Split so the storefront's list queries never depend on get(): Firestore
