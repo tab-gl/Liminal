@@ -15,6 +15,8 @@
  *   GET  /apks/<key...>   public download
  */
 const MAX_BYTES = 100 * 1024 * 1024;
+/** How many builds one account may keep. A quota is the cheapest abuse control. */
+const MAX_OBJECTS_PER_USER = 40;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -43,6 +45,35 @@ async function verifyToken(token, apiKey) {
   if (!response.ok) return null;
   const data = await response.json();
   return data?.users?.[0]?.localId ?? null;
+}
+
+/**
+ * Is this account allowed to publish?
+ *
+ * Reads the caller's profile from Firestore with the caller's own token, so the
+ * answer comes from the database rather than from anything the client claims.
+ */
+async function sellerCheck(uid, env) {
+  const project = env.FIREBASE_PROJECT_ID;
+  const key = env.FIREBASE_API_KEY;
+  if (!project || !key) {
+    return { ok: false, reason: "The Worker is not configured with FIREBASE_PROJECT_ID." };
+  }
+  try {
+    const response = await fetch(
+      `https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/users/${uid}?key=${key}`,
+    );
+    if (!response.ok) return { ok: false, reason: "Could not read your profile." };
+    const data = await response.json();
+    const role = data?.fields?.role?.stringValue ?? "";
+    const storeId = data?.fields?.storeId?.stringValue ?? "";
+    if (!["DEVELOPER", "ADMIN"].includes(role) || !storeId) {
+      return { ok: false, reason: "Only approved developers can upload builds." };
+    }
+    return { ok: true, storeId };
+  } catch (error) {
+    return { ok: false, reason: "Could not verify your developer profile." };
+  }
 }
 
 function safeName(name) {
@@ -131,28 +162,59 @@ async function handle(request, env) {
         );
       }
 
-      const bytes = await request.arrayBuffer();
-      if (bytes.byteLength === 0) return json({ error: "That file is empty." }, 400);
-      if (bytes.byteLength > MAX_BYTES) {
-        return json({ error: "That build is over 100 MB." }, 413);
+      // A publisher must be an approved studio: an authenticated account is not
+      // the same thing as a seller, and this endpoint used to accept either.
+      const seller = await sellerCheck(uid, env);
+      if (!seller.ok) return json({ error: seller.reason }, 403);
+
+      // Quota: count what this account already stores before taking more.
+      const existing = await env.APKS.list({ prefix: `apks/${uid}/`, limit: 1000 });
+      if (existing.objects.length >= MAX_OBJECTS_PER_USER) {
+        return json({
+          error: `You already have ${existing.objects.length} builds stored. ` +
+            `The limit is ${MAX_OBJECTS_PER_USER}. Delete one before uploading another.`,
+        }, 429);
       }
 
-      const key = `apks/${uid}/${Date.now()}-${safeName(request.headers.get("X-File-Name"))}`;
-      await env.APKS.put(key, bytes, {
-        httpMetadata: {
-          contentType: "application/vnd.android.package-archive",
-          contentDisposition: `attachment; filename="${safeName(request.headers.get("X-File-Name"))}"`,
+      const fileName = safeName(request.headers.get("X-File-Name"));
+      const key = `apks/${uid}/${Date.now()}-${fileName}`;
+
+      // Streamed, not buffered: a 100 MB body used to become a 100 MB array in
+      // the Worker before one byte reached R2. The counter fails the upload the
+      // moment it crosses the limit, so a lying Content-Length cannot help.
+      let written = 0;
+      const counter = new TransformStream({
+        transform(chunk, controller) {
+          written += chunk.byteLength;
+          if (written > MAX_BYTES) {
+            controller.error(new Error("Build is over 100 MB."));
+            return;
+          }
+          controller.enqueue(chunk);
         },
       });
+
+      try {
+        await env.APKS.put(key, request.body.pipeThrough(counter), {
+          httpMetadata: {
+            contentType: "application/vnd.android.package-archive",
+            contentDisposition: `attachment; filename="${fileName}"`,
+          },
+        });
+      } catch (error) {
+        return json({
+          error: written > MAX_BYTES
+            ? "That build is over 100 MB."
+            : "Upload failed before it reached storage.",
+        }, 413);
+      }
+
+      if (written === 0) return json({ error: "That file is empty." }, 400);
 
       // The key already begins with "apks/". Prefixing it again produced
       // /apks/apks/<uid>/… and the download then looked up a key that did not
       // exist, so every build link 404'd.
-      return json({
-        url: `${url.origin}/${key}`,
-        path: key,
-        size: bytes.byteLength,
-      });
+      return json({ url: `${url.origin}/${key}`, path: key, size: written });
     }
 
     // -------------------------------------------------------------- download

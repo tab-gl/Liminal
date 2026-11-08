@@ -103,17 +103,6 @@ fun StoreScreen(
     val store = state.store
 
     LazyColumn(Modifier.fillMaxSize()) {
-        if (isAdmin && store != null) {
-            item {
-                Spacer(Modifier.height(8.dp))
-                StoreAdminActions(
-                    store = store,
-                    onStatus = viewModel::adminSetStatus,
-                    onOfficial = viewModel::adminMarkOfficial,
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-        }
         item {
             Box {
                 if (store?.bannerUrl.isNullOrBlank()) {
@@ -165,6 +154,19 @@ fun StoreScreen(
                     Box(contentAlignment = Alignment.Center) {
                         SproutlyIcon(PhosphorIcons.ChevronLeft, contentDescription = "Back")
                     }
+                }
+            }
+        }
+
+        if (isAdmin && store != null) {
+            item {
+                Spacer(Modifier.height(14.dp))
+                Column(Modifier.padding(horizontal = 20.dp)) {
+                    StoreAdminActions(
+                        store = store,
+                        onStatus = viewModel::adminSetStatus,
+                        onOfficial = viewModel::adminMarkOfficial,
+                    )
                 }
             }
         }

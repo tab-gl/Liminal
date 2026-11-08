@@ -10,3 +10,9 @@ bucket_name = "sproutly-apks"
 # FIREBASE_API_KEY is set as a Worker secret, not a var:
 #   wrangler secret put FIREBASE_API_KEY
 # A var of the same name here would shadow the secret.
+
+# Which Firestore project to ask about a caller's role. The upload endpoint reads
+# the caller's own profile document with their token, so an authenticated account
+# that is not a developer cannot upload builds.
+[vars]
+FIREBASE_PROJECT_ID = "tab-gl"
