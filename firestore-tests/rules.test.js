@@ -333,6 +333,16 @@ describe("loopholes", () => {
     await assertFails(updateDoc(doc(dev(), "products", "app1"), { reported: false, updatedAt: 2 }));
   });
 
+  it("lets an admin curate a listing's tags and delete the listing", async () => {
+    await assertSucceeds(
+      updateDoc(doc(admin(), "products", "app1"), { tags: ["role-playing"] }),
+    );
+    await assertFails(
+      updateDoc(doc(shopper(), "products", "app1"), { tags: ["hijacked"] }),
+    );
+    await assertSucceeds(deleteDoc(doc(admin(), "products", "app1")));
+  });
+
   it("refuses a new listing that seeds its own installs or rating", async () => {
     await assertFails(setDoc(doc(dev(), "products", "fake"), product({ unitsSold: 5000 })));
     await assertFails(setDoc(doc(dev(), "products", "fake2"), product({ rating: 5, ratingCount: 900 })));

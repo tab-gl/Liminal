@@ -449,6 +449,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onUsers = { go(Routes.ADMIN_USERS) },
                     onProducts = { go(Routes.ADMIN_PRODUCTS) },
                     onCategories = { go(Routes.ADMIN_CATEGORIES) },
+                    onTags = { go(Routes.ADMIN_TAGS) },
                 )
             }
             composable(Routes.ADMIN_STORES) {
@@ -462,6 +463,9 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             }
             composable(Routes.ADMIN_CATEGORIES) {
                 AdminCategoriesScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.ADMIN_TAGS) {
+                AdminTagsScreen(onBack = { navController.popBackStack() })
             }
         }
 

@@ -42,6 +42,7 @@ object Routes {
     const val ADMIN_USERS = "admin/users"
     const val ADMIN_PRODUCTS = "admin/products"
     const val ADMIN_CATEGORIES = "admin/categories"
+    const val ADMIN_TAGS = "admin/tags"
 
     fun product(id: String) = "product/$id"
     fun store(id: String) = "store/$id"

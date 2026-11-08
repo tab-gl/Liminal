@@ -313,6 +313,7 @@ fun ProductDetailScreen(
                             status = product.status,
                             reported = product.reported,
                             onStatus = viewModel::adminSetStatus,
+                            onRemove = { viewModel.adminRemove(onDone = onBack) },
                             onResolve = viewModel::adminResolve,
                         )
                         Spacer(Modifier.height(12.dp))
@@ -735,7 +736,30 @@ private fun AdminActions(
     reported: Boolean,
     onStatus: (app.tab.store.domain.model.ProductStatus) -> Unit,
     onResolve: (Boolean) -> Unit,
+    onRemove: () -> Unit,
 ) {
+    var confirmRemove by remember { mutableStateOf(false) }
+
+    if (confirmRemove) {
+        AlertDialog(
+            onDismissRequest = { confirmRemove = false },
+            title = { Text("Remove this app?") },
+            text = {
+                Text(
+                    "The listing and its reviews are deleted for good. Blocking keeps it " +
+                        "and only hides it from the store — use that if you may restore it.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { confirmRemove = false; onRemove() }) {
+                    Text("Remove", color = Tokens.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmRemove = false }) { Text("Cancel") }
+            },
+        )
+    }
     Surface(
         shape = SproutlyRadii.card,
         color = Tokens.colorScheme.surfaceContainerHigh,
@@ -760,8 +784,8 @@ private fun AdminActions(
                 }
                 if (reported) {
                     AdminChip("Keep") { onResolve(true) }
-                    AdminChip("Remove") { onResolve(false) }
                 }
+                AdminChip("Delete") { confirmRemove = true }
             }
         }
     }

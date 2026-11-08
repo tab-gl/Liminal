@@ -283,3 +283,102 @@ class AdminCategoriesViewModel @Inject constructor(
 
     fun consumeMessage() = _uiState.update { it.copy(message = null) }
 }
+
+data class AdminTagsUiState(
+    val tags: List<Pair<String, Int>> = emptyList(),
+    val isLoading: Boolean = true,
+    val isSaving: Boolean = false,
+    val editing: String? = null,
+    val draft: String = "",
+    val message: String? = null,
+    val error: String? = null,
+)
+
+/**
+ * Tag curation.
+ *
+ * Tags are written by whoever publishes an app, so the same idea arrives as
+ * "rpg", "RPG" and "role playing". An admin can fold one into another or drop it
+ * entirely, which is a batch edit across every listing that carries it.
+ */
+@HiltViewModel
+class AdminTagsViewModel @Inject constructor(
+    private val adminRepository: AdminRepository,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(AdminTagsUiState())
+    val uiState: StateFlow<AdminTagsUiState> = _uiState.asStateFlow()
+
+    init {
+        refresh()
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            when (val res = adminRepository.listTags()) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isLoading = false, error = res.message)
+                }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(isLoading = false, tags = res.value)
+                }
+            }
+        }
+    }
+
+    fun startEdit(tag: String) = _uiState.update { it.copy(editing = tag, draft = tag) }
+    fun onDraft(value: String) = _uiState.update { it.copy(draft = value) }
+    fun cancelEdit() = _uiState.update { it.copy(editing = null, draft = "") }
+
+    fun saveEdit() {
+        val state = _uiState.value
+        val from = state.editing ?: return
+        val to = state.draft.trim()
+        if (to.isBlank() || to.equals(from, ignoreCase = true)) {
+            cancelEdit()
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            when (val res = adminRepository.renameTag(from, to)) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isSaving = false, error = res.message)
+                }
+                is DataResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isSaving = false,
+                            editing = null,
+                            draft = "",
+                            message = "\"$from\" is now \"$to\" on ${res.value} listing(s).",
+                        )
+                    }
+                    refresh()
+                }
+            }
+        }
+    }
+
+    fun delete(tag: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            when (val res = adminRepository.deleteTag(tag)) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isSaving = false, error = res.message)
+                }
+                is DataResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isSaving = false,
+                            message = "\"$tag\" removed from ${res.value} listing(s).",
+                        )
+                    }
+                    refresh()
+                }
+            }
+        }
+    }
+
+    fun consumeMessage() = _uiState.update { it.copy(message = null, error = null) }
+}

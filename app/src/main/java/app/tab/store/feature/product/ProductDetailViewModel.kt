@@ -254,6 +254,19 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
+    /** Admin: delete the listing and its reviews. */
+    fun adminRemove(onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            when (val result = adminRepository.removeProduct(productId)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> {
+                    _uiState.update { it.copy(message = "App removed.") }
+                    onDone()
+                }
+            }
+        }
+    }
+
     fun adminResolve(keepListed: Boolean) {
         viewModelScope.launch {
             when (val result = adminRepository.resolveReport(productId, keepListed)) {

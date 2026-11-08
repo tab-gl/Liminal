@@ -51,8 +51,8 @@ data class TabDestination(
 val primaryTabs = listOf(
     TabDestination(Routes.HOME, "Apps", PhosphorIcons.Apps),
     // The controller, not a die — and scaled down, because it fills its box.
-    TabDestination(Routes.GAMES, "Games", PhosphorIcons.Gamepad, iconScale = 0.88f),
-    TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.Gift),
+    TabDestination(Routes.GAMES, "Games", PhosphorIcons.GamepadAlt, iconScale = 0.92f),
+    TabDestination(Routes.OFFERS, "Offers", PhosphorIcons.TagAlt),
 )
 
 /** You, in the right pill. Search is a FAB, not a tab. */

@@ -205,6 +205,77 @@ class AdminRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun listTags(): DataResult<List<Pair<String, Int>>> = firestoreResult {
+        // Tags live on listings as a list, so the catalogue is the index. At this
+        // size that is cheaper than maintaining a second collection.
+        val snapshot = products.limit(500).get().await()
+        snapshot.documents
+            .flatMap { doc -> (doc.get("tags") as? List<*>)?.filterIsInstance<String>() ?: emptyList() }
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .groupingBy { it }
+            .eachCount()
+            .toList()
+            .sortedByDescending { it.second }
+    }
+
+    override suspend fun renameTag(from: String, to: String): DataResult<Int> = firestoreResult {
+        val needle = from.trim()
+        val replacement = to.trim()
+        val affected = products.whereArrayContains("tags", needle).get().await()
+        affected.documents.forEach { doc ->
+            val tags = (doc.get("tags") as? List<*>)?.filterIsInstance<String>()?.toMutableList()
+                ?: return@forEach
+            val updated = tags.map { if (it.equals(needle, ignoreCase = true)) replacement else it }
+                .distinct()
+            doc.reference.update("tags", updated).await()
+        }
+        affected.size()
+    }
+
+    override suspend fun deleteTag(tag: String): DataResult<Int> = firestoreResult {
+        val needle = tag.trim()
+        val affected = products.whereArrayContains("tags", needle).get().await()
+        affected.documents.forEach { doc ->
+            val tags = (doc.get("tags") as? List<*>)?.filterIsInstance<String>() ?: return@forEach
+            doc.reference.update(
+                "tags",
+                tags.filterNot { it.equals(needle, ignoreCase = true) },
+            ).await()
+        }
+        affected.size()
+    }
+
+    override suspend fun removeProduct(productId: String): DataResult<Unit> =
+        firestoreResult {
+            val doc = products.document(productId)
+            val product = doc.get().await()
+            val title = product.stringOr("title")
+            val storeId = product.stringOr("storeId")
+
+            // The listing goes, its reviews go with it, and the studio is told.
+            // An admin needs a way to actually remove an app, not only hide it:
+            // blocking leaves a tombstone that still appears in searches.
+            firestore.collection(FirestorePaths.PRODUCTS).document(productId)
+                .collection("reviews").get().await()
+                .documents.forEach { review -> review.reference.delete().await() }
+            doc.delete().await()
+
+            if (storeId.isNotBlank()) {
+                firestore.collection(FirestorePaths.STORES).document(storeId)
+                    .collection("notifications").add(
+                        mapOf(
+                            "userId" to storeId,
+                            "title" to "App removed",
+                            "body" to "\"$title\" was removed by a moderator.",
+                            "type" to "SYSTEM",
+                            "read" to false,
+                            "createdAt" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                        ),
+                    ).await()
+            }
+        }
+
     override suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit> =
         firestoreResult {
             val product = products.document(productId).get().await()

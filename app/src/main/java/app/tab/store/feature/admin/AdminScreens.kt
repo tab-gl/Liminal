@@ -65,6 +65,7 @@ fun AdminDashboardScreen(
     onUsers: () -> Unit,
     onProducts: () -> Unit,
     onCategories: () -> Unit,
+    onTags: () -> Unit = {},
     viewModel: AdminDashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -194,6 +195,18 @@ fun AdminDashboardScreen(
                     modifier = Modifier.weight(1f),
                     onClick = onCategories,
                 )
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AdminTile(
+                    icon = PhosphorIcons.TagAlt,
+                    label = "Tags",
+                    count = "",
+                    detail = "Merge or drop duplicates",
+                    modifier = Modifier.weight(1f),
+                    onClick = onTags,
+                )
+                Spacer(Modifier.weight(1f))
             }
 
             if (state.pendingStores.isNotEmpty()) {
@@ -777,5 +790,94 @@ private fun AdminTile(
                 maxLines = 2,
             )
         }
+    }
+}
+
+/**
+ * Tag curation. Every tag in the catalogue, how many listings carry it, and two
+ * actions: fold it into another name, or remove it everywhere.
+ */
+@Composable
+fun AdminTagsScreen(
+    onBack: () -> Unit,
+    viewModel: AdminTagsViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(state.message, state.error) {
+        (state.message ?: state.error)?.let {
+            snackbar.showSnackbar(it)
+            viewModel.consumeMessage()
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 32.dp),
+        ) {
+            SproutlyTopBar(title = "Tags", onBack = onBack)
+            Text(
+                "Tags are typed by developers, so the same idea arrives several ways. " +
+                    "Fold a duplicate into one name, or drop a tag entirely.",
+                style = Tokens.typography.bodySmall,
+                color = Tokens.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(16.dp))
+
+            when {
+                state.isLoading -> {
+                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                    Spacer(Modifier.height(12.dp))
+                }
+                state.tags.isEmpty() -> EmptyState(
+                    title = "No tags yet",
+                    message = "Tags appear here once developers add them to a listing.",
+                    icon = PhosphorIcons.TagAlt,
+                )
+                else -> state.tags.forEach { (tag, count) ->
+                    Surface(
+                        shape = SproutlyRadii.card,
+                        color = Tokens.colorScheme.surface,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                    ) {
+                        Column(Modifier.padding(14.dp)) {
+                            if (state.editing == tag) {
+                                SproutlyTextField(
+                                    value = state.draft,
+                                    onValueChange = viewModel::onDraft,
+                                    label = "Rename \"$tag\" to",
+                                )
+                                Spacer(Modifier.height(10.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    AdminChip("Save") { viewModel.saveEdit() }
+                                    AdminChip("Cancel") { viewModel.cancelEdit() }
+                                }
+                            } else {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(tag, style = Tokens.typography.titleSmall)
+                                        Text(
+                                            "$count listing${if (count == 1) "" else "s"}",
+                                            style = Tokens.typography.bodySmall,
+                                            color = Tokens.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    AdminChip("Rename") { viewModel.startEdit(tag) }
+                                    Spacer(Modifier.width(8.dp))
+                                    AdminChip("Delete") { viewModel.delete(tag) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(16.dp))
     }
 }

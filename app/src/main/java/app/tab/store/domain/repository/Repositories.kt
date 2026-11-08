@@ -118,6 +118,18 @@ interface SellerRepository {
     suspend fun upsertProduct(product: Product): DataResult<String>
     suspend fun deleteProduct(productId: String): DataResult<Unit>
     suspend fun setStock(productId: String, stock: Int): DataResult<Unit>
+    /** Admin: every tag in the catalogue, with how many listings use it. */
+    suspend fun listTags(): DataResult<List<Pair<String, Int>>>
+
+    /** Admin: rename a tag everywhere. Returns how many listings changed. */
+    suspend fun renameTag(from: String, to: String): DataResult<Int>
+
+    /** Admin: remove a tag from every listing that carries it. */
+    suspend fun deleteTag(tag: String): DataResult<Int>
+
+    /** Admin: delete a listing and its reviews outright. */
+    suspend fun removeProduct(productId: String): DataResult<Unit>
+
     suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit>
 
     fun observeStats(storeId: String): Flow<SellerStats>
@@ -135,6 +147,18 @@ interface AdminRepository {
     fun observeUsers(): Flow<List<User>>
     suspend fun setUserRole(uid: String, role: app.tab.store.domain.model.UserRole): DataResult<Unit>
     fun observeReportedProducts(): Flow<List<Product>>
+    /** Admin: every tag in the catalogue, with how many listings use it. */
+    suspend fun listTags(): DataResult<List<Pair<String, Int>>>
+
+    /** Admin: rename a tag everywhere. Returns how many listings changed. */
+    suspend fun renameTag(from: String, to: String): DataResult<Int>
+
+    /** Admin: remove a tag from every listing that carries it. */
+    suspend fun deleteTag(tag: String): DataResult<Int>
+
+    /** Admin: delete a listing and its reviews outright. */
+    suspend fun removeProduct(productId: String): DataResult<Unit>
+
     suspend fun setProductStatus(productId: String, status: ProductStatus): DataResult<Unit>
 
     /** Clears the flag once a moderator has looked, telling the developer. */
