@@ -9,6 +9,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -390,14 +395,29 @@ fun SnackbarHost(hostState: SnackbarHostState, modifier: Modifier = Modifier) {
     AnimatedVisibility(
         visible = message != null,
         enter = fadeIn() + slideInVertically { it / 3 },
-        exit = fadeOut(),
+        exit = fadeOut() + slideOutVertically { it },
         modifier = modifier,
     ) {
+        // Swipe down (or tap) to dismiss. A snackbar that only disappears on a
+        // timer sits over whatever you were about to press.
+        var offsetY by remember { mutableStateOf(0f) }
         Box(
             Modifier
                 .padding(horizontal = 16.dp, vertical = 12.dp)
+                .graphicsLayer { translationY = offsetY }
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragEnd = {
+                            if (offsetY > 40.dp.toPx()) hostState.dismiss() else offsetY = 0f
+                        },
+                        onDragCancel = { offsetY = 0f },
+                    ) { _, dragAmount ->
+                        offsetY = (offsetY + dragAmount).coerceAtLeast(0f)
+                    }
+                }
                 .clip(CircleShape)
                 .background(Tokens.colorScheme.inverseSurface)
+                .clickable { hostState.dismiss() }
                 .padding(horizontal = 18.dp, vertical = 14.dp),
         ) {
             Text(
@@ -519,13 +539,10 @@ fun ModalBottomSheet(
                         .clip(CircleShape)
                         .background(Tokens.colorScheme.outlineVariant),
                 )
-                // Tall content scrolls rather than running off the top of the
-                // screen, which is what hid the account switcher's rows.
-                Column(
-                    modifier = Modifier
-                        .heightIn(max = 620.dp)
-                        .verticalScroll(rememberScrollState()),
-                ) {
+                // Capped, but not scrolled here: the sheets that need scrolling
+                // bring their own. Wrapping a scrollable in another scrollable is
+                // measured with infinite height and crashes on open.
+                Column(modifier = Modifier.heightIn(max = 640.dp)) {
                     content()
                 }
             }
@@ -695,7 +712,12 @@ fun OutlinedTextField(
                 ) { it() }
                 Spacer(Modifier.width(6.dp))
             }
-            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+            Box(
+                Modifier
+                    .weight(1f)
+                    .wrapContentHeight(Alignment.CenterVertically),
+                contentAlignment = Alignment.CenterStart,
+            ) {
                 if (value.isEmpty() && placeholder != null) {
                     androidx.compose.runtime.CompositionLocalProvider(
                         LocalContentColor provides colors.unfocusedPlaceholderColor,
@@ -750,7 +772,12 @@ fun TextField(
             it()
             Spacer(Modifier.width(10.dp))
         }
-        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+        Box(
+            Modifier
+                .weight(1f)
+                .wrapContentHeight(Alignment.CenterVertically),
+            contentAlignment = Alignment.CenterStart,
+        ) {
             if (value.isEmpty() && placeholder != null) {
                 androidx.compose.runtime.CompositionLocalProvider(
                     LocalContentColor provides colors.unfocusedPlaceholderColor,

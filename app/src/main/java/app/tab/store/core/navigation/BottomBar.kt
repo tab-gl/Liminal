@@ -243,8 +243,7 @@ private fun FloatingTab(
                     tint = content,
                 )
                 SproutlyIcon(
-                    icon = tab.iconFilled,
-                    contentDescription = null,
+                    icon = tab.icon,
                     modifier = Modifier
                         .size(24.dp)
                         .graphicsLayer {

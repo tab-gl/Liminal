@@ -87,7 +87,11 @@ DRAWABLE = """<?xml version="1.0" encoding="utf-8"?>
 </vector>
 """
 
+# Phosphor draws its holes with reverse-wound subpaths. Android's default
+# nonZero fill turns those into solid blobs, which is why the filled glyphs came
+# out malformed; evenOdd punches the holes back out.
 PATH = """    <path
+        android:fillType="evenOdd"
         android:pathData="{d}"
         android:fillColor="#FF000000" />
 """
