@@ -55,7 +55,10 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Materialise the Gradle wrapper
-        run: gradle wrapper --gradle-version 8.14.3 --distribution-type bin
+        # --no-validate-url: the wrapper task HEADs the distribution URL first, and
+        # when services.gradle.org is slow that check fails the whole build before
+        # a single line of code is compiled.
+        run: gradle wrapper --gradle-version 8.14.3 --distribution-type bin --no-validate-url
 
       - name: Use google-services.json from secrets (optional)
         env:
