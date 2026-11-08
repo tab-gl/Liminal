@@ -347,14 +347,11 @@ service cloud.firestore {
         && unchanged('ratingCount')
         // Being on the front page is the store's call, not the seller's.
         && unchanged('featured')
-        // Publishing is gated on the store being approved — unless the build came
-        // back clean from Sprout Safe (score of 50 or below), in which case it may
-        // go live on its own. The score is client-reported, so this is a quality
-        // gate, not a security boundary: it shortens the queue for ordinary apps.
-        // A listing never goes live on the strength of the client's own scan.
-        // scanScore and scanRisk come from the app, so a modified client could
-        // claim anything; publishing is now a decision an admin makes.
-        && request.resource.data.status != 'ACTIVE' 
+        // A seller may keep editing a live listing, but cannot move one INTO
+        // ACTIVE: going live is an admin's decision, because the scan that used to
+        // justify it came from the client.
+        && (resource.data.status == 'ACTIVE'
+            || request.resource.data.status != 'ACTIVE')
         && validProduct()
         && paidNeedsVerification();
 
