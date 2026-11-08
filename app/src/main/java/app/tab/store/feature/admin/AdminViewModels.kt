@@ -10,6 +10,7 @@ import app.tab.store.domain.model.StoreStatus
 import app.tab.store.domain.model.User
 import app.tab.store.domain.model.UserRole
 import app.tab.store.domain.repository.AdminRepository
+import app.tab.store.domain.repository.CatalogRepository
 import app.tab.store.domain.repository.DataResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -326,6 +327,9 @@ data class AdminTagsUiState(
 @HiltViewModel
 class AdminTagsViewModel @Inject constructor(
     private val adminRepository: AdminRepository,
+    // Categories are read through the catalogue; the admin repository only edits
+    // them.
+    private val catalogRepository: CatalogRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdminTagsUiState())
@@ -340,7 +344,7 @@ class AdminTagsViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             // Categories, not free-text tags: the shelf a listing sits on is what a
             // shopper filters by, and it is what needs curating.
-            val categories = adminRepository.observeCategories().first()
+            val categories = catalogRepository.observeCategories().first()
             _uiState.update {
                 it.copy(
                     isLoading = false,
