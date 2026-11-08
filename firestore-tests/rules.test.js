@@ -205,12 +205,18 @@ describe("paid apps", () => {
     );
   });
 
-  it("allows it once the store is verified", async () => {
+  it("allows a paid listing to be submitted once the store is verified", async () => {
     await env.withSecurityRulesDisabled(async (context) => {
       await updateDoc(doc(context.firestore(), "stores", STORE), { verified: true });
     });
     await assertSucceeds(
-      setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "ACTIVE" })),
+      setDoc(doc(dev(), "products", "paid1"), product({ price: 9900, status: "PENDING" })),
+    );
+  });
+
+  it("lets an admin approve a submitted paid listing", async () => {
+    await assertSucceeds(
+      updateDoc(doc(admin(), "products", "paid1"), { status: "ACTIVE" }),
     );
   });
 
@@ -608,10 +614,10 @@ describe("publishing shape", () => {
     );
   });
 
-  it("a live listing with a build is accepted", async () => {
+  it("a submitted listing with a build is accepted", async () => {
     await assertSucceeds(
       setDoc(doc(dev(), "products", "live-with-build"), product({
-        status: "ACTIVE",
+        status: "PENDING",
         apkUrl: "https://sproutly-apk-upload.example.workers.dev/apks/x/app.apk",
       })),
     );
