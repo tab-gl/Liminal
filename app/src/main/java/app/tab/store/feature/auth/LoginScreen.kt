@@ -78,7 +78,7 @@ fun LoginScreen(
                 BrandMark(size = 40.dp)
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    text = "Sproutly",
+                    text = "Liminal",
                     style = Tokens.typography.headlineSmall,
                     color = SproutlyPalette.OliveDeep,
                 )
@@ -222,7 +222,7 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "New to Sproutly?",
+                    "New to Liminal?",
                     style = Tokens.typography.bodyMedium,
                     color = Tokens.colorScheme.onSurfaceVariant,
                 )
@@ -232,7 +232,7 @@ fun LoginScreen(
             }
             Spacer(Modifier.height(10.dp))
             Text(
-                "By continuing you agree to Sproutly's Terms of Service and Privacy Policy. " +
+                "By continuing you agree to Liminal's Terms of Service and Privacy Policy. " +
                     "Tap to read either.",
                 style = Tokens.typography.bodySmall,
                 color = Tokens.colorScheme.onSurfaceVariant,

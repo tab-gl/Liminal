@@ -933,7 +933,7 @@ private fun ApkSourcePicker(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Uploaded to Sproutly. 100 MB max.",
+                    "Uploaded to Liminal. 100 MB max.",
                     style = Tokens.typography.bodySmall,
                     color = Tokens.colorScheme.onSurfaceVariant,
                 )

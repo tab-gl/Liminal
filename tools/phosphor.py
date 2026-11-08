@@ -53,6 +53,7 @@ ICONS = {
     "Share": ("regular", "share-network"),
     "Sparkles": ("regular", "sparkle"),
     "Star": ("regular", "star"),
+    "StarFilled": ("fill", "star-fill"),
     "Store": ("regular", "storefront"),
     "Tag": ("regular", "tag"),
     "Tick": ("regular", "check"),

@@ -211,7 +211,7 @@ private fun SettingsContent(
                         Spacer(Modifier.height(10.dp))
                     }
                     Spacer(Modifier.height(10.dp))
-                    Text("Sproutly ${app.tab.store.BuildConfig.VERSION_NAME}", style = Tokens.typography.titleSmall)
+                    Text("Liminal ${app.tab.store.BuildConfig.VERSION_NAME}", style = Tokens.typography.titleSmall)
                     Text(
                         "An app store for independent developers.",
                         style = Tokens.typography.bodySmall,

@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Sproutly brand palette -->
-    <color name="sproutly_lime">#DBE6A1</color>
-    <color name="sproutly_olive">#3F4C06</color>
-    <color name="sproutly_espresso">#3C3130</color>
-    <color name="sproutly_cream">#FAFBF4</color>
-    <color name="sproutly_ink">#23201A</color>
+    <!-- Liminal palette, in Porcelain roles. The sproutly_* names are kept because
+         the manifest and the notification icon refer to them. -->
+    <color name="sproutly_lime">#FFD7263D</color>
+    <color name="sproutly_olive">#FF111111</color>
+    <color name="sproutly_espresso">#FF111111</color>
+    <color name="sproutly_cream">#FFFAFAF8</color>
+    <color name="sproutly_ink">#FF111111</color>
     <color name="sproutly_white">#FFFFFFFF</color>
     <color name="sproutly_black">#FF000000</color>
+    <!-- The icon field: ink, so the white mark reads on any wallpaper. -->
+    <color name="liminal_ink">#FF111111</color>
 </resources>

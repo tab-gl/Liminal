@@ -48,7 +48,7 @@ fun DocumentReference.snapshotFlow(): Flow<DocumentSnapshot> = callbackFlow {
  * Now the stream degrades to [fallback] and the screen shows its empty state.
  */
 fun <T> Flow<T>.orFallback(fallback: T): Flow<T> = catch { throwable ->
-    Log.w("SproutlyFirestore", "stream failed, falling back to empty state", throwable)
+    Log.w("LiminalFirestore", "stream failed, falling back to empty state", throwable)
     AppErrors.report(throwable)
     emit(fallback)
 }

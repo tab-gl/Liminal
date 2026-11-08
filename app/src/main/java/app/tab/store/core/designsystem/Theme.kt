@@ -8,6 +8,7 @@ import app.tab.store.core.theme.ThemeMode
 import app.tab.store.core.ui.ProvideTokens
 import app.tab.store.core.ui.Tokens
 import app.tab.store.core.ui.lightScheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -18,68 +19,67 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 private val LightColors = lightScheme(
-    primary = SproutlyPalette.Olive,
-    onPrimary = SproutlyPalette.LimeTint,
-    primaryContainer = SproutlyPalette.Lime,
-    onPrimaryContainer = SproutlyPalette.OliveDeep,
-    secondary = SproutlyPalette.Moss,
-    onSecondary = SproutlyPalette.Paper,
-    secondaryContainer = SproutlyPalette.LimeSoft,
-    onSecondaryContainer = SproutlyPalette.OliveDeep,
-    tertiary = SproutlyPalette.Espresso,
-    onTertiary = SproutlyPalette.Cream,
-    tertiaryContainer = SproutlyPalette.ClaySoft,
-    onTertiaryContainer = SproutlyPalette.Clay,
-    background = SproutlyPalette.Cream,
+    // Red is the interaction colour: install, offer, destructive. Ink carries
+    // everything else, which is the whole point of a monochrome base.
+    primary = SproutlyPalette.Accent,
+    onPrimary = SproutlyPalette.Surface,
+    primaryContainer = SproutlyPalette.AccentSoft,
+    onPrimaryContainer = SproutlyPalette.AccentPressed,
+    secondary = SproutlyPalette.Ink,
+    onSecondary = SproutlyPalette.Surface,
+    secondaryContainer = SproutlyPalette.SurfaceSubtle,
+    onSecondaryContainer = SproutlyPalette.Ink,
+    tertiary = SproutlyPalette.InkSecondary,
+    onTertiary = SproutlyPalette.Surface,
+    tertiaryContainer = SproutlyPalette.SurfaceSubtle,
+    onTertiaryContainer = SproutlyPalette.Ink,
+    background = SproutlyPalette.Canvas,
     onBackground = SproutlyPalette.Ink,
-    surface = SproutlyPalette.Paper,
+    surface = SproutlyPalette.Surface,
     onSurface = SproutlyPalette.Ink,
-    surfaceVariant = SproutlyPalette.LimeTint,
+    surfaceVariant = SproutlyPalette.SurfaceSubtle,
     onSurfaceVariant = SproutlyPalette.InkMuted,
-    surfaceContainer = SproutlyPalette.LimeTint,
-    surfaceContainerHigh = SproutlyPalette.LimeSoft,
-    outline = SproutlyPalette.Outline,
-    outlineVariant = SproutlyPalette.LimeSoft,
-    error = SproutlyPalette.Berry,
-    onError = SproutlyPalette.Paper,
-    errorContainer = SproutlyPalette.ClaySoft,
-    onErrorContainer = SproutlyPalette.Clay,
-    inverseSurface = SproutlyPalette.Espresso,
-    inverseOnSurface = SproutlyPalette.Cream,
+    surfaceContainer = SproutlyPalette.SurfaceSubtle,
+    surfaceContainerHigh = SproutlyPalette.SurfaceSubtle,
+    outline = SproutlyPalette.Border,
+    outlineVariant = SproutlyPalette.Border,
+    error = SproutlyPalette.Error,
+    onError = SproutlyPalette.Surface,
+    errorContainer = SproutlyPalette.AccentSoft,
+    onErrorContainer = SproutlyPalette.Error,
+    inverseSurface = SproutlyPalette.Ink,
+    inverseOnSurface = SproutlyPalette.Canvas,
 )
 
-private val ColorTokens_DarkMuted = androidx.compose.ui.graphics.Color(0xFFB9B7A6)
-private val ColorTokens_DarkError = androidx.compose.ui.graphics.Color(0xFFE8A99A)
-
 private val DarkColors = lightScheme(
-    primary = SproutlyPalette.Lime,
-    onPrimary = SproutlyPalette.OliveDeep,
-    primaryContainer = SproutlyPalette.Olive,
-    onPrimaryContainer = SproutlyPalette.Lime,
-    secondary = SproutlyPalette.Moss,
-    onSecondary = SproutlyPalette.EspressoDeep,
-    secondaryContainer = SproutlyPalette.OliveDeep,
-    onSecondaryContainer = SproutlyPalette.Lime,
-    tertiary = SproutlyPalette.ClaySoft,
-    onTertiary = SproutlyPalette.Clay,
-    tertiaryContainer = SproutlyPalette.EspressoSoft,
-    onTertiaryContainer = SproutlyPalette.ClaySoft,
-    background = SproutlyPalette.EspressoDeep,
-    onBackground = SproutlyPalette.Cream,
-    surface = SproutlyPalette.EspressoMid,
-    onSurface = SproutlyPalette.Cream,
-    surfaceVariant = SproutlyPalette.Espresso,
-    onSurfaceVariant = ColorTokens_DarkMuted,
-    surfaceContainer = SproutlyPalette.Espresso,
-    surfaceContainerHigh = SproutlyPalette.EspressoSoft,
-    outline = SproutlyPalette.OutlineDark,
-    outlineVariant = SproutlyPalette.EspressoSoft,
-    error = ColorTokens_DarkError,
-    onError = SproutlyPalette.EspressoDeep,
-    errorContainer = SproutlyPalette.EspressoSoft,
-    onErrorContainer = SproutlyPalette.ClaySoft,
-    inverseSurface = SproutlyPalette.Cream,
-    inverseOnSurface = SproutlyPalette.Ink,
+    primary = SproutlyPalette.AccentDark,
+    onPrimary = Color(0xFF1A0A0D),
+    primaryContainer = SproutlyPalette.AccentSoftDark,
+    onPrimaryContainer = SproutlyPalette.AccentDark,
+    secondary = SproutlyPalette.InkDark,
+    onSecondary = SproutlyPalette.CanvasDark,
+    secondaryContainer = SproutlyPalette.SurfaceSubtleDark,
+    onSecondaryContainer = SproutlyPalette.InkDark,
+    tertiary = SproutlyPalette.InkSecondaryDark,
+    onTertiary = SproutlyPalette.CanvasDark,
+    tertiaryContainer = SproutlyPalette.SurfaceSubtleDark,
+    onTertiaryContainer = SproutlyPalette.InkDark,
+    background = SproutlyPalette.CanvasDark,
+    onBackground = SproutlyPalette.InkDark,
+    surface = SproutlyPalette.SurfaceDark,
+    onSurface = SproutlyPalette.InkDark,
+    surfaceVariant = SproutlyPalette.SurfaceSubtleDark,
+    onSurfaceVariant = SproutlyPalette.InkMutedDark,
+    surfaceContainer = SproutlyPalette.SurfaceSubtleDark,
+    surfaceContainerHigh = SproutlyPalette.SurfaceSubtleDark,
+    outline = SproutlyPalette.BorderDark,
+    outlineVariant = SproutlyPalette.BorderDark,
+    error = SproutlyPalette.ErrorDark,
+    onError = Color(0xFF1A0A0D),
+    errorContainer = SproutlyPalette.AccentSoftDark,
+    onErrorContainer = SproutlyPalette.ErrorDark,
+    inverseSurface = SproutlyPalette.InkDark,
+    inverseOnSurface = SproutlyPalette.CanvasDark,
 )
 
 /** Spacing scale — every screen composes from these, never from magic numbers. */
@@ -127,17 +127,18 @@ fun SproutlyTheme(
     val colors = if (darkTheme) DarkColors else LightColors
     val extra = if (darkTheme) {
         SproutlyExtra(
-            skeleton = SproutlyPalette.EspressoSoft,
-            skeletonHighlight = SproutlyPalette.Espresso,
+            skeleton = SproutlyPalette.SurfaceSubtleDark,
+            skeletonHighlight = SproutlyPalette.SurfaceDark,
+            // A rating star is not an interaction: it stays gold in both themes.
             ratingGold = SproutlyPalette.Gold,
-            success = SproutlyPalette.Lime,
+            success = SproutlyPalette.SuccessDark,
         )
     } else {
         SproutlyExtra(
-            skeleton = SproutlyPalette.LimeSoft,
-            skeletonHighlight = SproutlyPalette.Paper,
+            skeleton = SproutlyPalette.SurfaceSubtle,
+            skeletonHighlight = SproutlyPalette.Surface,
             ratingGold = SproutlyPalette.Gold,
-            success = SproutlyPalette.OliveMid,
+            success = SproutlyPalette.Success,
         )
     }
 

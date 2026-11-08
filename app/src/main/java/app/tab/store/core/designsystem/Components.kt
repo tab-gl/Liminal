@@ -795,14 +795,14 @@ fun BrandMark(
         modifier = modifier
             .size(size)
             .clip(RoundedCornerShape(size / 4))
-            .background(SproutlyPalette.Lime),
+            .background(SproutlyPalette.Ink),
         contentAlignment = Alignment.Center,
     ) {
         androidx.compose.foundation.Image(
             painter = androidx.compose.ui.res.painterResource(
                 id = app.tab.store.R.drawable.ic_sproutly_mark,
             ),
-            contentDescription = "Sproutly",
+            contentDescription = "Liminal",
             modifier = Modifier
                 .fillMaxSize(0.86f)
                 .graphicsLayer {
@@ -826,7 +826,7 @@ fun BrandWordmark(
         BrandMark(size = markSize, animateLeaf = animateLeaf, leafKey = leafKey)
         Spacer(Modifier.width(9.dp))
         Text(
-            text = "Sproutly",
+            text = "Liminal",
             style = Tokens.typography.headlineMedium,
             color = Tokens.colorScheme.onBackground,
         )

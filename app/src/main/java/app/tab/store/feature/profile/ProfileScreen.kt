@@ -85,7 +85,7 @@ fun ProfileScreen(
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        user?.displayName?.ifBlank { "Sproutly shopper" } ?: "Sproutly shopper",
+                        user?.displayName?.ifBlank { "Liminal shopper" } ?: "Liminal shopper",
                         style = Tokens.typography.headlineSmall,
                         color = SproutlyPalette.OliveDeep,
                     )
@@ -188,7 +188,7 @@ fun ProfileScreen(
             }
             Spacer(Modifier.height(28.dp))
             Text(
-                "Sproutly · v${app.tab.store.BuildConfig.VERSION_NAME} " +
+                "Liminal · v${app.tab.store.BuildConfig.VERSION_NAME} " +
                     "(${app.tab.store.BuildConfig.VERSION_CODE})",
                 style = Tokens.typography.bodySmall,
                 color = Tokens.colorScheme.onSurfaceVariant,
@@ -219,7 +219,7 @@ fun ProfileScreen(
             onFeedback = {
                 val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
                     data = android.net.Uri.parse("mailto:support@sproutly.app")
-                    putExtra(android.content.Intent.EXTRA_SUBJECT, "Sproutly feedback")
+                    putExtra(android.content.Intent.EXTRA_SUBJECT, "Liminal feedback")
                 }
                 runCatching { context.startActivity(intent) }
             },

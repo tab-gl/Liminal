@@ -87,7 +87,7 @@ fun ProductDetailScreen(
             type = "text/plain"
             putExtra(
                 android.content.Intent.EXTRA_TEXT,
-                "${product.title} on Sproutly — ${Routes.shareLink(product.id)}",
+                "${product.title} on Liminal — ${Routes.shareLink(product.id)}",
             )
         }
         context.startActivity(
@@ -132,8 +132,9 @@ fun ProductDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    // Room for the pinned install bar.
-                    .padding(bottom = 96.dp),
+                    // Room for the pinned install bar, which is 54dp plus its own
+                    // padding and the gesture area.
+                    .padding(bottom = 140.dp),
             ) {
                 Box {
                     val pagerState = rememberPagerState(
@@ -227,7 +228,7 @@ fun ProductDetailScreen(
 
                 Column(Modifier.padding(20.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        SproutlyTag(product.categoryLabel.ifBlank { "Sproutly" })
+                        SproutlyTag(product.categoryLabel.ifBlank { "Liminal" })
                         if (product.status == app.tab.store.domain.model.ProductStatus.BLOCKED) {
                             Spacer(Modifier.width(6.dp))
                             SproutlyTag(
@@ -290,7 +291,7 @@ fun ProductDetailScreen(
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    product.storeName.ifBlank { "Sproutly developer" },
+                                    product.storeName.ifBlank { "Liminal developer" },
                                     style = Tokens.typography.titleSmall,
                                 )
                                 Text(
@@ -356,7 +357,7 @@ fun ProductDetailScreen(
                     if (state.needsInstallPermission) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Android needs permission to install apps from Sproutly.",
+                            "Android needs permission to install apps from Liminal.",
                             style = Tokens.typography.bodySmall,
                             color = Tokens.colorScheme.onSurfaceVariant,
                         )
@@ -465,7 +466,7 @@ fun ProductDetailScreen(
                                 Text("Sprout Safe", style = Tokens.typography.titleSmall)
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    "This build was not scanned, so Sproutly cannot say what " +
+                                    "This build was not scanned, so Liminal cannot say what " +
                                         "it can reach. Install it at your own discretion.",
                                     style = Tokens.typography.bodySmall,
                                     color = Tokens.colorScheme.onSurfaceVariant,
@@ -717,12 +718,18 @@ private fun RatingRow(
     val mine = summary.mine?.rating ?: 0
     val shown = mine.takeIf { it > 0 } ?: summary.average.roundToInt()
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(summary.display, style = Tokens.typography.titleMedium)
+        // With no ratings there is no average to show: "—" rather than "0.0".
+        Text(
+            if (summary.hasRatings) summary.display else "—",
+            style = Tokens.typography.titleMedium,
+        )
         Spacer(Modifier.width(6.dp))
         repeat(5) { index ->
             val star = index + 1
             SproutlyIcon(
-                icon = PhosphorIcons.Star,
+                // A filled glyph for a star you have, an outline for one you do
+                // not. Tinting an outline star does not read as filled.
+                icon = if (star <= shown) PhosphorIcons.StarFilled else PhosphorIcons.Star,
                 contentDescription = if (mine > 0) "Your rating" else null,
                 modifier = Modifier
                     .size(18.dp)

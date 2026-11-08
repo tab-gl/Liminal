@@ -175,7 +175,7 @@ class ProductDetailViewModel @Inject constructor(
                         is AppInstaller.Outcome.Installed -> "Installed. Open it below."
                         is AppInstaller.Outcome.Launched -> "Android is installing it now."
                         is AppInstaller.Outcome.NeedsPermission ->
-                            "Allow Sproutly to install apps, then come back to finish."
+                            "Allow Liminal to install apps, then come back to finish."
                         is AppInstaller.Outcome.Failed -> outcome.message
                     },
                     needsInstallPermission = outcome is AppInstaller.Outcome.NeedsPermission,

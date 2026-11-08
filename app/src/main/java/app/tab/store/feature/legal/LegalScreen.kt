@@ -102,11 +102,11 @@ private val terms = listOf(
         "Every build is scanned when it is uploaded; the scan is shown to people " +
         "before they install.",
     "Installing" to
-        "Installs happen through Android's own installer. Sproutly hands it the " +
+        "Installs happen through Android's own installer. Liminal hands it the " +
         "build and asks Android for permission; it never installs anything quietly.",
     "Moderation" to
         "A listing can be removed if it breaks these terms or if it is reported and " +
         "the report holds up. You will be told which and why.",
     "Money" to
-        "Paid apps need a verified developer profile. Sproutly takes no cut today.",
+        "Paid apps need a verified developer profile. Liminal takes no cut today.",
 )

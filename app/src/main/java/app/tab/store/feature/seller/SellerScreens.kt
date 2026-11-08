@@ -200,7 +200,7 @@ fun SellerDashboardScreen(
         if (state.needsStore) {
             EmptyState(
                 title = "No developer profile yet",
-                message = "Open a developer profile to start publishing apps on Sproutly.",
+                message = "Open a developer profile to start publishing apps on Liminal.",
                 icon = PhosphorIcons.Store,
                 actionLabel = "Get started",
                 onAction = onSetupStore,

@@ -132,7 +132,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     title = "That is\nall we\nneed",
                     body = "You can change every one of these later in Settings.",
                     icon = PhosphorIcons.Tick,
-                    primary = "Open Sproutly" to onDone,
+                    primary = "Open Liminal" to onDone,
                     secondary = null,
                 )
             }

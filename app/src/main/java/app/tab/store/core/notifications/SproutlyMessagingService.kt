@@ -39,7 +39,7 @@ class SproutlyMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         val title = message.notification?.title
             ?: message.data["title"]
-            ?: "Sproutly"
+            ?: "Liminal"
         val body = message.notification?.body
             ?: message.data["body"]
             ?: return

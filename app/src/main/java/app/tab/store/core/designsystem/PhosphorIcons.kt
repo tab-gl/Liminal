@@ -29,6 +29,10 @@ object PhosphorIcons {
     @DrawableRes val Favourite = R.drawable.ic_ph_favourite
     @DrawableRes val Filter = R.drawable.ic_ph_filter
     @DrawableRes val Gamepad = R.drawable.ic_ph_gamepad
+    /** Drawn from the supplied reference: an outlined gamepad. */
+    @DrawableRes val GamepadAlt = R.drawable.ic_ph_gamepad_alt
+    /** Drawn from the supplied reference: an outlined price tag. */
+    @DrawableRes val TagAlt = R.drawable.ic_ph_tag_alt
     @DrawableRes val Gift = R.drawable.ic_ph_gift
     @DrawableRes val Grid = R.drawable.ic_ph_grid
     @DrawableRes val Home = R.drawable.ic_ph_home
@@ -44,12 +48,9 @@ object PhosphorIcons {
     @DrawableRes val Share = R.drawable.ic_ph_share
     @DrawableRes val Sparkles = R.drawable.ic_ph_sparkles
     @DrawableRes val Star = R.drawable.ic_ph_star
+    @DrawableRes val StarFilled = R.drawable.ic_ph_star_filled
     @DrawableRes val Store = R.drawable.ic_ph_store
     @DrawableRes val Tag = R.drawable.ic_ph_tag
-    /** Drawn from the supplied reference: an outlined price tag. */
-    @DrawableRes val TagAlt = R.drawable.ic_ph_tag_alt
-    /** Drawn from the supplied reference: an outlined gamepad. */
-    @DrawableRes val GamepadAlt = R.drawable.ic_ph_gamepad_alt
     @DrawableRes val Tick = R.drawable.ic_ph_tick
     @DrawableRes val Trash = R.drawable.ic_ph_trash
     @DrawableRes val Upload = R.drawable.ic_ph_upload
