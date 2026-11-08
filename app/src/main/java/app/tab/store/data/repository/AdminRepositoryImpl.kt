@@ -1,6 +1,7 @@
 package app.tab.store.data.repository
 
 import app.tab.store.core.firebase.firestoreResult
+import app.tab.store.core.firebase.firestoreResultOf
 import app.tab.store.core.firebase.orFallback
 import app.tab.store.core.firebase.snapshotFlow
 import app.tab.store.core.firebase.toUserMessage
@@ -205,7 +206,7 @@ class AdminRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun listTags(): DataResult<List<Pair<String, Int>>> = firestoreResult {
+    override suspend fun listTags(): DataResult<List<Pair<String, Int>>> = firestoreResultOf {
         // Tags live on listings as a list, so the catalogue is the index. At this
         // size that is cheaper than maintaining a second collection.
         val snapshot = products.limit(500).get().await()
@@ -219,7 +220,7 @@ class AdminRepositoryImpl @Inject constructor(
             .sortedByDescending { it.second }
     }
 
-    override suspend fun renameTag(from: String, to: String): DataResult<Int> = firestoreResult {
+    override suspend fun renameTag(from: String, to: String): DataResult<Int> = firestoreResultOf {
         val needle = from.trim()
         val replacement = to.trim()
         val affected = products.whereArrayContains("tags", needle).get().await()
@@ -233,7 +234,7 @@ class AdminRepositoryImpl @Inject constructor(
         affected.size()
     }
 
-    override suspend fun deleteTag(tag: String): DataResult<Int> = firestoreResult {
+    override suspend fun deleteTag(tag: String): DataResult<Int> = firestoreResultOf {
         val needle = tag.trim()
         val affected = products.whereArrayContains("tags", needle).get().await()
         affected.documents.forEach { doc ->
