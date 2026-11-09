@@ -166,6 +166,7 @@ fun SellerDashboardScreen(
     onOrders: () -> Unit,
     onAnalytics: () -> Unit,
     onStoreEdit: () -> Unit,
+    onVerification: () -> Unit = {},
     onSetupStore: () -> Unit,
     viewModel: SellerDashboardViewModel = hiltViewModel(),
 ) {
@@ -484,7 +485,9 @@ fun SellerDashboardScreen(
                         else -> "Needed for paid apps"
                     },
                     modifier = Modifier.weight(1f),
-                    onClick = onStoreEdit,
+                    // Its own screen: opening the store editor from here meant two
+                    // tiles led to the same page.
+                    onClick = onVerification,
                 )
                 Bento(
                     icon = PhosphorIcons.Receipt,
@@ -955,4 +958,100 @@ private enum class SellerTab(val label: String, val icon: Int) {
     APPS("Apps", PhosphorIcons.Grid),
     OFFERS("Offers", PhosphorIcons.Gift),
     INSTALLS("Installs", PhosphorIcons.Receipt),
+}
+
+/**
+ * Verification, on its own page.
+ *
+ * It used to be a tile that opened the store editor, which made two tiles do the
+ * same thing and left the one question people actually have — "am I verified, and
+ * if not, what do I do?" — answered nowhere.
+ */
+@Composable
+fun SellerVerificationScreen(
+    onBack: () -> Unit,
+    viewModel: SellerDashboardViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val store = state.store
+    val verified = store?.verified == true
+    val pending = store?.verificationStatus == "PENDING"
+
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        SproutlyTopBar(title = "Verification", onBack = onBack)
+        Column(Modifier.padding(horizontal = 20.dp)) {
+            Surface(
+                shape = SproutlyRadii.hero,
+                color = if (verified) Tokens.colorScheme.primaryContainer
+                else Tokens.colorScheme.surfaceContainerLow,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(20.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SproutlyIcon(
+                            if (verified) PhosphorIcons.Verified else PhosphorIcons.Tag,
+                            contentDescription = null,
+                            modifier = Modifier.size(22.dp),
+                            tint = Tokens.colorScheme.primary,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            when {
+                                verified -> "Verified"
+                                pending -> "In review"
+                                else -> "Not verified"
+                            },
+                            style = Tokens.typography.titleMedium,
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        when {
+                            verified ->
+                                "Your studio is verified. You can publish paid apps, and your " +
+                                    "listings carry the badge."
+                            pending ->
+                                "Your request is with the team. You can keep publishing free " +
+                                    "apps while you wait."
+                            else ->
+                                "Free apps need no verification. Paid apps do: it is how a buyer " +
+                                    "knows who they are paying."
+                        },
+                        style = Tokens.typography.bodyMedium,
+                        color = Tokens.colorScheme.onSurfaceVariant,
+                    )
+                    if (!verified && !pending) {
+                        Spacer(Modifier.height(16.dp))
+                        SproutlyButton(
+                            text = "Request verification",
+                            onClick = { viewModel.requestVerification() },
+                            loading = state.isLoading,
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "What we check",
+                style = Tokens.typography.titleSmall,
+            )
+            Spacer(Modifier.height(6.dp))
+            listOf(
+                "That you own the studio name you publish under.",
+                "That a paid listing has a working build attached.",
+                "That nothing you have published is under moderation.",
+            ).forEach { line ->
+                Row(Modifier.padding(vertical = 4.dp)) {
+                    Text("·", style = Tokens.typography.bodyMedium, color = Tokens.colorScheme.primary)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        line,
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Spacer(Modifier.height(30.dp))
+        }
+    }
 }

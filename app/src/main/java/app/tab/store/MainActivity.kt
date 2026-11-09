@@ -39,7 +39,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val state by authViewModel.uiState.collectAsState()
             val themeMode by themePreference.mode.collectAsState()
-            SproutlyTheme(mode = themeMode) {
+            val accent by themePreference.accent.collectAsState()
+            SproutlyTheme(mode = themeMode, accent = accent) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     // While the session is being restored there is no user yet.
                     // Rendering the nav host here would flash the sign-in screen

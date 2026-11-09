@@ -126,8 +126,17 @@ fun ProfileScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            StatTile("Installs", state.orderCount.toString(), Modifier.weight(1f))
-            StatTile("Wishlist", state.wishlistCount.toString(), Modifier.weight(1f))
+            // A dash while the first snapshot is on its way, not a zero.
+            StatTile(
+                "Installs",
+                if (state.countsLoaded) state.orderCount.toString() else "—",
+                Modifier.weight(1f),
+            )
+            StatTile(
+                "Wishlist",
+                if (state.countsLoaded) state.wishlistCount.toString() else "—",
+                Modifier.weight(1f),
+            )
         }
 
         Column(Modifier.padding(horizontal = 20.dp)) {

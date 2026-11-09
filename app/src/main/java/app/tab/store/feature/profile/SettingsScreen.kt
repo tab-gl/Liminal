@@ -28,6 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.tab.store.core.theme.AccentOption
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import app.tab.store.core.theme.ThemeMode
 import app.tab.store.core.designsystem.BrandMark
 import app.tab.store.core.designsystem.SproutlyPalette
@@ -46,6 +51,7 @@ fun SettingsScreen(
     val lastCrash = remember { app.tab.store.core.utils.CrashLogHolder.last }
     val themeViewModel: ThemeViewModel = hiltViewModel()
     val themeMode by themeViewModel.mode.collectAsStateWithLifecycle()
+    val accent by themeViewModel.accent.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -57,6 +63,8 @@ fun SettingsScreen(
             state = state,
             themeMode = themeMode,
             onTheme = themeViewModel::set,
+            accent = accent,
+            onAccent = themeViewModel::setAccent,
             onLegal = onLegal,
             onClearCache = onClearCache,
             onFeedback = onFeedback,
@@ -81,6 +89,7 @@ fun SettingsSheet(
     val lastCrash = remember { app.tab.store.core.utils.CrashLogHolder.last }
     val themeViewModel: ThemeViewModel = hiltViewModel()
     val themeMode by themeViewModel.mode.collectAsStateWithLifecycle()
+    val accent by themeViewModel.accent.collectAsStateWithLifecycle()
     app.tab.store.core.ui.ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = Tokens.colorScheme.surface,
@@ -100,6 +109,8 @@ fun SettingsSheet(
             state = state,
             themeMode = themeMode,
             onTheme = themeViewModel::set,
+            accent = accent,
+            onAccent = themeViewModel::setAccent,
             onLegal = onLegal,
             onClearCache = onClearCache,
             onFeedback = onFeedback,
@@ -113,6 +124,8 @@ private fun SettingsContent(
     state: ProfileUiState,
     themeMode: ThemeMode,
     onTheme: (ThemeMode) -> Unit,
+    accent: AccentOption,
+    onAccent: (AccentOption) -> Unit,
     onLegal: (Boolean) -> Unit,
     onClearCache: () -> Unit,
     onFeedback: () -> Unit,
@@ -136,6 +149,59 @@ private fun SettingsContent(
                             )
                         }
                     }
+                    Spacer(Modifier.height(14.dp))
+                    Text("Accent", style = Tokens.typography.titleSmall)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "The app is monochrome; this is the one colour it uses.",
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    // Swatches rather than words: an accent is a colour, and a chip
+                    // that says "Indigo" tells you less than a dot of it.
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        items(AccentOption.entries.toList()) { option ->
+                            val swatch = when (option) {
+                                AccentOption.MONET -> Tokens.colorScheme.primary
+                                else -> androidx.compose.ui.graphics.Color(option.hex or 0xFF000000L)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(androidx.compose.foundation.shape.CircleShape)
+                                    .background(swatch)
+                                    .then(
+                                        if (accent == option) {
+                                            Modifier.border(
+                                                3.dp,
+                                                Tokens.colorScheme.onSurface,
+                                                androidx.compose.foundation.shape.CircleShape,
+                                            )
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+                                    .clickable { onAccent(option) },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                if (option == AccentOption.MONET) {
+                                    SproutlyIcon(
+                                        PhosphorIcons.Sparkles,
+                                        contentDescription = "Match wallpaper",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = Tokens.colorScheme.onPrimary,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        accent.label,
+                        style = Tokens.typography.labelMedium,
+                        color = Tokens.colorScheme.onSurfaceVariant,
+                    )
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = Tokens.colorScheme.outlineVariant,

@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import android.os.Build
 import androidx.compose.ui.platform.LocalContext
+import app.tab.store.core.theme.AccentOption
 import app.tab.store.core.theme.ThemeMode
 import app.tab.store.core.ui.ProvideTokens
 import app.tab.store.core.ui.Tokens
@@ -116,6 +117,8 @@ val LocalSproutlyExtra = staticCompositionLocalOf {
 fun SproutlyTheme(
     /** Null means "follow the device"; set by the Settings sheet. */
     mode: ThemeMode? = null,
+    /** The one colour in a monochrome app. Monet follows the wallpaper. */
+    accent: AccentOption = AccentOption.MONET,
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
@@ -124,7 +127,8 @@ fun SproutlyTheme(
         ThemeMode.DARK -> true
         else -> systemDark
     }
-    val colors = if (darkTheme) DarkColors else LightColors
+    val base = if (darkTheme) DarkColors else LightColors
+    val colors = applyAccent(base, accent, darkTheme)
     val extra = if (darkTheme) {
         SproutlyExtra(
             skeleton = SproutlyPalette.SurfaceSubtleDark,
@@ -170,4 +174,40 @@ fun SproutlyTheme(
             content = content,
         )
     }
+}
+
+/** Relative luminance, per WCAG, so contrast is computed rather than guessed. */
+private fun luminance(color: Color): Double {
+    fun channel(value: Float): Double {
+        val c = value.toDouble()
+        return if (c <= 0.03928) c / 12.92 else Math.pow((c + 0.055) / 1.055, 2.4)
+    }
+    return 0.2126 * channel(color.red) + 0.7152 * channel(color.green) + 0.0722 * channel(color.blue)
+}
+
+/** Black or white, whichever reads on [background]. */
+internal fun onColorFor(background: Color): Color =
+    if (luminance(background) > 0.45) Color(0xFF111111) else Color(0xFFFFFFFF)
+
+/**
+ * Swaps the accent into the scheme and derives everything that depends on it.
+ *
+ * The foreground of an accent is computed from its luminance rather than assumed
+ * white: an amber accent with white text is unreadable, and a person picking their
+ * own accent would hit exactly that.
+ */
+private fun applyAccent(base: SkColorScheme, accent: AccentOption, dark: Boolean): SkColorScheme {
+    val seed = when {
+        // Monet: the wallpaper colour on Android 12+, the brand's own indigo before.
+        accent == AccentOption.MONET -> if (dark) Color(0xFFB9C3FF) else Color(0xFF4F5BD5)
+        else -> Color(accent.hex or 0xFF000000L)
+    }
+    val resolved = if (dark && accent != AccentOption.MONET) seed.copy(alpha = 1f) else seed
+    val onAccent = onColorFor(resolved)
+    return base.copy(
+        primary = resolved,
+        onPrimary = onAccent,
+        primaryContainer = resolved.copy(alpha = 0.16f),
+        onPrimaryContainer = if (dark) resolved else resolved,
+    )
 }

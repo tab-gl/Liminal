@@ -98,6 +98,8 @@ private data class HeroSlide(
     val title: String,
     val body: String,
     val cta: String,
+    /** The app's own art, shown on the card when there is one. */
+    val imageUrl: String? = null,
     val onClick: () -> Unit,
 )
 
@@ -116,6 +118,7 @@ private fun heroSlides(
             title = app.title,
             body = "Fresh from ${app.storeName.ifBlank { "an independent developer" }}.",
             cta = "Open",
+            imageUrl = app.primaryImage,
             onClick = { onProduct(app.id) },
         )
     }
@@ -126,6 +129,7 @@ private fun heroSlides(
             title = app.title,
             body = "On offer now — ${formatPrice(app.price)}.",
             cta = "See all offers",
+            imageUrl = app.primaryImage,
             onClick = onOffers,
         )
     }
@@ -136,6 +140,7 @@ private fun heroSlides(
             title = app.title,
             body = InstallCount.phrase(app.unitsSold),
             cta = "Open",
+            imageUrl = app.primaryImage,
             onClick = { onProduct(app.id) },
         )
     }
@@ -328,38 +333,47 @@ fun HomeScreen(
                             .clip(SproutlyRadii.hero)
                             .clickable(onClick = promo.onClick)
                             .background(
-                                if (page % 2 == 0) {
-                                    Brush.linearGradient(
-                                        listOf(SproutlyPalette.Lime, SproutlyPalette.LimeSoft),
-                                    )
-                                } else {
-                                    Brush.linearGradient(
-                                        listOf(SproutlyPalette.Olive, SproutlyPalette.OliveDeep),
-                                    )
-                                },
+                                // Monochrome: the card is ink on paper, and the only
+                                // colour in it is the app's own artwork.
+                                if (page % 2 == 0) Tokens.colorScheme.surfaceContainerHigh
+                                else Tokens.colorScheme.inverseSurface,
                             )
                             .padding(20.dp),
                     ) {
-                        Column(Modifier.align(Alignment.CenterStart)) {
+                        if (!promo.imageUrl.isNullOrBlank()) {
+                            SproutlyImage(
+                                url = promo.imageUrl,
+                                contentDescription = promo.title,
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .size(96.dp),
+                                corner = 20.dp,
+                            )
+                        }
+                        Column(
+                            Modifier
+                                .align(Alignment.CenterStart)
+                                .fillMaxWidth(if (promo.imageUrl.isNullOrBlank()) 1f else 0.62f),
+                        ) {
                             Text(
                                 promo.eyebrow,
                                 style = Tokens.typography.labelSmall,
-                                color = if (page % 2 == 0) SproutlyPalette.Olive
-                                else SproutlyPalette.Lime,
+                                color = if (page % 2 == 0) Tokens.colorScheme.onSurfaceVariant
+                                else Tokens.colorScheme.inverseOnSurface.copy(alpha = 0.75f),
                             )
                             Spacer(Modifier.height(6.dp))
                             Text(
                                 promo.title,
                                 style = Tokens.typography.headlineMedium,
-                                color = if (page % 2 == 0) SproutlyPalette.OliveDeep
-                                else SproutlyPalette.Lime,
+                                color = if (page % 2 == 0) Tokens.colorScheme.onSurface
+                                else Tokens.colorScheme.inverseOnSurface,
                             )
                             Spacer(Modifier.height(6.dp))
                             Text(
                                 promo.body,
                                 style = Tokens.typography.bodySmall,
-                                color = if (page % 2 == 0) SproutlyPalette.Olive
-                                else SproutlyPalette.LimeSoft,
+                                color = if (page % 2 == 0) Tokens.colorScheme.onSurfaceVariant
+                                else Tokens.colorScheme.inverseOnSurface.copy(alpha = 0.8f),
                                 modifier = Modifier.fillMaxWidth(0.72f),
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
@@ -368,8 +382,8 @@ fun HomeScreen(
                             Surface(
                                 onClick = promo.onClick,
                                 shape = SproutlyRadii.pill,
-                                color = if (page % 2 == 0) SproutlyPalette.Olive
-                                else SproutlyPalette.Lime,
+                                color = if (page % 2 == 0) Tokens.colorScheme.onSurfaceVariant
+                                else Tokens.colorScheme.inverseOnSurface.copy(alpha = 0.75f),
                             ) {
                                 Text(
                                     promo.cta,

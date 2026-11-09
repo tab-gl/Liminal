@@ -157,6 +157,13 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
         restoreState = true
     }
 
+    // Back pops to the screen you came from. Without this, some routes fell through
+    // to the activity and landed on the storefront, which felt like being thrown
+    // out of the app.
+    BackHandler(enabled = navController.previousBackStackEntry != null) {
+        navController.popBackStack()
+    }
+
     Scaffold(
         containerColor = Tokens.colorScheme.background,
         // Insets are handled explicitly below (content clears the status bar, the
@@ -411,6 +418,7 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onOrders = { goTab(Routes.LIBRARY) },
                     onAnalytics = { go(Routes.SELLER_ANALYTICS) },
                     onStoreEdit = { go(Routes.SELLER_STORE_EDIT) },
+                    onVerification = { go(Routes.SELLER_VERIFICATION) },
                     onSetupStore = { go(Routes.SELLER_SETUP) },
                 )
             }
@@ -438,6 +446,9 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
             composable(Routes.SELLER_ANALYTICS) {
                 SellerAnalyticsScreen(onBack = { navController.popBackStack() })
             }
+            composable(Routes.SELLER_VERIFICATION) {
+                SellerVerificationScreen(onBack = { navController.popBackStack() })
+            }
             composable(Routes.SELLER_STORE_EDIT) {
                 SellerStoreEditScreen(onBack = { navController.popBackStack() })
             }
@@ -460,7 +471,12 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 AdminUsersScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.ADMIN_PRODUCTS) {
-                AdminProductsScreen(onBack = { navController.popBackStack() })
+                AdminProductsScreen(
+                    onBack = { navController.popBackStack() },
+                    // An admin can manage any listing from here, not only the
+                    // ones that were reported.
+                    onOpenProduct = { go(Routes.product(it)) },
+                )
             }
             composable(Routes.ADMIN_CATEGORIES) {
                 AdminCategoriesScreen(onBack = { navController.popBackStack() })

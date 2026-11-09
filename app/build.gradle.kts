@@ -25,8 +25,8 @@ android {
         applicationId = "app.tab.store"
         minSdk = 24
         targetSdk = 36
-        versionCode = 69
-        versionName = "1.1.1"
+        versionCode = 70
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

@@ -542,6 +542,8 @@ fun AdminUsersScreen(
 @Composable
 fun AdminProductsScreen(
     onBack: () -> Unit,
+    /** Admin opens a listing to manage it: edit, block, delete. */
+    onOpenProduct: (String) -> Unit = {},
     viewModel: AdminProductsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -585,7 +587,11 @@ fun AdminProductsScreen(
                                 corner = 12.dp,
                             )
                             Spacer(Modifier.width(10.dp))
-                            Column(Modifier.weight(1f)) {
+                            Column(
+                                Modifier
+                                    .weight(1f)
+                                    .clickable { onOpenProduct(product.id) },
+                            ) {
                                 Text(product.title, style = Tokens.typography.titleSmall, maxLines = 1)
                                 Text(
                                     "${product.storeName} · scan ${product.scanScore}/100 (self-reported)",
@@ -634,7 +640,11 @@ fun AdminProductsScreen(
                                     corner = 12.dp,
                                 )
                                 Spacer(Modifier.width(10.dp))
-                                Column(Modifier.weight(1f)) {
+                                Column(
+                                    Modifier
+                                        .weight(1f)
+                                        .clickable { onOpenProduct(product.id) },
+                                ) {
                                     Text(
                                         product.title,
                                         style = Tokens.typography.titleSmall,

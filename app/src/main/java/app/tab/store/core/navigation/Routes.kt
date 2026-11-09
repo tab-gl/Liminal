@@ -35,6 +35,7 @@ object Routes {
     const val SELLER_PRODUCT_EDIT = "seller/product-edit?productId={productId}"
     const val SELLER_ANALYTICS = "seller/analytics"
     const val SELLER_STORE_EDIT = "seller/store-edit"
+    const val SELLER_VERIFICATION = "seller/verification"
 
     // Admin
     const val ADMIN_DASHBOARD = "admin/dashboard"

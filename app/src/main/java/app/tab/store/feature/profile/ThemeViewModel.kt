@@ -13,6 +13,9 @@ class ThemeViewModel @Inject constructor(
     private val preference: ThemePreference,
 ) : ViewModel() {
     val mode: StateFlow<ThemeMode> = preference.mode
+    val accent: StateFlow<app.tab.store.core.theme.AccentOption> = preference.accent
 
     fun set(mode: ThemeMode) = preference.set(mode)
+
+    fun setAccent(accent: app.tab.store.core.theme.AccentOption) = preference.setAccent(accent)
 }

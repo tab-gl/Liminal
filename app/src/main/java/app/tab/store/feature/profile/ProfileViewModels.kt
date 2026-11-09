@@ -25,6 +25,12 @@ data class ProfileUiState(
     val orderCount: Int = 0,
     val wishlistCount: Int = 0,
     val isSigningOut: Boolean = false,
+    /**
+     * Counts start at zero and are filled by a listener, so a screen that renders
+     * immediately shows "0 installs" to someone who has twelve. The tiles show a
+     * placeholder until the first snapshot arrives.
+     */
+    val countsLoaded: Boolean = false,
 )
 
 @HiltViewModel
@@ -45,12 +51,12 @@ class ProfileViewModel @Inject constructor(
         }
         viewModelScope.launch {
             orderRepository.observeBuyerOrders().collect { orders ->
-                _uiState.update { it.copy(orderCount = orders.size) }
+                _uiState.update { it.copy(orderCount = orders.size, countsLoaded = true) }
             }
         }
         viewModelScope.launch {
             wishlistRepository.observeWishlist().collect { items ->
-                _uiState.update { it.copy(wishlistCount = items.size) }
+                _uiState.update { it.copy(wishlistCount = items.size, countsLoaded = true) }
             }
         }
     }
