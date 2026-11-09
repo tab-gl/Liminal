@@ -53,6 +53,8 @@ data class SkColorScheme(
     val inverseSurface: Color,
     val inverseOnSurface: Color,
     val scrim: Color,
+    /** The accent as it reads on [inverseSurface]; for dark feature cards. */
+    val inversePrimary: Color = Color.Unspecified,
 )
 
 @Immutable
@@ -158,6 +160,7 @@ fun lightScheme(
     onErrorContainer: Color,
     inverseSurface: Color,
     inverseOnSurface: Color,
+    inversePrimary: Color = Color.Unspecified,
 ) = SkColorScheme(
     primary = primary,
     onPrimary = onPrimary,
@@ -190,6 +193,7 @@ fun lightScheme(
     inverseSurface = inverseSurface,
     inverseOnSurface = inverseOnSurface,
     scrim = Color(0x52000000),
+    inversePrimary = if (inversePrimary == Color.Unspecified) primary else inversePrimary,
 )
 
 /** Outfit, weighted the way the brand uses it. */

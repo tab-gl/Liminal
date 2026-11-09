@@ -37,7 +37,6 @@ import app.tab.store.core.designsystem.PhosphorIcons
 import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.BrandMark
 import app.tab.store.core.designsystem.SproutlyButton
-import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTextField
 import app.tab.store.core.designsystem.SproutlyTheme
@@ -70,7 +69,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(SproutlyPalette.Lime)
+                .background(Tokens.colorScheme.primary)
                 .padding(horizontal = 24.dp)
                 .padding(top = 20.dp, bottom = 26.dp),
         ) {
@@ -80,20 +79,20 @@ fun LoginScreen(
                 Text(
                     text = "Liminal",
                     style = Tokens.typography.headlineSmall,
-                    color = SproutlyPalette.OliveDeep,
+                    color = Tokens.colorScheme.onPrimary,
                 )
             }
             Spacer(Modifier.height(22.dp))
             Text(
                 text = "Build it.\nPublish it.\nGrow it.",
                 style = Tokens.typography.displaySmall,
-                color = SproutlyPalette.OliveDeep,
+                color = Tokens.colorScheme.onPrimary,
             )
             Spacer(Modifier.height(10.dp))
             Text(
                 text = "An app store for independent developers.",
                 style = Tokens.typography.bodyMedium,
-                color = SproutlyPalette.Olive,
+                color = Tokens.colorScheme.onPrimary,
             )
         }
 

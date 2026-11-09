@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import app.tab.store.core.designsystem.PhosphorIcons
 import app.tab.store.core.designsystem.SproutlyIcon
-import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.core.utils.DateFormatters
 import app.tab.store.domain.model.OrderEvent
@@ -32,8 +31,8 @@ fun OrderStatusChip(status: OrderStatus, modifier: Modifier = Modifier) {
         OrderStatus.PENDING -> Tokens.colorScheme.tertiaryContainer to Tokens.colorScheme.onTertiaryContainer
         OrderStatus.CONFIRMED -> Tokens.colorScheme.primaryContainer to Tokens.colorScheme.onPrimaryContainer
         OrderStatus.PACKED -> Tokens.colorScheme.primaryContainer to Tokens.colorScheme.onPrimaryContainer
-        OrderStatus.SHIPPED -> SproutlyPalette.LimeSoft to SproutlyPalette.Olive
-        OrderStatus.DELIVERED -> SproutlyPalette.Lime to SproutlyPalette.OliveDeep
+        OrderStatus.SHIPPED -> Tokens.colorScheme.primaryContainer to Tokens.colorScheme.onPrimaryContainer
+        OrderStatus.DELIVERED -> Tokens.colorScheme.primary to Tokens.colorScheme.onPrimary
         OrderStatus.CANCELLED -> Tokens.colorScheme.errorContainer to Tokens.colorScheme.onErrorContainer
     }
     SproutlyTag(

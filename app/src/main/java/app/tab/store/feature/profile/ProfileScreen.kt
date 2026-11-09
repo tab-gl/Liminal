@@ -36,7 +36,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.PhosphorIcons
 import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.Avatar
-import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.feature.seller.DeveloperSwitchDialog
@@ -72,7 +71,7 @@ fun ProfileScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(SproutlyPalette.Lime)
+                .background(Tokens.colorScheme.primary)
                 .padding(horizontal = 20.dp, vertical = 26.dp),
         ) {
             Row(
@@ -87,32 +86,32 @@ fun ProfileScreen(
                     Text(
                         user?.displayName?.ifBlank { "Liminal shopper" } ?: "Liminal shopper",
                         style = Tokens.typography.headlineSmall,
-                        color = SproutlyPalette.OliveDeep,
+                        color = Tokens.colorScheme.onPrimary,
                     )
                     Text(
                         user?.email.orEmpty(),
                         style = Tokens.typography.bodySmall,
-                        color = SproutlyPalette.Olive,
+                        color = Tokens.colorScheme.onPrimary,
                     )
                     if (user?.role != null && user.role.name != "CUSTOMER") {
                         Spacer(Modifier.height(6.dp))
                         SproutlyTag(
                             text = user.role.name,
-                            container = SproutlyPalette.Olive,
-                            content = SproutlyPalette.Lime,
+                            container = Tokens.colorScheme.inverseSurface,
+                            content = Tokens.colorScheme.inversePrimary,
                         )
                     }
                 }
                 Surface(
                     onClick = onEditProfile,
                     shape = CircleShape,
-                    color = SproutlyPalette.Olive,
+                    color = Tokens.colorScheme.inverseSurface,
                     modifier = Modifier.size(38.dp),
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         SproutlyIcon(PhosphorIcons.Edit,
                             contentDescription = "Edit profile",
-                            tint = SproutlyPalette.Lime,
+                            tint = Tokens.colorScheme.inversePrimary,
                             modifier = Modifier.size(18.dp),
                         )
                     }

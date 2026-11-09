@@ -48,7 +48,6 @@ import app.tab.store.core.designsystem.Avatar
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyImage
-import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.core.designsystem.SproutlyTextField
@@ -81,20 +80,20 @@ fun AdminDashboardScreen(
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
                 shape = SproutlyRadii.hero,
-                color = SproutlyPalette.Espresso,
+                color = Tokens.colorScheme.inverseSurface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Text(
                         "TOTAL APP SALES",
                         style = Tokens.typography.labelSmall,
-                        color = SproutlyPalette.LimeSoft,
+                        color = Tokens.colorScheme.inverseOnSurface,
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         formatCompact(state.overview.grossMerchandiseValue / 100),
                         style = Tokens.typography.displaySmall,
-                        color = SproutlyPalette.Lime,
+                        color = Tokens.colorScheme.inversePrimary,
                     )
                     Spacer(Modifier.height(14.dp))
                     Row {
@@ -257,8 +256,8 @@ fun AdminDashboardScreen(
 @Composable
 private fun AdminStat(label: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier) {
-        Text(value, style = Tokens.typography.titleLarge, color = SproutlyPalette.Lime)
-        Text(label, style = Tokens.typography.bodySmall, color = SproutlyPalette.LimeSoft)
+        Text(value, style = Tokens.typography.titleLarge, color = Tokens.colorScheme.inversePrimary)
+        Text(label, style = Tokens.typography.bodySmall, color = Tokens.colorScheme.inverseOnSurface)
     }
 }
 

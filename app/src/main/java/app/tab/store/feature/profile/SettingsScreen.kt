@@ -35,7 +35,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import app.tab.store.core.theme.ThemeMode
 import app.tab.store.core.designsystem.BrandMark
-import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTopBar
 
@@ -282,12 +281,6 @@ private fun SettingsContent(
                         "An app store for independent developers.",
                         style = Tokens.typography.bodySmall,
                         color = Tokens.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        "Palette — Lime ${"#DBE6A1"} · Olive ${"#3F4C06"}",
-                        style = Tokens.typography.bodySmall,
-                        color = SproutlyPalette.OliveMid,
                     )
                 }
             }

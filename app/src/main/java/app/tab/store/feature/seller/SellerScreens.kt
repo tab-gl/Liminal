@@ -54,7 +54,6 @@ import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyButton
 import app.tab.store.core.designsystem.SproutlyImage
-import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyTag
 import app.tab.store.core.designsystem.SproutlyTextField
@@ -86,25 +85,25 @@ fun SellerSetupScreen(
         Column(Modifier.padding(horizontal = 24.dp)) {
             Surface(
                 shape = SproutlyRadii.hero,
-                color = SproutlyPalette.Lime,
+                color = Tokens.colorScheme.primary,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(20.dp)) {
                     SproutlyIcon(PhosphorIcons.Store,
                         contentDescription = null,
-                        tint = SproutlyPalette.OliveDeep,
+                        tint = Tokens.colorScheme.onPrimary,
                         modifier = Modifier.size(30.dp),
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(
                         "Build it. Publish it. Grow it.",
                         style = Tokens.typography.headlineMedium,
-                        color = SproutlyPalette.OliveDeep,
+                        color = Tokens.colorScheme.onPrimary,
                     )
                     Text(
                         "Set up a developer profile in under a minute, publish your first app and track installs.",
                         style = Tokens.typography.bodySmall,
-                        color = SproutlyPalette.Olive,
+                        color = Tokens.colorScheme.onPrimary,
                     )
                 }
             }
@@ -399,20 +398,20 @@ fun SellerDashboardScreen(
         Column(Modifier.padding(horizontal = 20.dp)) {
             Surface(
                 shape = SproutlyRadii.hero,
-                color = SproutlyPalette.Olive,
+                color = Tokens.colorScheme.inverseSurface,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(20.dp)) {
                     Text(
                         "INSTALLS",
                         style = Tokens.typography.labelSmall,
-                        color = SproutlyPalette.LimeSoft,
+                        color = Tokens.colorScheme.inverseOnSurface,
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         InstallCount.label(state.stats.orderCount),
                         style = Tokens.typography.displaySmall,
-                        color = SproutlyPalette.Lime,
+                        color = Tokens.colorScheme.inversePrimary,
                     )
                     Spacer(Modifier.height(14.dp))
                     Row {
@@ -660,12 +659,12 @@ private fun DashStat(label: String, value: String, modifier: Modifier = Modifier
         Text(
             value,
             style = Tokens.typography.titleLarge,
-            color = SproutlyPalette.Lime,
+            color = Tokens.colorScheme.inversePrimary,
         )
         Text(
             label,
             style = Tokens.typography.bodySmall,
-            color = SproutlyPalette.LimeSoft,
+            color = Tokens.colorScheme.inverseOnSurface,
         )
     }
 }
@@ -762,7 +761,7 @@ fun SellerAnalyticsScreen(
                                     )
                                     .clip(SproutlyRadii.pill)
                                     .background(
-                                        if (revenue > 0) SproutlyPalette.Olive
+                                        if (revenue > 0) Tokens.colorScheme.primary
                                         else Tokens.colorScheme.surfaceContainerHigh,
                                     ),
                             )

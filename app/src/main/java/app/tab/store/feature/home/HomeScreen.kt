@@ -54,6 +54,8 @@ import app.tab.store.core.ui.SnackbarHostState
 import app.tab.store.core.ui.Surface
 import app.tab.store.core.ui.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -79,7 +81,6 @@ import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyChip
 import app.tab.store.core.designsystem.SproutlyImage
 import app.tab.store.core.designsystem.formatPrice
-import app.tab.store.core.designsystem.SproutlyPalette
 import app.tab.store.core.designsystem.SproutlyRadii
 import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.categoryIcon
@@ -93,6 +94,10 @@ import app.tab.store.domain.model.Product
  * whatever is actually in the catalogue, and fall back to the developer invite
  * only when there is nothing to show.
  */
+/** A screenshot of the app when the developer set one. Never the icon. */
+private fun Product.screenshotUrl(): String? =
+    screenshots.firstOrNull { it.url.isNotBlank() }?.url ?: promoImageUrl?.takeIf { it.isNotBlank() }
+
 private data class HeroSlide(
     val eyebrow: String,
     val title: String,
@@ -118,7 +123,7 @@ private fun heroSlides(
             title = app.title,
             body = "Fresh from ${app.storeName.ifBlank { "an independent developer" }}.",
             cta = "Open",
-            imageUrl = app.primaryImage,
+            imageUrl = app.screenshotUrl(),
             onClick = { onProduct(app.id) },
         )
     }
@@ -129,7 +134,7 @@ private fun heroSlides(
             title = app.title,
             body = "On offer now — ${formatPrice(app.price)}.",
             cta = "See all offers",
-            imageUrl = app.primaryImage,
+            imageUrl = app.screenshotUrl(),
             onClick = onOffers,
         )
     }
@@ -140,7 +145,7 @@ private fun heroSlides(
             title = app.title,
             body = InstallCount.phrase(app.unitsSold),
             cta = "Open",
-            imageUrl = app.primaryImage,
+            imageUrl = app.screenshotUrl(),
             onClick = { onProduct(app.id) },
         )
     }
@@ -344,10 +349,12 @@ fun HomeScreen(
                             SproutlyImage(
                                 url = promo.imageUrl,
                                 contentDescription = promo.title,
+                                // Phone-shaped, so a portrait screenshot is not cropped to a square.
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
-                                    .size(96.dp),
-                                corner = 20.dp,
+                                    .fillMaxHeight()
+                                    .aspectRatio(9f / 16f),
+                                corner = 18.dp,
                             )
                         }
                         Column(
@@ -382,14 +389,16 @@ fun HomeScreen(
                             Surface(
                                 onClick = promo.onClick,
                                 shape = SproutlyRadii.pill,
-                                color = if (page % 2 == 0) Tokens.colorScheme.onSurfaceVariant
-                                else Tokens.colorScheme.inverseOnSurface.copy(alpha = 0.75f),
+                                // The accent is the one colour on the card; its label colour
+                                // comes from the theme, which checks the contrast.
+                                color = if (page % 2 == 0) Tokens.colorScheme.primary
+                                else Tokens.colorScheme.inversePrimary,
                             ) {
                                 Text(
                                     promo.cta,
                                     style = Tokens.typography.labelMedium,
-                                    color = if (page % 2 == 0) SproutlyPalette.Lime
-                                    else SproutlyPalette.OliveDeep,
+                                    color = if (page % 2 == 0) Tokens.colorScheme.onPrimary
+                                    else Tokens.colorScheme.inverseSurface,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                 )
                             }
