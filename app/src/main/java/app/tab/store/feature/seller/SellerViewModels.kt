@@ -96,6 +96,21 @@ class SellerDashboardViewModel @Inject constructor(
     private val sellerRepository: SellerRepository,
 ) : ViewModel() {
 
+    /** Asks an admin to verify the studio, which unlocks paid listings. */
+    fun requestVerification() {
+        viewModelScope.launch {
+            when (val res = sellerRepository.requestVerification()) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = res.message) }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(
+                        message = "Verification requested. An admin will review it.",
+                        store = it.store?.copy(verificationStatus = "PENDING"),
+                    )
+                }
+            }
+        }
+    }
+
     private val _uiState = MutableStateFlow(SellerDashboardUiState())
     val uiState: StateFlow<SellerDashboardUiState> = _uiState.asStateFlow()
 
