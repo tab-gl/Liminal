@@ -89,6 +89,8 @@ data class SellerDashboardUiState(
     val drafts: List<Product> = emptyList(),
     val isLoading: Boolean = true,
     val needsStore: Boolean = false,
+    /** One-line feedback, shown as a snackbar by the console. */
+    val message: String? = null,
 )
 
 @HiltViewModel
