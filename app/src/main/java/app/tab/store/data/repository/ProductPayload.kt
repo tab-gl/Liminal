@@ -37,6 +37,7 @@ internal fun productPayload(product: Product): MutableMap<String, Any?> {
         "promoHeadline" to product.promoHeadline,
         "promoBody" to product.promoBody,
         "promoImageUrl" to product.promoImageUrl,
+        "iconUrl" to product.iconUrl,
         "currency" to "INR",
         "stock" to product.stock,
         "status" to product.status.name,
