@@ -32,6 +32,8 @@ import app.tab.store.core.theme.AccentOption
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
 import app.tab.store.core.theme.ThemeMode
 import app.tab.store.core.designsystem.BrandMark

@@ -50,6 +50,7 @@ import app.tab.store.feature.profile.AccountSwitcherSheet
 import app.tab.store.feature.profile.AccountSwitcherViewModel
 import app.tab.store.feature.profile.ProfileViewModel
 import app.tab.store.feature.profile.Workspace
+import app.tab.store.feature.seller.SellerVerificationScreen
 import app.tab.store.feature.admin.AdminCategoriesScreen
 import app.tab.store.feature.admin.AdminTagsScreen
 import app.tab.store.feature.admin.AdminDashboardScreen
