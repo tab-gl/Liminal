@@ -83,8 +83,6 @@ fun ProductDetailScreen(
     var viewerStart by remember { mutableStateOf<Int?>(null) }
     val context = LocalContext.current
 
-    var showBuilds by remember { mutableStateOf(false) }
-
     fun shareProduct() {
         val product = state.product ?: return
         val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
