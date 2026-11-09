@@ -302,6 +302,7 @@ fun SellerProductEditScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val picker = rememberImagePicker { uri -> if (uri != null) viewModel.onImagePicked(uri) }
+    val iconPicker = rememberImagePicker { uri -> if (uri != null) viewModel.onIconPicked(uri) }
     val screenshotPicker = rememberImagePicker { uri ->
         if (uri != null) viewModel.onScreenshotPicked(uri)
     }
@@ -418,6 +419,48 @@ fun SellerProductEditScreen(
                     )
                 }
             }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // --------------------------------------------------------------- icon
+            BentoTile(
+                title = "Icon",
+                hint = "One square image. Cards and search results show this, not a screenshot.",
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box {
+                        SproutlyImage(
+                            url = state.iconUrl,
+                            contentDescription = "App icon",
+                            modifier = Modifier.size(72.dp),
+                            corner = 18.dp,
+                        )
+                        if (state.iconUrl != null) {
+                            Surface(
+                                onClick = { viewModel.clearIcon() },
+                                shape = CircleShape,
+                                color = Tokens.colorScheme.surface,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(3.dp)
+                                    .size(22.dp),
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    SproutlyIcon(
+                                        PhosphorIcons.Close,
+                                        contentDescription = "Remove icon",
+                                        modifier = Modifier.size(13.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    TextButton(onClick = { iconPicker.launch(pickImageRequest()) }) {
+                        Text(if (state.iconUrl == null) "Choose icon" else "Replace")
+                    }
+                }
             }
 
             Spacer(Modifier.height(12.dp))

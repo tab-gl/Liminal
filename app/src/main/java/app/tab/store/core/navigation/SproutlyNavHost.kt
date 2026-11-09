@@ -181,8 +181,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 // neighbouring tab comes in from that side. Edge-only, so it never
                 // fights a horizontally scrolling row or the screenshot pager.
                 .pointerInput(currentRoute) {
-                    val edge = 32.dp.toPx()
-                    val threshold = 90.dp.toPx()
+                    val edge = 56.dp.toPx()
+                    val threshold = 64.dp.toPx()
                     var total = 0f
                     var active = false
                     detectHorizontalDragGestures(

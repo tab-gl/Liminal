@@ -55,6 +55,11 @@ data class Product(
     val promoHeadline: String = "",
     val promoBody: String = "",
     val promoImageUrl: String? = null,
+    /**
+     * The app's icon: a square mark, not a screenshot. A card falls back to a
+     * monogram when it is missing, never to a screenshot.
+     */
+    val iconUrl: String? = null,
     val currency: String = "INR",
     val stock: Int = 0,
     val status: ProductStatus = ProductStatus.DRAFT,
@@ -106,8 +111,6 @@ data class Product(
 
     val primaryImage: String? get() = images.firstOrNull()?.url
 
-    /** The app's own icon, which is what a card should lead with when there is one. */
-    val iconUrl: String? get() = images.firstOrNull()?.url
     val isFree: Boolean get() = price <= 0L
 
     /** A real, running discount — not just a crossed-out number. */

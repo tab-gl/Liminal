@@ -338,6 +338,8 @@ data class ProductEditorUiState(
     val promoHeadline: String = "",
     val promoBody: String = "",
     val promoImageUrl: String? = null,
+    /** The square mark shown on cards; separate from the screenshots. */
+    val iconUrl: String? = null,
     /** Release identity: what makes this an update rather than a new app. */
     val versionName: String = "",
     val versionCode: String = "",
@@ -522,6 +524,7 @@ class SellerProductEditViewModel @Inject constructor(
                                     promoHeadline = product.promoHeadline,
                                     promoBody = product.promoBody,
                                     promoImageUrl = product.promoImageUrl,
+                                    iconUrl = product.iconUrl,
                                     stock = product.stock.toString(),
                                     images = product.images,
                                     screenshots = product.screenshots,
@@ -642,6 +645,29 @@ class SellerProductEditViewModel @Inject constructor(
     }
 
     fun clearPromoImage() = _uiState.update { it.copy(promoImageUrl = null) }
+
+    fun onIconPicked(uri: Uri) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUploading = true, error = null) }
+            val bytes = uploader.prepare(uri)
+            if (bytes == null) {
+                _uiState.update { it.copy(isUploading = false, error = "Could not read that image.") }
+                return@launch
+            }
+            when (val res = uploader.upload(bytes, "icon-${System.currentTimeMillis()}.jpg", "icons") { progress ->
+                _uiState.update { it.copy(uploadProgress = progress) }
+            }) {
+                is DataResult.Failure -> _uiState.update {
+                    it.copy(isUploading = false, error = res.message)
+                }
+                is DataResult.Success -> _uiState.update {
+                    it.copy(isUploading = false, uploadProgress = 0f, iconUrl = res.value.url)
+                }
+            }
+        }
+    }
+
+    fun clearIcon() = _uiState.update { it.copy(iconUrl = null) }
 
     fun onVersionName(v: String) = _uiState.update { it.copy(versionName = v.take(20)) }
 
@@ -870,7 +896,7 @@ class SellerProductEditViewModel @Inject constructor(
     private fun draftFingerprint(state: ProductEditorUiState): String = listOf(
         state.title, state.description, state.categoryId, state.categoryLabel,
         state.isFree, state.priceRupees, state.compareAtRupees, state.offerDays,
-        state.promoHeadline, state.promoBody, state.promoImageUrl,
+        state.promoHeadline, state.promoBody, state.promoImageUrl, state.iconUrl,
         state.versionName, state.versionCode, state.releaseNotes,
         state.apkUrl, state.apkLink, state.flavours, state.scanRisk, state.scanScore,
         state.scanPermissions, state.scanWarnings, state.stock, state.images,
@@ -947,6 +973,7 @@ class SellerProductEditViewModel @Inject constructor(
                 promoHeadline = state.promoHeadline.trim(),
                 promoBody = state.promoBody.trim(),
                 promoImageUrl = state.promoImageUrl,
+                iconUrl = state.iconUrl,
                 versionName = state.versionName.trim().ifBlank { "1.0" },
                 versionCode = state.versionCode.toIntOrNull() ?: 1,
                 official = state.storeOfficial,

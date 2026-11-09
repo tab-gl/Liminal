@@ -447,7 +447,8 @@ fun HomeScreen(
             }
 
             item {
-                // An ad, below the content that matters, never over a control.
+                // The banner sits after the first rail, not between the hero and the
+                // category chips: there it read as part of the navigation.
                 BannerAd(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
                 )

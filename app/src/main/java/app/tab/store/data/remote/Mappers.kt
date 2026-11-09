@@ -120,6 +120,7 @@ fun DocumentSnapshot.toProduct(): Product {
         promoHeadline = str("promoHeadline").ifBlank { "" },
         promoBody = str("promoBody").ifBlank { "" },
         promoImageUrl = strOrNull("promoImageUrl"),
+        iconUrl = strOrNull("iconUrl"),
         currency = str("currency").ifBlank { "INR" },
         stock = int("stock"),
         status = ProductStatus.from(str("status")),

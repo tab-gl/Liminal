@@ -194,12 +194,14 @@ fun Surface(
                     }
                 }
                 clipPath(path) {
+                    // A dark lip inside the top edge, and a fainter one along the
+                    // bottom. No highlight: that reads as glossy paper.
                     drawRect(
                         brush = Brush.verticalGradient(
                             0f to Color.Black.copy(alpha = 0.10f),
-                            0.05f to Color.Transparent,
-                            0.94f to Color.Transparent,
-                            1f to Color.White.copy(alpha = 0.16f),
+                            0.045f to Color.Transparent,
+                            0.96f to Color.Transparent,
+                            1f to Color.Black.copy(alpha = 0.05f),
                         ),
                     )
                 }

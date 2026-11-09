@@ -635,11 +635,11 @@ fun ProductCard(
         Column(Modifier.padding(8.dp)) {
             Box {
                 SproutlyImage(
-                    // An offer has its own picture and is the reason to look; then
-                    // the app's icon; then a screenshot. One box, so the grid holds.
+                    // The offer's own picture when there is one, then the app's
+                    // icon. A screenshot is not an icon, so it is not used here;
+                    // the monogram below stands in instead.
                     url = product.promoImageUrl?.takeIf { it.isNotBlank() }
-                        ?: product.iconUrl?.takeIf { it.isNotBlank() }
-                        ?: product.primaryImage,
+                        ?: product.iconUrl?.takeIf { it.isNotBlank() },
                     contentDescription = product.title,
                     modifier = Modifier
                         .fillMaxWidth()
