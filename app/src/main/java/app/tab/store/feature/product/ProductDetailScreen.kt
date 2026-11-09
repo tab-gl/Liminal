@@ -1,6 +1,8 @@
 package app.tab.store.feature.product
 
 import app.tab.store.core.ui.Tokens
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,7 +84,8 @@ fun ProductDetailScreen(
     val context = LocalContext.current
 
     fun shareProduct() {
-        val product = state.product ?: return
+        val product = state.product
+    var showBuilds by remember { mutableStateOf(false) } ?: return
         val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(
@@ -113,6 +116,7 @@ fun ProductDetailScreen(
     }
 
     val product = state.product
+    var showBuilds by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize()) {
         when {
@@ -437,15 +441,51 @@ fun ProductDetailScreen(
 
                     if (product.builds.size > 1) {
                         Spacer(Modifier.height(14.dp))
-                        Text("Builds", style = Tokens.typography.titleSmall)
-                        Spacer(Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            product.builds.forEachIndexed { index, build ->
-                                SproutlyChip(
-                                    text = build.name.ifBlank { "Build ${index + 1}" },
-                                    selected = state.chosenFlavour == index,
-                                    onClick = { viewModel.chooseFlavour(index) },
+                        val recommended = viewModel.recommendedFlavourIndex(product)
+                        val shown = product.builds.getOrNull(state.chosenFlavour)
+                            ?: product.builds.getOrNull(recommended)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(SproutlyRadii.pill)
+                                .clickable { showBuilds = !showBuilds }
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                "Build: ${shown?.name?.ifBlank { "Standard" } ?: "Standard"}",
+                                style = Tokens.typography.labelMedium,
+                            )
+                            if (state.chosenFlavour == 0 && recommended > 0) {
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    "for this device",
+                                    style = Tokens.typography.labelSmall,
+                                    color = Tokens.colorScheme.onSurfaceVariant,
                                 )
+                            }
+                            Spacer(Modifier.weight(1f))
+                            SproutlyIcon(
+                                icon = if (showBuilds) PhosphorIcons.ChevronDown else PhosphorIcons.ChevronRight,
+                                contentDescription = if (showBuilds) "Hide builds" else "Choose a build",
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .graphicsLayer { rotationZ = if (showBuilds) 180f else 0f },
+                                tint = Tokens.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        AnimatedVisibility(visible = showBuilds) {
+                            Row(
+                                modifier = Modifier.padding(top = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                product.builds.forEachIndexed { index, build ->
+                                    SproutlyChip(
+                                        text = build.name.ifBlank { "Build ${index + 1}" },
+                                        selected = state.chosenFlavour == index,
+                                        onClick = { viewModel.chooseFlavour(index) },
+                                    )
+                                }
                             }
                         }
                     }
@@ -716,7 +756,9 @@ private fun RatingRow(
     onRate: (Int) -> Unit,
 ) {
     val mine = summary.mine?.rating ?: 0
-    val shown = mine.takeIf { it > 0 } ?: summary.average.roundToInt()
+    // Fill from the person's own rating when they have one, otherwise from the
+    // average. Clamped to five: rounding 4.6 up to 5 is fine, 5.4 is not a thing.
+    val shown = (if (mine > 0) mine else summary.average.roundToInt()).coerceIn(0, 5)
     Row(verticalAlignment = Alignment.CenterVertically) {
         // With no ratings there is no average to show: "—" rather than "0.0".
         Text(

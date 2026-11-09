@@ -50,6 +50,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -621,15 +623,37 @@ fun ProductCard(
             Tokens.colorScheme.outlineVariant.copy(alpha = 0.5f),
         ),
         interactionSource = interaction,
-        modifier = modifier.graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        },
+        shadowElevation = 6.dp,
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                // A card that lifts a hair as it is pressed reads as an object.
+                shadowElevation = if (scale < 1f) 2.dp.toPx() else 6.dp.toPx()
+            }
+            .drawWithContent {
+                drawContent()
+                // Inner shadow: a soft dark line along the top edge, and a light
+                // one along the bottom, so the card has thickness.
+                drawRoundRect(
+                    brush = Brush.verticalGradient(
+                        0f to Color.Black.copy(alpha = 0.05f),
+                        0.12f to Color.Transparent,
+                        0.9f to Color.Transparent,
+                        1f to Color.White.copy(alpha = 0.35f),
+                    ),
+                    cornerRadius = CornerRadius(28.dp.toPx()),
+                )
+            },
     ) {
         Column(Modifier.padding(8.dp)) {
             Box {
                 SproutlyImage(
-                    url = product.primaryImage,
+                    // An offer has its own picture and is the reason to look; then
+                    // the app's icon; then a screenshot. One box, so the grid holds.
+                    url = product.promoImageUrl?.takeIf { it.isNotBlank() }
+                        ?: product.iconUrl?.takeIf { it.isNotBlank() }
+                        ?: product.primaryImage,
                     contentDescription = product.title,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -792,7 +816,9 @@ fun BrandMark(
         modifier = modifier
             .size(size)
             .clip(RoundedCornerShape(size / 4))
-            .background(SproutlyPalette.Ink),
+            // The badge is the accent, so the mark changes with the person's choice.
+            // (A launcher icon cannot: Android draws it before the app runs.)
+            .background(Tokens.colorScheme.primary),
         contentAlignment = Alignment.Center,
     ) {
         androidx.compose.foundation.Image(

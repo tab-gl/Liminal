@@ -230,6 +230,45 @@ private fun SettingsContent(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = Tokens.colorScheme.outlineVariant,
                     )
+                    // About, where people look for it: who made this, and what it is.
+                    Text("About", style = Tokens.typography.titleSmall)
+                    Spacer(Modifier.height(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                .background(Tokens.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            SproutlyIcon(
+                                PhosphorIcons.Store,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = Tokens.colorScheme.primary,
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text("The Ace Base", style = Tokens.typography.titleSmall)
+                            Text(
+                                "Built the store, the scanner and the app you are holding.",
+                                style = Tokens.typography.bodySmall,
+                                color = Tokens.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Liminal is an app store for independent developers. " +
+                            "Beyond the ordinary. Into discovery.",
+                        style = Tokens.typography.bodySmall,
+                        color = Tokens.colorScheme.onSurfaceVariant,
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = Tokens.colorScheme.outlineVariant,
+                    )
                     SettingLink("Send feedback") { onFeedback() }
                     if (!lastCrash.isNullOrBlank()) {
                         HorizontalDivider(

@@ -28,6 +28,7 @@ import com.google.firebase.firestore.Query
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
@@ -93,10 +94,21 @@ class AdminRepositoryImpl @Inject constructor(
             .map { snap -> snap.documents.map { it.toStore() } }.orFallback(emptyList())
 
     override fun observeAllStores(): Flow<List<Store>> =
-        stores.orderBy("createdAt", Query.Direction.DESCENDING)
-            .limit(100)
-            .snapshotFlow()
-            .map { snap -> snap.documents.map { it.toStore() } }.orFallback(emptyList())
+        combine(
+            stores.orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(100)
+                .snapshotFlow()
+                .map { snap -> snap.documents.map { it.toStore() } }
+                .orFallback(emptyList()),
+            // A stored productCount was never maintained, so every studio said
+            // "0 apps". This counts what is actually published.
+            products.snapshotFlow()
+                .map { snap -> snap.documents.mapNotNull { it.getString("storeId") } }
+                .orFallback(emptyList()),
+        ) { storeList, storeIds ->
+            val counts = storeIds.groupingBy { it }.eachCount()
+            storeList.map { store -> store.copy(productCount = counts[store.id] ?: 0) }
+        }
 
     override suspend fun setStoreStatus(storeId: String, status: StoreStatus): DataResult<Unit> =
         firestoreResult {

@@ -448,6 +448,8 @@ fun AdminStoresScreen(
 @Composable
 fun AdminUsersScreen(
     onBack: () -> Unit,
+    /** Open a user's studio to see and manage what they publish. */
+    onOpenStore: (String) -> Unit = {},
     viewModel: AdminUsersViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -508,7 +510,15 @@ fun AdminUsersScreen(
                                 SproutlyTag(text = user.role.name)
                             }
                             Spacer(Modifier.height(4.dp))
-                            Row {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (!user.storeId.isNullOrBlank()) {
+                                    TextButton(onClick = { onOpenStore(user.storeId) }) {
+                                        Text(
+                                            "Their apps",
+                                            style = Tokens.typography.labelMedium,
+                                        )
+                                    }
+                                }
                                 UserRole.entries.forEach { role ->
                                     val canAssign = role != UserRole.SELLER || !user.storeId.isNullOrBlank()
                                     if (role != user.role && canAssign) {

@@ -470,7 +470,10 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                 AdminStoresScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.ADMIN_USERS) {
-                AdminUsersScreen(onBack = { navController.popBackStack() })
+                AdminUsersScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenStore = { go(Routes.store(it)) },
+                )
             }
             composable(Routes.ADMIN_PRODUCTS) {
                 AdminProductsScreen(

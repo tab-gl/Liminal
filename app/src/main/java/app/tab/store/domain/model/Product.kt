@@ -105,6 +105,9 @@ data class Product(
         }
 
     val primaryImage: String? get() = images.firstOrNull()?.url
+
+    /** The app's own icon, which is what a card should lead with when there is one. */
+    val iconUrl: String? get() = images.firstOrNull()?.url
     val isFree: Boolean get() = price <= 0L
 
     /** A real, running discount — not just a crossed-out number. */

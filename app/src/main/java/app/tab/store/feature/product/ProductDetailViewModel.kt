@@ -217,9 +217,36 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * The build for this device.
+     *
+     * A flavour is named after its ABI in practice ("arm64-v8a", "armeabi-v7a"),
+     * so the phone can pick its own. Choosing explicitly still wins, and the
+     * picker stays one tap away for anyone who knows better than the detection.
+     */
     private fun pickBuild(product: Product): app.tab.store.domain.model.Flavour? {
         val builds = product.builds
-        return builds.getOrNull(_uiState.value.chosenFlavour) ?: builds.firstOrNull()
+        val chosen = _uiState.value.chosenFlavour
+        if (chosen > 0) return builds.getOrNull(chosen) ?: builds.firstOrNull()
+        if (builds.size <= 1) return builds.firstOrNull()
+
+        val deviceAbis = android.os.Build.SUPPORTED_ABIS.map { it.lowercase() }
+        val match = builds.firstOrNull { build ->
+            val name = build.name.lowercase().replace("_", "-")
+            deviceAbis.any { abi -> name.contains(abi) || name.contains(abi.replace("-", "")) }
+        }
+        return match ?: builds.firstOrNull()
+    }
+
+    /** The index of the build this device would get, for the picker's label. */
+    fun recommendedFlavourIndex(product: Product): Int {
+        val builds = product.builds
+        val deviceAbis = android.os.Build.SUPPORTED_ABIS.map { it.lowercase() }
+        val index = builds.indexOfFirst { build ->
+            val name = build.name.lowercase().replace("_", "-")
+            deviceAbis.any { abi -> name.contains(abi) || name.contains(abi.replace("-", "")) }
+        }
+        return if (index >= 0) index else 0
     }
 
     /** Called when the screen returns to the foreground, e.g. from the permission page. */
