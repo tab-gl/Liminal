@@ -35,6 +35,7 @@ class ProductPayloadTest {
             promoHeadline = "Half price",
             promoBody = "This week only",
             promoImageUrl = "https://x/b.jpg",
+            iconUrl = "https://x/icon.jpg",
             stock = 0,
             apkUrl = "https://x/app.apk",
             apkSizeBytes = 1024,
