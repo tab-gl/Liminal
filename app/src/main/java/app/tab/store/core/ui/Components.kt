@@ -183,7 +183,17 @@ fun Surface(
                 // bottom, clipped to the shape. Drawn here so every surface — a card,
                 // the floating bar, a sheet — has the same thickness.
                 val outline = shape.createOutline(size, layoutDirection, this)
-                clipPath(outline) {
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    when (outline) {
+                        is androidx.compose.ui.graphics.Outline.Rounded ->
+                            addRoundRect(outline.roundRect)
+                        is androidx.compose.ui.graphics.Outline.Rectangle ->
+                            addRect(outline.rect)
+                        is androidx.compose.ui.graphics.Outline.Generic ->
+                            addPath(outline.path)
+                    }
+                }
+                clipPath(path) {
                     drawRect(
                         brush = Brush.verticalGradient(
                             0f to Color.Black.copy(alpha = 0.10f),
