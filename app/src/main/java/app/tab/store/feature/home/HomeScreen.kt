@@ -166,6 +166,9 @@ fun HomeScreen(
     onProduct: (String) -> Unit,
     onStore: (String) -> Unit,
     onSearch: () -> Unit,
+    /** Search with words already spoken. */
+    onSearchQuery: (String) -> Unit = {},
+    onVoiceSearch: () -> Unit = {},
     onCategory: (String) -> Unit,
     onSeeAll: () -> Unit,
     onDownloads: () -> Unit,
@@ -186,6 +189,17 @@ fun HomeScreen(
             snackbar.showSnackbar(it)
             viewModel.consumeMessage()
         }
+    }
+
+    // Voice search: the recogniser is a system activity, so the words come back
+    // as a result and are handed to the search screen as a starting query.
+    val voiceLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        val spoken = result.data
+            ?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)
+            ?.firstOrNull()
+        if (!spoken.isNullOrBlank()) onSearchQuery(spoken)
     }
 
     val listState = rememberLazyListState()
@@ -277,7 +291,9 @@ fun HomeScreen(
                             .height(52.dp),
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 18.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(start = 18.dp, end = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             SproutlyIcon(PhosphorIcons.Search,
@@ -285,12 +301,35 @@ fun HomeScreen(
                                 tint = Tokens.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp),
                             )
-                            Spacer(Modifier.width(10.dp))
+                            Spacer(Modifier.width(12.dp))
                             Text(
                                 "Search apps, developers, categories",
                                 style = Tokens.typography.bodyMedium,
                                 color = Tokens.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                                maxLines = 1,
                             )
+                            // Voice: a magnifier is not the only way in.
+                            IconButton(onClick = {
+                                val intent = android.content.Intent(
+                                    android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH,
+                                ).apply {
+                                    putExtra(
+                                        android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                                        android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM,
+                                    )
+                                    putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Search Liminal")
+                                }
+                                runCatching { voiceLauncher.launch(intent) }
+                                    .onFailure { onVoiceSearch() }
+                            }) {
+                                SproutlyIcon(
+                                    PhosphorIcons.Microphone,
+                                    contentDescription = "Search by voice",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Tokens.colorScheme.primary,
+                                )
+                            }
                         }
                     }
                 }
@@ -349,18 +388,18 @@ fun HomeScreen(
                             SproutlyImage(
                                 url = promo.imageUrl,
                                 contentDescription = promo.title,
-                                // Phone-shaped, so a portrait screenshot is not cropped to a square.
+                                // A thumbnail beside the text, not a backdrop under it:
+                                // the card is a card, not a poster.
                                 modifier = Modifier
                                     .align(Alignment.CenterEnd)
-                                    .fillMaxHeight()
-                                    .aspectRatio(9f / 16f),
-                                corner = 18.dp,
+                                    .size(92.dp),
+                                corner = 20.dp,
                             )
                         }
                         Column(
                             Modifier
                                 .align(Alignment.CenterStart)
-                                .fillMaxWidth(if (promo.imageUrl.isNullOrBlank()) 1f else 0.62f),
+                                .fillMaxWidth(if (promo.imageUrl.isNullOrBlank()) 1f else 0.66f),
                         ) {
                             Text(
                                 promo.eyebrow,

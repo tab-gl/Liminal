@@ -29,15 +29,12 @@ object PhosphorIcons {
     @DrawableRes val Favourite = R.drawable.ic_ph_favourite
     @DrawableRes val Filter = R.drawable.ic_ph_filter
     @DrawableRes val Gamepad = R.drawable.ic_ph_gamepad
-    /** Drawn from the supplied reference: an outlined gamepad. */
-    @DrawableRes val GamepadAlt = R.drawable.ic_ph_gamepad_alt
-    /** Drawn from the supplied reference: an outlined price tag. */
-    @DrawableRes val TagAlt = R.drawable.ic_ph_tag_alt
     @DrawableRes val Gift = R.drawable.ic_ph_gift
     @DrawableRes val Grid = R.drawable.ic_ph_grid
     @DrawableRes val Home = R.drawable.ic_ph_home
     @DrawableRes val Image = R.drawable.ic_ph_image
     @DrawableRes val More = R.drawable.ic_ph_more
+    @DrawableRes val Microphone = R.drawable.ic_ph_microphone
     @DrawableRes val Notification = R.drawable.ic_ph_notification
     @DrawableRes val Package = R.drawable.ic_ph_package
     @DrawableRes val Plus = R.drawable.ic_ph_plus
@@ -65,4 +62,8 @@ object PhosphorIcons {
     @DrawableRes val Library = R.drawable.ic_ph_library
     @DrawableRes val LibraryAlt = R.drawable.ic_ph_library_alt
     @DrawableRes val Link = R.drawable.ic_ph_link
+    /** Drawn from the supplied reference: an outlined gamepad. */
+    @DrawableRes val GamepadAlt = R.drawable.ic_ph_gamepad_alt
+    /** Drawn from the supplied reference: an outlined price tag. */
+    @DrawableRes val TagAlt = R.drawable.ic_ph_tag_alt
 }

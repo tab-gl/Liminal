@@ -257,6 +257,8 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
                     onProduct = { go(Routes.product(it)) },
                     onStore = { go(Routes.store(it)) },
                     onSearch = { go(Routes.search()) },
+                    // Spoken words become the search query.
+                    onSearchQuery = { words -> go(Routes.search(words)) },
                     onCategory = { go(Routes.searchInCategory(it)) },
                     onSeeAll = { goTab(Routes.SEARCH) },
                     onDownloads = { goTab(Routes.LIBRARY) },

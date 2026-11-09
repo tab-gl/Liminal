@@ -631,20 +631,6 @@ fun ProductCard(
                 // A card that lifts a hair as it is pressed reads as an object.
                 shadowElevation = if (scale < 1f) 2.dp.toPx() else 6.dp.toPx()
             }
-            .drawWithContent {
-                drawContent()
-                // Inner shadow: a soft dark line along the top edge, and a light
-                // one along the bottom, so the card has thickness.
-                drawRoundRect(
-                    brush = Brush.verticalGradient(
-                        0f to Color.Black.copy(alpha = 0.05f),
-                        0.12f to Color.Transparent,
-                        0.9f to Color.Transparent,
-                        1f to Color.White.copy(alpha = 0.35f),
-                    ),
-                    cornerRadius = CornerRadius(28.dp.toPx()),
-                )
-            },
     ) {
         Column(Modifier.padding(8.dp)) {
             Box {

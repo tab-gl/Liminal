@@ -51,6 +51,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
@@ -174,6 +177,23 @@ fun Surface(
             .then(
                 if (border != null) Modifier.border(border, shape) else Modifier,
             )
+            .drawWithContent {
+                drawContent()
+                // Inner shadow: a dark lip along the top and a light one along the
+                // bottom, clipped to the shape. Drawn here so every surface — a card,
+                // the floating bar, a sheet — has the same thickness.
+                val outline = shape.createOutline(size, layoutDirection, this)
+                clipPath(outline) {
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            0f to Color.Black.copy(alpha = 0.10f),
+                            0.05f to Color.Transparent,
+                            0.94f to Color.Transparent,
+                            1f to Color.White.copy(alpha = 0.16f),
+                        ),
+                    )
+                }
+            }
             .then(
                 if (onClick != null && enabled) {
                     Modifier.clickable(

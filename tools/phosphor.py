@@ -43,6 +43,7 @@ ICONS = {
     "Home": ("regular", "house"),
     "Image": ("regular", "image"),
     "More": ("regular", "dots-three"),
+    "Microphone": ("regular", "microphone"),
     "Notification": ("regular", "bell"),
     "Package": ("regular", "package"),
     "Plus": ("regular", "plus"),
