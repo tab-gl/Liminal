@@ -159,11 +159,12 @@ private fun SproutlyGraph(isSignedIn: Boolean, role: UserRole?) {
         restoreState = true
     }
 
-    // Back pops to the screen you came from. Without this, some routes fell through
-    // to the activity and landed on the storefront, which felt like being thrown
-    // out of the app.
-    BackHandler(enabled = navController.previousBackStackEntry != null) {
-        navController.popBackStack()
+    // Back from a tab page goes to Home, wherever you came from: Games, Offers,
+    // Downloads and Profile are peers of the storefront, not steps on a path to it.
+    // Everywhere else back is the ordinary "previous screen", and from Home it
+    // leaves the app.
+    BackHandler(enabled = isSignedIn && showBottomBar && baseRoute != Routes.HOME) {
+        goTab(Routes.HOME)
     }
 
     Scaffold(

@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.tab.store.core.designsystem.PhosphorIcons
+import app.tab.store.core.designsystem.ShimmerBox
 import app.tab.store.core.designsystem.SproutlyIcon
 import app.tab.store.core.designsystem.EmptyState
 import app.tab.store.core.designsystem.SproutlyButton
@@ -408,16 +409,19 @@ fun SellerDashboardScreen(
                         color = Tokens.colorScheme.inverseOnSurface,
                     )
                     Spacer(Modifier.height(6.dp))
-                    Text(
-                        InstallCount.label(state.stats.orderCount),
+                    StatValue(
+                        loaded = state.statsLoaded,
+                        text = InstallCount.label(state.stats.orderCount),
                         style = Tokens.typography.displaySmall,
                         color = Tokens.colorScheme.inversePrimary,
+                        placeholderWidth = 72.dp,
                     )
                     Spacer(Modifier.height(14.dp))
                     Row {
-                        DashStat("Apps", state.stats.activeProducts.toString(), Modifier.weight(1f))
-                        DashStat("Drafts", state.drafts.size.toString(), Modifier.weight(1f))
-                        DashStat("Live", state.stats.activeProducts.toString(), Modifier.weight(1f))
+                        // Apps is everything listed; Live is the published subset.
+                        DashStat("Apps", state.products.size.toString(), state.statsLoaded, Modifier.weight(1f))
+                        DashStat("Drafts", state.drafts.size.toString(), state.statsLoaded, Modifier.weight(1f))
+                        DashStat("Live", state.stats.activeProducts.toString(), state.statsLoaded, Modifier.weight(1f))
                     }
                 }
             }
@@ -653,13 +657,44 @@ fun SellerDashboardScreen(
     }
 }
 
+/**
+ * A figure that is a shimmering bar until the first snapshot arrives. A zero means
+ * "none"; it must never also mean "not loaded yet".
+ */
 @Composable
-private fun DashStat(label: String, value: String, modifier: Modifier = Modifier) {
+private fun StatValue(
+    loaded: Boolean,
+    text: String,
+    style: androidx.compose.ui.text.TextStyle,
+    color: androidx.compose.ui.graphics.Color,
+    placeholderWidth: androidx.compose.ui.unit.Dp,
+    modifier: Modifier = Modifier,
+) {
+    androidx.compose.animation.Crossfade(targetState = loaded, label = "statValue") { ready ->
+        if (ready) {
+            Text(text, style = style, color = color, modifier = modifier)
+        } else {
+            // Same height as the text it stands in for, so nothing jumps on arrival.
+            val height = with(androidx.compose.ui.platform.LocalDensity.current) {
+                (if (style.lineHeight.isSp) style.lineHeight else style.fontSize).toDp()
+            }
+            ShimmerBox(
+                modifier = modifier.size(width = placeholderWidth, height = height.coerceAtLeast(20.dp) - 6.dp),
+                corner = 6.dp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DashStat(label: String, value: String, loaded: Boolean, modifier: Modifier = Modifier) {
     Column(modifier) {
-        Text(
-            value,
+        StatValue(
+            loaded = loaded,
+            text = value,
             style = Tokens.typography.titleLarge,
             color = Tokens.colorScheme.inversePrimary,
+            placeholderWidth = 28.dp,
         )
         Text(
             label,
@@ -722,13 +757,13 @@ fun SellerAnalyticsScreen(
         SproutlyTopBar(title = "Analytics", subtitle = "Last 7 days and lifetime", onBack = onBack)
         Column(Modifier.padding(horizontal = 20.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                MetricTile("Revenue", formatCompact(stats.totalRevenue), Modifier.weight(1f))
-                MetricTile("Installs", stats.orderCount.toString(), Modifier.weight(1f))
+                MetricTile("Revenue", formatCompact(stats.totalRevenue), !state.isLoading, Modifier.weight(1f))
+                MetricTile("Installs", stats.orderCount.toString(), !state.isLoading, Modifier.weight(1f))
             }
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                MetricTile("Units sold", stats.unitsSold.toString(), Modifier.weight(1f))
-                MetricTile("Needs attention", stats.lowStockCount.toString(), Modifier.weight(1f))
+                MetricTile("Downloads", stats.unitsSold.toString(), !state.isLoading, Modifier.weight(1f))
+                MetricTile("Needs attention", stats.lowStockCount.toString(), !state.isLoading, Modifier.weight(1f))
             }
 
             Spacer(Modifier.height(20.dp))
@@ -825,14 +860,20 @@ fun SellerAnalyticsScreen(
 }
 
 @Composable
-private fun MetricTile(label: String, value: String, modifier: Modifier = Modifier) {
+private fun MetricTile(label: String, value: String, loaded: Boolean, modifier: Modifier = Modifier) {
     Surface(
         shape = SproutlyRadii.card,
         color = Tokens.colorScheme.surface,
         modifier = modifier,
     ) {
         Column(Modifier.padding(14.dp)) {
-            Text(value, style = Tokens.typography.headlineMedium)
+            StatValue(
+                loaded = loaded,
+                text = value,
+                style = Tokens.typography.headlineMedium,
+                color = Tokens.colorScheme.onSurface,
+                placeholderWidth = 48.dp,
+            )
             Text(
                 label,
                 style = Tokens.typography.bodySmall,

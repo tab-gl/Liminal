@@ -127,6 +127,9 @@ interface AdminRepository {
     /** Admin: listings waiting for review before they go live. */
     fun observePendingProducts(): Flow<List<Product>>
 
+    /** Admin: every listing in any state, newest 300, so any app can be managed. */
+    fun observeAllProducts(): Flow<List<Product>>
+
     /** Admin: every tag in the catalogue, with how many listings use it. */
     suspend fun listTags(): DataResult<List<Pair<String, Int>>>
 

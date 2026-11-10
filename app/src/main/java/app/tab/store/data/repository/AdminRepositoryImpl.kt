@@ -224,6 +224,12 @@ class AdminRepositoryImpl @Inject constructor(
             .map { snap -> snap.documents.map { it.toProduct() } }
             .orFallback(emptyList())
 
+    override fun observeAllProducts(): Flow<List<Product>> =
+        products.limit(300)
+            .snapshotFlow()
+            .map { snap -> snap.documents.map { it.toProduct() }.sortedBy { it.title.lowercase() } }
+            .orFallback(emptyList())
+
     override suspend fun listTags(): DataResult<List<Pair<String, Int>>> = firestoreResultOf {
         // Tags live on listings as a list, so the catalogue is the index. At this
         // size that is cheaper than maintaining a second collection.

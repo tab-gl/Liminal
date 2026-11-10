@@ -166,9 +166,25 @@ data class AdminProductsUiState(
     val reported: List<Product> = emptyList(),
     /** Listings a developer has submitted and nobody has approved yet. */
     val pending: List<Product> = emptyList(),
+    /** Every listing in any state, for the manager below the queues. */
+    val all: List<Product> = emptyList(),
+    val allLoaded: Boolean = false,
+    val query: String = "",
     val isLoading: Boolean = true,
     val message: String? = null,
-)
+) {
+    /** The manager list after the search box, matching the title, developer or status. */
+    val visibleAll: List<Product>
+        get() {
+            val q = query.trim().lowercase()
+            if (q.isEmpty()) return all
+            return all.filter {
+                it.title.lowercase().contains(q) ||
+                    it.storeName.lowercase().contains(q) ||
+                    it.status.name.lowercase().contains(q)
+            }
+        }
+}
 
 @HiltViewModel
 class AdminProductsViewModel @Inject constructor(
@@ -187,6 +203,23 @@ class AdminProductsViewModel @Inject constructor(
         viewModelScope.launch {
             adminRepository.observePendingProducts().collect { products ->
                 _uiState.update { it.copy(pending = products) }
+            }
+        }
+        viewModelScope.launch {
+            adminRepository.observeAllProducts().collect { products ->
+                _uiState.update { it.copy(all = products, allLoaded = true) }
+            }
+        }
+    }
+
+    fun onQuery(value: String) = _uiState.update { it.copy(query = value) }
+
+    /** Takes an app down for good: the listing and its reviews. */
+    fun remove(product: Product) {
+        viewModelScope.launch {
+            when (val result = adminRepository.removeProduct(product.id)) {
+                is DataResult.Failure -> _uiState.update { it.copy(message = result.message) }
+                is DataResult.Success -> _uiState.update { it.copy(message = "${product.title} was deleted.") }
             }
         }
     }

@@ -88,6 +88,8 @@ data class SellerDashboardUiState(
      */
     val drafts: List<Product> = emptyList(),
     val isLoading: Boolean = true,
+    /** False until the first stats snapshot arrives, so a zero is never shown for "not yet". */
+    val statsLoaded: Boolean = false,
     val needsStore: Boolean = false,
     /** One-line feedback, shown as a snackbar by the console. */
     val message: String? = null,
@@ -124,22 +126,21 @@ class SellerDashboardViewModel @Inject constructor(
                 }
                 if (store != null) {
                     launch {
-                        // The Offers tab lists every app, so the dashboard keeps
-                        // the listings as well as the totals.
+                        // One listener for the listings: the Offers tab wants them all
+                        // and the dashboard wants the drafts. Two listeners on the same
+                        // query doubled the reads.
                         sellerRepository.observeStoreProducts(store.id).collect { products ->
-                            _uiState.update { s -> s.copy(products = products) }
+                            _uiState.update { s ->
+                                s.copy(
+                                    products = products,
+                                    drafts = products.filter { p -> p.status == ProductStatus.DRAFT }.take(5),
+                                )
+                            }
                         }
                     }
                     launch {
                         sellerRepository.observeStats(store.id).collect { stats ->
-                            _uiState.update { s -> s.copy(stats = stats) }
-                        }
-                    }
-                    launch {
-                        sellerRepository.observeStoreProducts(store.id).collect { products ->
-                            _uiState.update {
-                                it.copy(drafts = products.filter { p -> p.status == ProductStatus.DRAFT }.take(5))
-                            }
+                            _uiState.update { s -> s.copy(stats = stats, statsLoaded = true) }
                         }
                     }
                 }

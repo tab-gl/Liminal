@@ -30,6 +30,9 @@ import app.tab.store.core.ui.SnackbarHostState
 import app.tab.store.core.ui.Surface
 import app.tab.store.core.ui.Text
 import app.tab.store.core.ui.TextButton
+import app.tab.store.core.designsystem.ShimmerBox
+import app.tab.store.core.ui.TextField
+import app.tab.store.core.ui.AlertDialog
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
@@ -622,18 +625,11 @@ fun AdminProductsScreen(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                 )
             }
-            if (!state.isLoading && state.reported.isEmpty() && state.pending.isEmpty()) {
-                EmptyState(
-                    title = "Nothing to moderate",
-                    message = "New listings and flagged apps both land here.",
-                    icon = PhosphorIcons.Verified,
-                )
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    items(state.reported, key = { it.id }) { product ->
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                items(state.reported, key = { "reported-${it.id}" }) { product ->
                         Surface(
                             shape = SproutlyRadii.card,
                             color = Tokens.colorScheme.surface,
@@ -685,8 +681,113 @@ fun AdminProductsScreen(
                             }
                         }
                     }
-                    item { Spacer(Modifier.height(20.dp)) }
+                item(key = "all-header") {
+                    Column(Modifier.padding(top = 10.dp)) {
+                        Text("All apps", style = Tokens.typography.headlineSmall)
+                        Text(
+                            "Search any listing, open it, block it or delete it.",
+                            style = Tokens.typography.bodySmall,
+                            color = Tokens.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        TextField(
+                            value = state.query,
+                            onValueChange = viewModel::onQuery,
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Search by app, developer or status") },
+                            singleLine = true,
+                        )
+                    }
                 }
+                if (!state.allLoaded) {
+                    item(key = "all-loading") {
+                        ShimmerBox(Modifier.fillMaxWidth().height(72.dp), corner = 16.dp)
+                    }
+                } else if (state.visibleAll.isEmpty()) {
+                    item(key = "all-empty") {
+                        Text(
+                            if (state.query.isBlank()) "No apps have been published yet."
+                            else "Nothing matches \"${state.query.trim()}\".",
+                            style = Tokens.typography.bodyMedium,
+                            color = Tokens.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 12.dp),
+                        )
+                    }
+                }
+                items(state.visibleAll, key = { "all-${it.id}" }) { product ->
+                    var confirmDelete by remember { mutableStateOf(false) }
+                    Surface(
+                        shape = SproutlyRadii.card,
+                        color = Tokens.colorScheme.surface,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onOpenProduct(product.id) },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                SproutlyImage(
+                                    url = product.primaryImage,
+                                    contentDescription = product.title,
+                                    modifier = Modifier.size(48.dp),
+                                    corner = 12.dp,
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        product.title,
+                                        style = Tokens.typography.titleSmall,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        "${product.storeName.ifBlank { "Unknown developer" }} · ${product.status.name.lowercase()}",
+                                        style = Tokens.typography.bodySmall,
+                                        color = Tokens.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                if (product.status == ProductStatus.BLOCKED) {
+                                    TextButton(onClick = { viewModel.setStatus(product, ProductStatus.ACTIVE) }) {
+                                        Text("Unblock")
+                                    }
+                                } else {
+                                    TextButton(onClick = { viewModel.setStatus(product, ProductStatus.BLOCKED) }) {
+                                        Text("Block")
+                                    }
+                                }
+                                if (product.status == ProductStatus.PENDING) {
+                                    TextButton(onClick = { viewModel.approve(product) }) { Text("Approve") }
+                                }
+                                TextButton(onClick = { confirmDelete = true }) {
+                                    Text("Delete", color = Tokens.colorScheme.error)
+                                }
+                            }
+                        }
+                    }
+                    if (confirmDelete) {
+                        AlertDialog(
+                            onDismissRequest = { confirmDelete = false },
+                            title = { Text("Delete ${product.title}?") },
+                            text = { Text("This removes the listing and its reviews for good. Installs people already have are not affected.") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    confirmDelete = false
+                                    viewModel.remove(product)
+                                }) { Text("Delete", color = Tokens.colorScheme.error) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { confirmDelete = false }) { Text("Cancel") }
+                            },
+                        )
+                    }
+                }
+                item { Spacer(Modifier.height(100.dp)) }
             }
         }
         SnackbarHost(
